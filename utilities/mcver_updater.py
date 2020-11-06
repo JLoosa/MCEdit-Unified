@@ -1,5 +1,7 @@
 import json
 import os
+import urllib.error
+import urllib.parse
 import urllib.request
 from logging import getLogger
 
@@ -51,8 +53,8 @@ def run():
     except:
         return
 
-    for gamePlatform in data.iterkeys():
-        for gameVersionNumber in data[gamePlatform].iterkeys():
+    for gamePlatform in data.keys():
+        for gameVersionNumber in data[gamePlatform].keys():
             for f in data[gamePlatform][gameVersionNumber]:
                 if download(gamePlatform, gameVersionNumber, f):
                     num = True

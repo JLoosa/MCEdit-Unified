@@ -1,5 +1,5 @@
 import player_cache
-import pymclevel.nbt as nbt
+from . import nbt
 
 
 class Player:

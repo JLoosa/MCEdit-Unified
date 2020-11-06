@@ -1,9 +1,7 @@
 # -*- coding: utf_8 -*-
 # The above line is necessary, unless we want problems with encodings...
-from __future__ import unicode_literals
 
 import copy
-import itertools
 import logging
 import math
 import sys
@@ -22,10 +20,11 @@ import keys
 import mceutils
 import pymclevel
 import raycaster
-from albow import alert, AttrRef, Button, Column, input_text, Row, TableColumn, TableView, Widget, CheckBox, TextFieldWrapped, IntField, ask
+from albow import alert, AttrRef, Button, Column, input_text, Row, TableColumn, TableView, Widget, CheckBox, \
+    TextFieldWrapped, MenuButton, ChoiceButton, IntInputRow, showProgress, IntField, ask
 from albow.controls import Label, ValueDisplay
 from albow.dialogs import Dialog, wrapped_label
-from albow.extended_widgets import BasicTextInputRow, CheckBoxLabel, MenuButton, ChoiceButton, IntInputRow, showProgress
+from albow.extended_widgets import BasicTextInputRow, CheckBoxLabel
 from albow.openglwidgets import GLViewport
 from albow.root import get_top_widget
 from albow.translate import _
@@ -216,10 +215,10 @@ class CameraViewport(GLViewport):
         ))
 
         # give the camera an impulse according to the state of the inputs and in the direction of the camera
-        cameraAccel = map(lambda x: x * accel_factor * timeDelta, directedInputs)
+        cameraAccel = [x * accel_factor * timeDelta for x in directedInputs]
         # cameraImpulse = map(lambda x: x*impulse_factor, directedInputs)
 
-        newVelocity = map(lambda a, b: a + b, velocity, cameraAccel)
+        newVelocity = list(map(lambda a, b: a + b, velocity, cameraAccel))
         velocityDir, speed = mceutils.normalize_size(newVelocity)
 
         # apply drag
@@ -240,15 +239,15 @@ class CameraViewport(GLViewport):
         if abs(speed) < drag_epsilon:
             speed = 0
 
-        velocity = map(lambda a: a * speed, velocityDir)
+        velocity = [a * speed for a in velocityDir]
 
         # velocity = map(lambda p,d: p + d, velocity, cameraImpulse)
-        d = map(lambda a, b: abs(a - b), self.cameraPosition, self.oldPosition)
+        d = list(map(lambda a, b: abs(a - b), self.cameraPosition, self.oldPosition))
         if d[0] + d[2] > 32.0:
             self.oldPosition = self.cameraPosition
             self.updateFloorQuad()
 
-        self.cameraPosition = map(lambda p, d: p + d * timeDelta, self.cameraPosition, velocity)
+        self.cameraPosition = list(map(lambda p, d: p + d * timeDelta, self.cameraPosition, velocity))
         if self.cameraPosition[1] > 3800.:
             self.cameraPosition[1] = 3800.
         elif self.cameraPosition[1] < -1000.:
@@ -284,7 +283,7 @@ class CameraViewport(GLViewport):
         dx = -math.sin(math.radians(yaw)) * math.cos(math.radians(pitch))
         dy = -math.sin(math.radians(pitch))
         dz = math.cos(math.radians(yaw)) * math.cos(math.radians(pitch))
-        return map(nanzero, (dx, dy, dz))
+        return list(map(nanzero, (dx, dy, dz)))
 
     def updateMouseVector(self):
         self.mouseVector = self._mouseVector()
@@ -389,7 +388,7 @@ class CameraViewport(GLViewport):
         d = [0, 0, 0]
 
         try:
-            intProjectedPoint = map(int, map(numpy.floor, projectedPoint))
+            intProjectedPoint = list(map(int, list(map(numpy.floor, projectedPoint))))
         except ValueError:
             return None  # catch NaNs
         intProjectedPoint[1] = max(-1, intProjectedPoint[1])
@@ -400,7 +399,7 @@ class CameraViewport(GLViewport):
                       (projectedPoint[2] - (intProjectedPoint[2] + 0.5))
                       )
 
-        av = map(abs, faceVector)
+        av = list(map(abs, faceVector))
 
         i = av.index(max(av))
         delta = faceVector[i]
@@ -421,7 +420,7 @@ class CameraViewport(GLViewport):
         else:
             # discard any faces that aren't likely to be exposed
             for face, offsets in pymclevel.faceDirections:
-                point = map(lambda a, b: a + b, intProjectedPoint, offsets)
+                point = list(map(lambda a, b: a + b, intProjectedPoint, offsets))
                 try:
                     neighborBlock = self.editor.level.blockAt(*point)
                     if block != neighborBlock:
@@ -575,7 +574,7 @@ class CameraViewport(GLViewport):
         # print mcedit_ids.get(_id, _id)
         # print mcedit_defs.get(mcedit_ids.get(_id, _id), {})
         _id2 = mcedit_defs.get(mcedit_ids.get(_id, _id), {})
-        if isinstance(_id2, (str, bytes)):
+        if isinstance(_id2, str):
             _id = _id2
         id = mcedit_defs.get(mcedit_ids.get(_id, _id), {}).get("name", _id)
 
@@ -709,7 +708,7 @@ class CameraViewport(GLViewport):
         def selectedDisc(id):
             if id == 0:
                 return "[No Record]"
-            return discs.keys()[discs.values().index(id + 2255)]
+            return list(discs.keys())[list(discs.values()).index(id + 2255)]
 
         def cancel():
             if id == "[No Record]":
@@ -893,7 +892,7 @@ class CameraViewport(GLViewport):
         json_fmt = False
 
         f = lambda a, b: (a + (['0'] * max(len(b) - len(a), 0)), b + (['0'] * max(len(a) - len(b), 0)))
-        if False not in map(lambda x, y: (int(x) if x.isdigit() else x) >= (int(y) if y.isdigit() else y), *f(splitVersion, newFmtVersion))[:2]:
+        if False not in list(map(lambda x, y: (int(x) if x.isdigit() else x) >= (int(y) if y.isdigit() else y), *f(splitVersion, newFmtVersion)))[:2]:
             json_fmt = True
             fmt = '{"text":""}'
 
@@ -935,26 +934,26 @@ class CameraViewport(GLViewport):
                     f.value = f.value.replace('\\"', '"')
 
         colors = [
-            u"§0  Black",
-            u"§1  Dark Blue",
-            u"§2  Dark Green",
-            u"§3  Dark Aqua",
-            u"§4  Dark Red",
-            u"§5  Dark Purple",
-            u"§6  Gold",
-            u"§7  Gray",
-            u"§8  Dark Gray",
-            u"§9  Blue",
-            u"§a  Green",
-            u"§b  Aqua",
-            u"§c  Red",
-            u"§d  Light Purple",
-            u"§e  Yellow",
-            u"§f  White",
+            "§0  Black",
+            "§1  Dark Blue",
+            "§2  Dark Green",
+            "§3  Dark Aqua",
+            "§4  Dark Red",
+            "§5  Dark Purple",
+            "§6  Gold",
+            "§7  Gray",
+            "§8  Dark Gray",
+            "§9  Blue",
+            "§a  Green",
+            "§b  Aqua",
+            "§c  Red",
+            "§d  Light Purple",
+            "§e  Yellow",
+            "§f  White",
         ]
 
         def menu_picked(index):
-            c = u"§%d" % index
+            c = "§%d" % index
             currentField = panel.focus_switch.focus_switch
             if currentField.insertion_step is not None:
                 currentField.text = currentField.text[:currentField.insertion_step] + c + currentField.text[currentField.insertion_step:]
@@ -967,10 +966,10 @@ class CameraViewport(GLViewport):
         def changeSign():
             unsavedChanges = False
             fmt = '"{}"'
-            u_fmt = u'"%s"'
+            u_fmt = '"%s"'
             if json_fmt or oneText:
                 fmt = '{}'
-                u_fmt = u'%s'
+                u_fmt = '%s'
             for l, f in zip(linekeys, lineFields):
                 oldText = fmt.format(tileEntity[l])
                 tileEntity[l] = pymclevel.TAG_String(u_fmt % f.value[:255])
@@ -1030,7 +1029,7 @@ class CameraViewport(GLViewport):
         titleLabel = Label("Edit Skull Data")
         usernameField = TextFieldWrapped(width=150)
         panel = Dialog()
-        skullMenu = ChoiceButton(map(str, skullTypes))
+        skullMenu = ChoiceButton(list(map(str, skullTypes)))
 
         if "Owner" in tileEntity:
             if "Owner" not in tileEntity["Owner"]:
@@ -1267,7 +1266,7 @@ class CameraViewport(GLViewport):
 
         def selectButtonAction():
             SlotEditor(chestItemTable,
-                       (chestWidget.Slot, chestWidget.id or u"", chestWidget.Count, chestWidget.Damage)
+                       (chestWidget.Slot, chestWidget.id or "", chestWidget.Count, chestWidget.Damage)
                        ).present()
 
         maxSlot = pymclevel.TileEntity.maxItems.get(tileEntityTag["id"].value, 27) - 1
@@ -1586,11 +1585,11 @@ class CameraViewport(GLViewport):
 
         if evt.num_clicks == 2:
             def distance2(p1, p2):
-                return numpy.sum(map(lambda a, b: (a - b) ** 2, p1, p2))
+                return numpy.sum(list(map(lambda a, b: (a - b) ** 2, p1, p2)))
 
             point, face = self.blockFaceUnderCursor
             if point:
-                point = map(lambda x: int(numpy.floor(x)), point)
+                point = [int(numpy.floor(x)) for x in point]
                 if self.editor.currentTool is self.editor.selectionTool:
                     try:
                         block = self.editor.level.blockAt(*point)
@@ -1900,9 +1899,9 @@ class CameraViewport(GLViewport):
 
     def getCameraPoint(self):
         distance = self.editor.currentTool.cameraDistance
-        return [i for i in itertools.imap(lambda p, d: int(numpy.floor(p + d * distance)),
-                                          self.cameraPosition,
-                                          self.cameraVector)]
+        return [i for i in map(lambda p, d: int(numpy.floor(p + d * distance)),
+                               self.cameraPosition,
+                               self.cameraVector)]
 
     blockFaceUnderCursor = (0, 0, 0), (0, 0, 0)
 
@@ -2110,12 +2109,12 @@ class CommandBlockInfoParser(BlockInfoParser):
             value = tile_entity.get("Command", pymclevel.TAG_String("")).value
             if value:
                 if len(value) > 1500:
-                    return u"{}\n**COMMAND IS TOO LONG TO SHOW MORE**{}{}".format(value[:1500], self.nbt_ending, self.edit_ending)
+                    return "{}\n**COMMAND IS TOO LONG TO SHOW MORE**{}{}".format(value[:1500], self.nbt_ending, self.edit_ending)
                 try:
-                    return u"{}{}{}".format(value, self.nbt_ending, self.edit_ending)
+                    return "{}{}{}".format(value, self.nbt_ending, self.edit_ending)
                 except:
-                    return u"[Command Block Parsing Failed]"
-        return u"[Empty Command Block]{}{}".format(self.nbt_ending, self.edit_ending)
+                    return "[Command Block Parsing Failed]"
+        return "[Empty Command Block]{}{}".format(self.nbt_ending, self.edit_ending)
 
 
 class ContainerInfoParser(BlockInfoParser):

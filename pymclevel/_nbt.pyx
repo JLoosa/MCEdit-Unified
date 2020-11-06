@@ -48,6 +48,7 @@ from cStringIO import StringIO
 from cpython cimport
 
 PyTypeObject, PyUnicode_DecodeUTF8, PyList_Append, PyString_FromStringAndSize
+
 logger = logging.getLogger(__name__)
 
 cdef extern from "cStringIO.h":

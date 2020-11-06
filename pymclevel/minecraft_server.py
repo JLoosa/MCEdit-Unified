@@ -10,14 +10,18 @@ import subprocess
 import sys
 import tempfile
 import time
-import urllib
+import urllib.error
+import urllib.error
+import urllib.parse
+import urllib.parse
+import urllib.request
 import urllib.request
 from os.path import dirname, join, basename
 
-import pymclevel.infiniteworld as infiniteworld
 from directories import getCacheDir
 from pymclevel import PocketLeveldbWorld
-from pymclevel.mclevelbase import exhaust, ChunkNotPresent
+from . import infiniteworld
+from .mclevelbase import exhaust, ChunkNotPresent
 
 log = logging.getLogger(__name__)
 
@@ -77,7 +81,7 @@ def sort_nicely(l):
 
 
 class ServerJarStorage(object):
-    _cacheDir = os.path.join(getCacheDir(), u"ServerJarStorage")
+    _cacheDir = os.path.join(getCacheDir(), "ServerJarStorage")
 
     def __init__(self, cacheDir=None):
         if not os.path.exists(self._cacheDir):
@@ -120,7 +124,7 @@ this way.
                     os.remove(p)
 
         print("Minecraft_Server.jar storage initialized.")
-        print(u"Each server is stored in a subdirectory of {0} named with the server's version number".format(
+        print("Each server is stored in a subdirectory of {0} named with the server's version number".format(
             self._cacheDir))
 
         print("Cached servers: ", self.versions)
@@ -129,7 +133,7 @@ this way.
         self.snapshot = getSnapshot
         print("Downloading the latest Minecraft Server...")
         try:
-            (filename, headers) = urllib.urlretrieve(getVersions(getSnapshot))
+            (filename, headers) = urllib.request.urlretrieve(getVersions(getSnapshot))
         except Exception as e:
             print("Error downloading server: {0!r}".format(e))
             return
@@ -209,7 +213,7 @@ def readProperties(filename):
 
 def saveProperties(filename, properties):
     with open(filename, "w") as f:
-        for k, v in properties.iteritems():
+        for k, v in properties.items():
             f.write("{0}={1}\n".format(k, v))
 
 
@@ -470,7 +474,7 @@ class MCServerChunkGenerator(object):
         return exhaust(self.createLevelIter(level, box, simulate, **kw))
 
     def createLevelIter(self, level, box, simulate=False, worldType="DEFAULT", **kw):
-        if isinstance(level, (str, bytes)):
+        if isinstance(level, str):
             filename = level
             level = infiniteworld.MCInfdevOldLevel(filename, create=True, **kw)
 
@@ -618,7 +622,7 @@ class MCServerChunkGenerator(object):
     generateChunksInLevelIter = generateChunksInLevelIter_new
 
     def runServer(self, startingDir):
-        if isinstance(startingDir, bytes):
+        if isinstance(startingDir, str):
             startingDir = startingDir.encode(sys.getfilesystemencoding())
 
         return self._runServer(startingDir, self.serverJarFile)

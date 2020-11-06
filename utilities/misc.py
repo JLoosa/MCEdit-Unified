@@ -61,6 +61,6 @@ def deprecated(func):
 
 def unicoded(func):
     def wrapper(*args, **kwargs):
-        return bytes(func(*args, **kwargs), encoding="utf-8")
+        return str(func(*args, **kwargs))
 
     return wrapper

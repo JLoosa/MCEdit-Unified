@@ -1,6 +1,5 @@
 exceptions = 0
-
-from pymclevel.leveldb import DB, Options, ReadOptions, WriteOptions, WriteBatch, RepairWrapper
+from leveldb_mcpe import DB, Options, ReadOptions, WriteOptions, WriteBatch, RepairWrapper
 
 op = Options()
 op.create_if_missing = True

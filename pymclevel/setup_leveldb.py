@@ -55,7 +55,7 @@ def check_bins(bins):
                 else:
                     print("Could not find %s." % n)
             if found:
-                g_keys = globals().keys()
+                g_keys = list(globals().keys())
                 g_name = name.replace('|', '_')
                 print("g_name", g_name, g_name in g_keys)
                 if g_name in g_keys:
@@ -242,7 +242,7 @@ def build_leveldb(zlib):
     # Inject the needed code into the sources.
     for root, d_names, f_names in os.walk("."):
         for f_name in fnmatch.filter(f_names, "c.[ch]*"):
-            if f_name in c_inject.keys():
+            if f_name in list(c_inject.keys()):
                 hook = c_inject[f_name]["hook"]
                 data = c_inject[f_name]["data"]
                 where = c_inject[f_name]["where"]

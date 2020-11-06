@@ -4,10 +4,10 @@ from datetime import datetime
 log = logging.getLogger(__name__)
 
 import numpy
-from pymclevel.box import BoundingBox
-from pymclevel.mclevelbase import exhaust
-import pymclevel.materials as materials
-from pymclevel.entity import Entity, TileEntity
+from .box import BoundingBox
+from .mclevelbase import exhaust
+from . import materials
+from .entity import Entity, TileEntity
 from copy import deepcopy
 
 
@@ -32,7 +32,7 @@ def sourceMaskFunc(blocksToCopy):
 
 
 def adjustCopyParameters(destLevel, sourceLevel, sourceBox, destinationPoint):
-    log.debug(u"Asked to copy {} blocks \n\tfrom {} in {}\n\tto {} in {}".format(
+    log.debug("Asked to copy {} blocks \n\tfrom {} in {}\n\tto {} in {}".format(
         sourceBox.volume, sourceBox, sourceLevel, destinationPoint, destLevel))
     if destLevel.Width == 0:
         return sourceBox, destinationPoint
@@ -56,7 +56,7 @@ def copyBlocksFromIter(destLevel, sourceLevel, sourceBox, destinationPoint, bloc
 
     sourceBox, destinationPoint = adjustCopyParameters(destLevel, sourceLevel, sourceBox, destinationPoint)
     # needs work xxx
-    log.info(u"Copying {0} blocks from {1} to {2}".format(ly * lz * lx, sourceBox, destinationPoint))
+    log.info("Copying {0} blocks from {1} to {2}".format(ly * lz * lx, sourceBox, destinationPoint))
     startTime = datetime.now()
 
     destBox = BoundingBox(destinationPoint, sourceBox.size)

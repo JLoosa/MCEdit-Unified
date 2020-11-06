@@ -189,7 +189,7 @@ def compound(char, string, pair=None):
     name, misc = string.split(char, 1)
     name = name.strip()
     misc = [a.strip() for a in misc.strip()[:-1].split(',')]
-    if (name not in enRes.keys() and name not in langRes.values()) and (name not in enMisc.keys() and name not in langMisc.values()):
+    if (name not in list(enRes.keys()) and name not in list(langRes.values())) and (name not in list(enMisc.keys()) and name not in list(langMisc.values())):
         addMissing(name)
     head = langRes.get(enRes.get(name, name), name)
     for i in range(len(misc)):
@@ -211,7 +211,7 @@ def compound(char, string, pair=None):
                             h = langRes.get(enRes.get(h, h), h)
                             stop[0] = True
                     if not stop[1]:
-                        t = u' '.join(elems[1:])
+                        t = ' '.join(elems[1:])
                         if langMisc.get(enMisc.get(t, False), False):
                             t = langMisc.get(enMisc.get(t, t), t)
                             stop[1] = True
@@ -220,26 +220,26 @@ def compound(char, string, pair=None):
                             stop[1] = True
                         if stop[0]:
                             stop[1] = True
-                misc[i] = u' '.join((h, t))
-                if (h not in enRes.keys() and h not in langRes.values()) and (h not in enMisc.keys() and h not in langMisc.values()):
+                misc[i] = ' '.join((h, t))
+                if (h not in list(enRes.keys()) and h not in list(langRes.values())) and (h not in list(enMisc.keys()) and h not in list(langMisc.values())):
                     addMissing(h, 'misc')
-                if (t not in enRes.keys() and t not in langRes.values()) and (t not in enMisc.keys() and t not in langMisc.values()):
+                if (t not in list(enRes.keys()) and t not in list(langRes.values())) and (t not in list(enMisc.keys()) and t not in list(langMisc.values())):
                     addMissing(t, 'misc')
-        elif u'/' in misc[i]:
-            misc[i] = u'/'.join([langMisc.get(enMisc.get(a, a), translate(a)) for a in misc[i].split('/')])
+        elif '/' in misc[i]:
+            misc[i] = '/'.join([langMisc.get(enMisc.get(a, a), translate(a)) for a in misc[i].split('/')])
         elif '-' in misc[i]:
-            misc[i] = u'-'.join([langMisc.get(enMisc.get(a, a), translate(a)) for a in misc[i].split('-')])
+            misc[i] = '-'.join([langMisc.get(enMisc.get(a, a), translate(a)) for a in misc[i].split('-')])
         elif '_' in misc[i]:
-            misc[i] = u'_'.join([langMisc.get(enMisc.get(a, a), translate(a)) for a in misc[i].split('_')])
+            misc[i] = '_'.join([langMisc.get(enMisc.get(a, a), translate(a)) for a in misc[i].split('_')])
         else:
             misc[i] = langRes.get(enRes.get(misc[i], misc[i]), misc[i])
-    tail = u'{0}{1}{2}'.format(char, u', '.join([langMisc.get(enMisc.get(a, a), a) for a in misc]), pair)
-    return u' '.join((head, tail))
+    tail = '{0}{1}{2}'.format(char, ', '.join([langMisc.get(enMisc.get(a, a), a) for a in misc]), pair)
+    return ' '.join((head, tail))
 
 
 if report_missing:
     def addMissing(name, cat='base'):
-        n = u''
+        n = ''
         for a in name:
             if a == ' ' or a.isalnum():
                 n += a
@@ -268,8 +268,8 @@ def translate(name):
         if c in name:
             return compound(c, name)
     if report_missing:
-        print('*', (name not in enRes.keys() and name not in langRes.values()) and (name not in enMisc.keys() and name not in langMisc.values()), name)
-    if (name not in enRes.keys() and name not in langRes.values()) and (name not in enMisc.keys() and name not in langMisc.values()):
+        print('*', (name not in list(enRes.keys()) and name not in list(langRes.values())) and (name not in list(enMisc.keys()) and name not in list(langMisc.values())), name)
+    if (name not in list(enRes.keys()) and name not in list(langRes.values())) and (name not in list(enMisc.keys()) and name not in list(langMisc.values())):
         addMissing(name)
     return langRes.get(enRes.get(name, name), name)
 
@@ -302,9 +302,9 @@ def search(text, untranslate=False, capitalize=True, filters=[]):
             else:
                 results.append(l.lower())
 
-    for k, v in serGnal.items():
+    for k, v in list(serGnal.items()):
         if text in k.lower():
-            if not filters or map(lambda _in: re.match(_in[0], _in[1]), zip(filters, [v] * len(filters))) != [None, None]:
+            if not filters or [re.match(x_y[0], x_y[1]) for x_y in zip(filters, [v] * len(filters))] != [None, None]:
                 if untranslate:
                     if capitalize:
                         results.append('-'.join([b.capitalize() for b in ' '.join([a.capitalize() for a in serNe[v].split(' ')]).split('-')]))

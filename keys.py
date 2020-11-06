@@ -686,7 +686,7 @@ class KeyConfigPanel(Dialog):
             except:
                 pass
 
-            if configKey in self.otherNames.keys():
+            if configKey in list(self.otherNames.keys()):
                 configKey = self.otherNames[configKey]
 
         else:
@@ -712,7 +712,7 @@ class KeyConfigPanel(Dialog):
             if result == "Save":
                 self.done()
             elif result == "Don't Save":
-                for k in self.changes.keys():
+                for k in list(self.changes.keys()):
                     config.keys[config.convert(k)].set(self.changes[k])
                 self.changesNum = False
                 self.changes = {}
@@ -816,7 +816,7 @@ class KeyConfigPanel(Dialog):
                     self.askAssignKey(configKey,
                                       "Movement keys can't use Ctrl or be with modifiers. Press a new key.\n\nPress ESC to cancel.")
                     return True
-            filter_keys = [i for (i, j) in config.config._sections["Filter Keys"].items() if j == _keyname]
+            filter_keys = [i for (i, j) in list(config.config._sections["Filter Keys"].items()) if j == _keyname]
             if filter_keys:
                 self.askAssignKey(configKey,
                                   _("Can't bind. {0} is already used by the \"{1}\" filter.\n Press a new key.\n\nPress ESC to cancel.").format(_keyname, filter_keys[0]))

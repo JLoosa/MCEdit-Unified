@@ -2,13 +2,12 @@
 # Taken from http://www.pygame.org/project-Splash+screen-1186-.html by Rock Achu (rockhachu2)
 # and tweaked ;)
 import os
-import sys
 
 import directories
 
-if sys.platform == 'linux2':
-    sys.path.insert(1, os.path.expanduser('~/.local/lib/python2.7/site-packages'))
-    sys.path.insert(1, os.path.abspath('./lib'))
+if os.sys.platform == 'linux2':
+    os.sys.path.insert(1, os.path.expanduser('~/.local/lib/python2.7/site-packages'))
+    os.sys.path.insert(1, os.path.abspath('./lib'))
 
 import pygame
 
@@ -97,7 +96,7 @@ if write_splash:
             splashes_folder = directories.getDataFile(splashes_folder)
         if os.path.exists(splashes_folder) and os.listdir(splashes_folder):
             new_splash = choice(os.listdir(splashes_folder))
-            if True: #TODO new_splash.split('.')[-1].lower() in ('jpg', 'png', 'bmp', 'pcx', 'tif', 'lbm', 'pbm', 'pgm', 'ppm', 'xpm'):
+            if new_splash.split('.')[-1].lower() in ('jpg', 'png', 'bmp', 'pcx', 'tif', 'lbm', 'pbm', 'pgm', 'ppm', 'xpm'):
                 f2 = open(splash_name, 'w')
                 try:
                     # f2.write(os.path.join(cur_dir, splashes_folder, new_splash))

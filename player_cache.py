@@ -1,14 +1,16 @@
 import atexit
 import base64
 import datetime
-import http
+import http.client
 import json
 import logging
 import os
 import threading
 import time
 import traceback
-import urllib
+import urllib.error
+import urllib.parse
+import urllib.request
 from uuid import UUID
 
 from PIL import Image
@@ -161,7 +163,7 @@ class PlayerCache:
             # TODO: Put this into a thread, since it could take alot of time to run
             # TODO: Handle entries that weren't successful last time the cache was modified
 
-            for uuid in self._cache["Cache"].keys():
+            for uuid in list(self._cache["Cache"].keys()):
                 player = self._cache["Cache"][uuid]
                 if player["Successful"]:
                     if self.getDeltaTime(player["Timestamp"], "hours") > 6:
@@ -177,7 +179,7 @@ class PlayerCache:
         self.save()
 
     def force_refresh(self):
-        for uuid in self._cache["Cache"].keys():
+        for uuid in list(self._cache["Cache"].keys()):
             self.getPlayerInfo(uuid, force=True)
         self.save()
 
@@ -200,7 +202,7 @@ class PlayerCache:
         :type name: str
         :rtype: bool
         """
-        for uuid in self._cache["Cache"].keys():
+        for uuid in list(self._cache["Cache"].keys()):
             if self._cache["Cache"][uuid].get("Name", "") == name:
                 return True
         return False
@@ -227,7 +229,7 @@ class PlayerCache:
         :return: The player data that is in the cache for the specified Player name, same format as getPlayerInfo()
         :rtype: tuple
         """
-        for uuid in self._cache["Cache"].keys():
+        for uuid in list(self._cache["Cache"].keys()):
             clean_uuid = uuid.replace("-", "")
             player = self._cache["Cache"][uuid]
             if player.get("Name", "") == name and player.get("Successful", False):
@@ -254,7 +256,7 @@ class PlayerCache:
         :return: True if the last time the player data retrieval from Mojang's API was successful, False otherwise
         :rtype: bool
         """
-        for uuid in self._cache["Cache"].keys():
+        for uuid in list(self._cache["Cache"].keys()):
             player = self._cache["Cache"][uuid]
             if player.get("Name", "") == name:
                 return player.get("Successful", False)
@@ -458,24 +460,24 @@ class PlayerCache:
     def _getDataFromURL(self, url):
         conn = None
         try:
-            conn = urllib.urlopen(url, timeout=self.TIMEOUT)
+            conn = urllib.request.urlopen(url, timeout=self.TIMEOUT)
             response = conn.read()
             self.last_error = False
             return response
-        except urllib.HTTPError as e:
-            log.warning("Encountered a HTTPError while trying to access \"" + url + "\"")
-            log.warning("Error: " + str(e.code))
+        except urllib.error.HTTPError as e:
+            log.warn("Encountered a HTTPError while trying to access \"" + url + "\"")
+            log.warn("Error: " + str(e.code))
             self.error_count += 1
-        except urllib.URLError as e:
-            log.warning("Encountered an URLError while trying to access \"" + url + "\"")
-            log.warning("Error: " + str(e.reason))
+        except urllib.error.URLError as e:
+            log.warn("Encountered an URLError while trying to access \"" + url + "\"")
+            log.warn("Error: " + str(e.reason))
             self.error_count += 1
-        except http.HTTPException:
-            log.warning("Encountered a HTTPException while trying to access \"" + url + "\"")
+        except http.client.HTTPException:
+            log.warn("Encountered a HTTPException while trying to access \"" + url + "\"")
             self.error_count += 1
         except Exception:
-            log.warning("Unknown error occurred while trying to get data from URL: " + url)
-            log.warning(traceback.format_exc())
+            log.warn("Unknown error occurred while trying to get data from URL: " + url)
+            log.warn(traceback.format_exc())
             self.error_count += 1
         finally:
             if conn:
@@ -485,21 +487,21 @@ class PlayerCache:
     def _postDataToURL(self, url, payload, headers):
         conn = None
         try:
-            request = urllib.Request(url, payload, headers)
-            conn = urllib.urlopen(request, timeout=self.TIMEOUT)
+            request = urllib.request.Request(url, payload, headers)
+            conn = urllib.request.urlopen(request, timeout=self.TIMEOUT)
             response = conn.read()
             return response
-        except urllib.HTTPError as e:
-            log.warning("Encountered a HTTPError while trying to POST to \"" + url + "\"")
-            log.warning("Error: " + str(e.code))
-        except urllib.URLError as e:
-            log.warning("Encountered an URLError while trying to POST to \"" + url + "\"")
-            log.warning("Error: " + str(e.reason))
-        except http.HTTPException:
-            log.warning("Encountered a HTTPException while trying to POST to \"" + url + "\"")
+        except urllib.error.HTTPError as e:
+            log.warn("Encountered a HTTPError while trying to POST to \"" + url + "\"")
+            log.warn("Error: " + str(e.code))
+        except urllib.error.URLError as e:
+            log.warn("Encountered an URLError while trying to POST to \"" + url + "\"")
+            log.warn("Error: " + str(e.reason))
+        except http.client.HTTPException:
+            log.warn("Encountered a HTTPException while trying to POST to \"" + url + "\"")
         except Exception:
-            log.warning("Unknown error occurred while trying to POST data to URL: " + url)
-            log.warning(traceback.format_exc())
+            log.warn("Unknown error occurred while trying to POST data to URL: " + url)
+            log.warn(traceback.format_exc())
         finally:
             if conn: conn.close()
         return None

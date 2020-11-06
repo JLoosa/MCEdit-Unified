@@ -4,7 +4,7 @@
 
 from pygame import Rect
 
-from albow.widget import Widget, overridable_property
+from .widget import Widget, overridable_property
 
 
 class MenuBar(Widget):

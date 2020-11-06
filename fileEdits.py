@@ -21,9 +21,9 @@ class fileEdit:
             return
         lines = []
         for line in f.readlines():
-            line = line.replace(b"\r", b"")
+            line = line.replace("\r", "")
             if line != "\n":
-                lines.append(line.replace(b"\n", b""))
+                lines.append(line.replace("\n", ""))
         f.close()
 
         tileEntities = []
@@ -44,7 +44,8 @@ class fileEdit:
         if op.canUndo:
             self.editor.addUnsavedEdit()
 
-    def writeCommandInFile(self, first, space, x, y, z, fileTemp, skip, chain, done, order):
+    def writeCommandInFile(self, first, space, xxx_todo_changeme, fileTemp, skip, chain, done, order):
+        (x, y, z) = xxx_todo_changeme
         block = self.editor.level.tileEntityAt(x, y, z)
         if chain:
             if not block or (x, y, z) in done:
@@ -103,8 +104,8 @@ class FileEditsOperation(Operation):
         for i, line in enumerate(self.lines):
             tileEntity = self.tileEntities[i]
             line = line.decode('utf-8')
-            line = line.replace(u"\u201c\u202a", "\"")
-            line = line.replace(u"\u201d\u202c", "\"")
+            line = line.replace("\u201c\u202a", "\"")
+            line = line.replace("\u201d\u202c", "\"")
             if line == "\"\"":
                 line = ""
             if tileEntity["Command"].value != line:

@@ -14,7 +14,7 @@ from logging import getLogger
 
 from numpy import fromstring
 
-from pymclevel.level import MCLevel
+from .level import MCLevel
 
 log = getLogger(__name__)
 
@@ -46,7 +46,7 @@ class MCJavaLevel(MCLevel):
         Length = 64
         Height = 64
         if data.shape[0] <= (32 * 32 * 64) * 2:
-            log.warn(u"Can't guess the size of a {0} byte level".format(data.shape[0]))
+            log.warn("Can't guess the size of a {0} byte level".format(data.shape[0]))
             raise IOError("MCJavaLevel attempted for smaller than 64 blocks cubed")
         if data.shape[0] > (64 * 64 * 64) * 2:
             Width = 128
@@ -75,21 +75,21 @@ class MCJavaLevel(MCLevel):
 
     def __init__(self, filename, data):
         self.filename = filename
-        if isinstance(data, (str, bytes)):
+        if isinstance(data, str):
             data = fromstring(data, dtype='uint8')
         self.filedata = data
 
         # try to take x,z,y from the filename
         r = re.findall("\d+", os.path.basename(filename))
         if r and len(r) >= 3:
-            (w, l, h) = map(int, r[-3:])
+            (w, l, h) = list(map(int, r[-3:]))
             if w * l * h > data.shape[0]:
                 log.info("Not enough blocks for size " + str((w, l, h)))
                 w, l, h = self.guessSize(data)
         else:
             w, l, h = self.guessSize(data)
 
-        log.info(u"MCJavaLevel created for potential level of size " + str((w, l, h)))
+        log.info("MCJavaLevel created for potential level of size " + str((w, l, h)))
 
         blockCount = h * l * w
         if blockCount > data.shape[0]:
@@ -134,7 +134,7 @@ class MCJavaLevel(MCLevel):
             with open(self.filename, 'wb') as f:
                 f.write(s.getvalue())
         except Exception as e:
-            log.info(u"Error while saving java level in place: {0}".format(e))
+            log.info("Error while saving java level in place: {0}".format(e))
             try:
                 os.remove(self.filename)
             except:

@@ -621,7 +621,7 @@ class DBInterface(object):
             sync = self._default_sync
         if self._prefix is not None and not batch._private:
             unscoped_batch = _OpaqueWriteBatch()
-            for key, value in batch._puts.iteritems():
+            for key, value in batch._puts.items():
                 unscoped_batch._puts[self._prefix + key] = value
             for key in batch._deletes:
                 unscoped_batch._deletes.add(self._prefix + key)
@@ -720,8 +720,8 @@ class DBInterface(object):
             verify_checksums = self._default_verify_checksums
         if fill_cache is None:
             fill_cache = self._default_fill_cache
-        return self.NewIterator(verify_checksums=verify_checksums,
-                                fill_cache=fill_cache, prefix=prefix).SeekToFirst().keys()
+        return list(self.NewIterator(verify_checksums=verify_checksums,
+                                     fill_cache=fill_cache, prefix=prefix).SeekToFirst().keys())
 
     Keys = keys
 
@@ -730,8 +730,8 @@ class DBInterface(object):
             verify_checksums = self._default_verify_checksums
         if fill_cache is None:
             fill_cache = self._default_fill_cache
-        return self.NewIterator(verify_checksums=verify_checksums,
-                                fill_cache=fill_cache, prefix=prefix).SeekToFirst().values()
+        return list(self.NewIterator(verify_checksums=verify_checksums,
+                                     fill_cache=fill_cache, prefix=prefix).SeekToFirst().values())
 
     Values = values
 
@@ -857,7 +857,7 @@ class _MemoryDBImpl(object):
         if self._is_snapshot:
             raise TypeError("cannot write on leveldb snapshot")
         with self._lock:
-            for key, val in batch._puts.iteritems():
+            for key, val in batch._puts.items():
                 self.put(options, key, val)
             for key in batch._deletes:
                 self.delete(key)
@@ -1124,7 +1124,7 @@ class _LevelDBImpl(object):
         if self._snapshot is not None:
             raise TypeError("cannot delete on leveldb snapshot")
         real_batch = _ldb.leveldb_writebatch_create()
-        for key, val in batch._puts.iteritems():
+        for key, val in batch._puts.items():
             _ldb.leveldb_writebatch_put(real_batch, key, len(key), val,
                                         len(val))
         for key in batch._deletes:

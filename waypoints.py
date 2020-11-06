@@ -8,12 +8,12 @@ log = logging.getLogger()
 
 
 class WaypointManager:
-    """
+    '''
     Class for handling the API to load and save waypoints
-    """
+    '''
 
-    def __init__(self, world_dir=None, editor=None):
-        self.worldDirectory = world_dir
+    def __init__(self, worldDir=None, editor=None):
+        self.worldDirectory = worldDir
         self.waypoints = {}
         self.waypoint_names = set()
         self.editor = editor
@@ -23,11 +23,9 @@ class WaypointManager:
         self.load()
 
     def build(self):
-        """
-        Builds the raw NBT data from the 'mcedit_waypoints.dat' file to a readable dictionary,
-        with the key being '<Name> (<X>,<Y>,<Z>)'
-        and the values being a list of [<X>,<Y>,<Z>,<Yaw>,<Pitch>,<Dimension>]
-        """
+        '''
+        Builds the raw NBT data from the 'mcedit_waypoints.dat' file to a readable dictionary, with the key being '<Name> (<X>,<Y>,<Z>)' and the values being a list of [<X>,<Y>,<Z>,<Yaw>,<Pitch>,<Dimension>]
+        '''
         for point in self.nbt_waypoints["Waypoints"]:
             self.waypoint_names.add(point["Name"].value)
             self.waypoints["{0} ({1},{2},{3})".format(point["Name"].value, int(point["Coordinates"][0].value), int(point["Coordinates"][1].value), int(point["Coordinates"][2].value))] = [
@@ -40,18 +38,18 @@ class WaypointManager:
             ]
 
     def load(self):
-        """
+        '''
         Loads the 'mcedit_waypoints.dat' file from the world directory if it exists. If it doesn't exist, it sets the 'Empty' waypoint
-        """
+        '''
         if self.editor.level is None:
             return
-        if not os.path.exists(os.path.join(self.worldDirectory, u"mcedit_waypoints.dat")):
+        if not os.path.exists(os.path.join(self.worldDirectory, "mcedit_waypoints.dat")):
             self.build()
         else:
             try:
-                self.nbt_waypoints = nbt.load(os.path.join(self.worldDirectory, u"mcedit_waypoints.dat"))
+                self.nbt_waypoints = nbt.load(os.path.join(self.worldDirectory, "mcedit_waypoints.dat"))
             except nbt.NBTFormatError as e:
-                shutil.move(os.path.join(self.worldDirectory, u"mcedit_waypoints.dat"), os.path.join(self.worldDirectory, u"mcedit_waypoints_backup.dat"))
+                shutil.move(os.path.join(self.worldDirectory, "mcedit_waypoints.dat"), os.path.join(self.worldDirectory, "mcedit_waypoints_backup.dat"))
                 log.error(e)
                 log.warning("Waypoint data file corrupted, ignoring...")
             finally:
@@ -64,12 +62,12 @@ class WaypointManager:
             del self.nbt_waypoints["LastPosition"]
 
     def save(self):
-        """
+        '''
         Saves all waypoint information to the 'mcedit_waypoints.dat' file in the world directory
-        """
+        '''
         del self.nbt_waypoints["Waypoints"]
         self.nbt_waypoints["Waypoints"] = nbt.TAG_List()
-        for waypoint in self.waypoints.keys():
+        for waypoint in list(self.waypoints.keys()):
             if waypoint.split()[0] == "Empty":
                 continue
             way = nbt.TAG_Compound()
@@ -85,33 +83,33 @@ class WaypointManager:
             way["Coordinates"] = coords
             way["Rotation"] = rot
             self.nbt_waypoints["Waypoints"].append(way)
-        self.nbt_waypoints.save(os.path.join(self.worldDirectory, u"mcedit_waypoints.dat"))
+        self.nbt_waypoints.save(os.path.join(self.worldDirectory, "mcedit_waypoints.dat"))
 
     def add_waypoint(self, name, coordinates, rotation, dimension):
-        """
+        '''
         Adds a waypoint to the current dictionary of waypoints
-
+        
         :param name: Name of the Waypoint
         :type name: str
         :param coordinates: The coordinates of the Waypoint (in X,Y,Z order)
         :type coordinates: tuple
         :param rotation: The rotation of the current camera viewport (in Yaw,Pitch order)
         :type rotation: tuple
-        :param dimension: The current dimension the camera viewport is in
+        :param dimension: The current dimenstion the camera viewport is in
         :type dimension: int
-        """
+        '''
         formatted_name = "{0} ({1},{2},{3})".format(name, coordinates[0], coordinates[1], coordinates[2])
         data = coordinates + rotation + (dimension,)
         self.waypoint_names.add(name)
         self.waypoints[formatted_name] = data
 
     def delete(self, choice):
-        """
+        '''
         Deletes the specified waypoint name from the dictionary of waypoints
-
+        
         :param choice: Name of the waypoint to delete
         :type choice: str
-        """
+        '''
         waypt = None
         for waypoint in self.waypoint_names:
             if choice.startswith(waypoint):
@@ -125,31 +123,31 @@ class WaypointManager:
         if not (len(self.waypoints) > 0):
             self.waypoints["Empty"] = [0, 0, 0, 0, 0, 0]
 
-    def save_last_position(self, main_viewport, dimension):
-        """
+    def saveLastPosition(self, mainViewport, dimension):
+        '''
         Saves the final position of the camera viewport when the world is closed or MCEdit is exited
-
-        :param main_viewport: The reference to viewport object
+        
+        :param mainViewport: The reference to viewport object
         :param dimension: The dimension the camera viewport is currently in
         :type dimension: int
-        """
+        '''
         log.info('Saving last position.')
         if "LastPosition" in self.nbt_waypoints:
             del self.nbt_waypoints["LastPosition"]
-        top_tag = nbt.TAG_Compound()
-        top_tag["Dimension"] = nbt.TAG_Int(dimension)
+        topTag = nbt.TAG_Compound()
+        topTag["Dimension"] = nbt.TAG_Int(dimension)
 
         pos = nbt.TAG_List()
-        pos.append(nbt.TAG_Float(main_viewport.cameraPosition[0]))
-        pos.append(nbt.TAG_Float(main_viewport.cameraPosition[1]))
-        pos.append(nbt.TAG_Float(main_viewport.cameraPosition[2]))
-        top_tag["Coordinates"] = pos
+        pos.append(nbt.TAG_Float(mainViewport.cameraPosition[0]))
+        pos.append(nbt.TAG_Float(mainViewport.cameraPosition[1]))
+        pos.append(nbt.TAG_Float(mainViewport.cameraPosition[2]))
+        topTag["Coordinates"] = pos
 
         rot = nbt.TAG_List()
-        rot.append(nbt.TAG_Float(main_viewport.yaw))
-        rot.append(nbt.TAG_Float(main_viewport.pitch))
-        top_tag["Rotation"] = rot
+        rot.append(nbt.TAG_Float(mainViewport.yaw))
+        rot.append(nbt.TAG_Float(mainViewport.pitch))
+        topTag["Rotation"] = rot
 
-        self.nbt_waypoints["LastPosition"] = top_tag
+        self.nbt_waypoints["LastPosition"] = topTag
         self.save()
         self.already_saved = True

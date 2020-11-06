@@ -178,15 +178,15 @@ from logging import getLogger
 
 from numpy import fromstring
 
-import pymclevel.nbt as nbt
 from directories import minecraftSaveFileDir
 from pymclevel import leveldbpocket
-from pymclevel.indev import MCIndevLevel
-from pymclevel.infiniteworld import MCInfdevOldLevel
-from pymclevel.javalevel import MCJavaLevel
-from pymclevel.leveldbpocket import PocketLeveldbWorld
-from pymclevel.pocket import PocketWorld
-from pymclevel.schematic import INVEditChest, MCSchematic, ZipSchematic
+from . import nbt
+from .indev import MCIndevLevel
+from .infiniteworld import MCInfdevOldLevel
+from .javalevel import MCJavaLevel
+from .leveldbpocket import PocketLeveldbWorld
+from .pocket import PocketWorld
+from .schematic import INVEditChest, MCSchematic, ZipSchematic
 
 log = getLogger(__name__)
 
@@ -199,7 +199,7 @@ def fromFile(filename, loadInfinite=True, readonly=False):
     ''' The preferred method for loading Minecraft levels of any type.
     pass False to loadInfinite if you'd rather not load infdev levels.
     '''
-    log.info(u"Identifying " + filename)
+    log.info("Identifying " + filename)
 
     if not filename:
         raise IOError("File not found: " + filename)
@@ -216,7 +216,7 @@ def fromFile(filename, loadInfinite=True, readonly=False):
         return PocketWorld(filename)
 
     if MCInfdevOldLevel._isLevel(filename):
-        log.info(u"Detected Infdev level.dat")
+        log.info("Detected Infdev level.dat")
         if loadInfinite:
             return MCInfdevOldLevel(filename=filename, readonly=readonly)
         else:
@@ -232,7 +232,7 @@ def fromFile(filename, loadInfinite=True, readonly=False):
     if os.path.isdir(filename):
         logging.exception("World load failed, trying to open a directory instead of a file")
 
-    f = open(filename, 'rb')
+    f = file(filename, 'rb')
     rawdata = f.read()
     f.close()
     if len(rawdata) < 4:
@@ -243,7 +243,7 @@ def fromFile(filename, loadInfinite=True, readonly=False):
         raise ValueError("{0} contains only zeroes. This file is damaged beyond repair.")
 
     if MCJavaLevel._isDataLevel(data):
-        log.info(u"Detected Java-style level")
+        log.info("Detected Java-style level")
         lev = MCJavaLevel(filename, data)
         lev.compressed = False
         return lev
@@ -254,7 +254,7 @@ def fromFile(filename, loadInfinite=True, readonly=False):
     try:
         unzippedData = nbt.gunzip(rawdata)
     except Exception as e:
-        log.info(u"Exception during Gzip operation, assuming {0} uncompressed: {1!r}".format(filename, e))
+        log.info("Exception during Gzip operation, assuming {0} uncompressed: {1!r}".format(filename, e))
         if unzippedData is None:
             compressed = False
             unzippedData = rawdata
@@ -262,7 +262,7 @@ def fromFile(filename, loadInfinite=True, readonly=False):
     # data =
     data = unzippedData
     if MCJavaLevel._isDataLevel(data):
-        log.info(u"Detected compressed Java-style level")
+        log.info("Detected compressed Java-style level")
         lev = MCJavaLevel(filename, data)
         lev.compressed = compressed
         return lev
@@ -271,9 +271,9 @@ def fromFile(filename, loadInfinite=True, readonly=False):
         root_tag = nbt.load(buf=data)
 
     except Exception as e:
-        log.info(u"Error during NBT load: {0!r}".format(e))
+        log.info("Error during NBT load: {0!r}".format(e))
         log.info(traceback.format_exc())
-        log.info(u"Fallback: Detected compressed flat block array, yzx ordered ")
+        log.info("Fallback: Detected compressed flat block array, yzx ordered ")
         try:
             lev = MCJavaLevel(filename, data)
             lev.compressed = compressed
@@ -283,14 +283,14 @@ def fromFile(filename, loadInfinite=True, readonly=False):
 
     else:
         if MCIndevLevel._isTagLevel(root_tag):
-            log.info(u"Detected Indev .mclevel")
+            log.info("Detected Indev .mclevel")
             return MCIndevLevel(root_tag, filename)
         if MCSchematic._isTagLevel(root_tag):
-            log.info(u"Detected Schematic.")
+            log.info("Detected Schematic.")
             return MCSchematic(filename=filename)
 
         if INVEditChest._isTagLevel(root_tag):
-            log.info(u"Detected INVEdit inventory file")
+            log.info("Detected INVEdit inventory file")
             return INVEditChest(root_tag=root_tag, filename=filename)
 
     raise IOError("Cannot detect file type.")
@@ -303,5 +303,5 @@ def loadWorld(name):
 
 def loadWorldNumber(i):
     # deprecated
-    filename = u"{0}{1}{2}{3}{1}".format(minecraftSaveFileDir, os.sep, u"World", i)
+    filename = "{0}{1}{2}{3}{1}".format(minecraftSaveFileDir, os.sep, "World", i)
     return fromFile(filename)

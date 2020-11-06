@@ -3,13 +3,13 @@ import textwrap
 
 from pygame import event
 
-from albow.controls import Label, Button
-from albow.fields import TextFieldWrapped
-from albow.layout import Row, Column
-from albow.scrollpanel import ScrollPanel
-from albow.table_view import TableView, TableColumn
-from albow.translate import _
-from albow.widget import Widget
+from .controls import Label, Button
+from .fields import TextFieldWrapped
+from .layout import Row, Column
+from .scrollpanel import ScrollPanel
+from .table_view import TableView, TableColumn
+from .translate import _
+from .widget import Widget
 
 
 class Modal(object):
@@ -134,7 +134,7 @@ def ask(mess, responses=("OK", "Cancel"), default=0, cancel=-1,
     buts = []
     for caption in responses:
         but = Button(caption, action=lambda x=caption: box.dismiss(x))
-        if caption in responses_tooltips.keys():
+        if caption in list(responses_tooltips.keys()):
             but.tooltipText = responses_tooltips[caption]
         buts.append(but)
     brow = Row(buts, spacing=d)

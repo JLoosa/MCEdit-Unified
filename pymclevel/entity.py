@@ -6,7 +6,7 @@ import random
 from copy import deepcopy
 from math import isnan
 
-import pymclevel.nbt as nbt
+from . import nbt
 
 __all__ = ["Entity", "TileEntity", "TileTick"]
 
@@ -131,7 +131,7 @@ class TileEntity(object):
         "skull": "MobHead",
     }
 
-    knownIDs = baseStructures.keys()
+    knownIDs = list(baseStructures.keys())
     maxItems = {
         "Furnace": 3,
         "Chest": 27,
@@ -182,7 +182,7 @@ class TileEntity(object):
                         spawn_id = nbt.TAG_String(MCEDIT_DEFS.get("Pig", "Pig"), "id")
                         tileEntityTag["SpawnData"] = tag()
                         if entity:
-                            for k, v in entity.iteritems():
+                            for k, v in entity.items():
                                 tileEntityTag["SpawnData"][k] = deepcopy(v)
                         else:
                             tileEntityTag["SpawnData"].add(spawn_id)
@@ -657,7 +657,7 @@ class Entity(object):
         # Need to check the content of the copy to regenerate the possible sub entities UUIDs.
         # A simple fix for the 1.9+ minecarts is proposed.
 
-        positionTags = map(lambda p, co: type(p)((p.value + co)), eTag["Pos"], copyOffset)
+        positionTags = list(map(lambda p, co: type(p)((p.value + co)), eTag["Pos"], copyOffset))
         eTag["Pos"] = nbt.TAG_List(positionTags)
 
         # Also match the 'minecraft:XXX' names
@@ -777,7 +777,7 @@ class PocketEntity(Entity):
         The first unknown entity will have the numerical ID 1001, the second one 1002, and so on.
         :v: the entity string ID to search for."""
         id = cls.getId(v)
-        if type(id) != int and v not in cls.entityList.keys():
+        if type(id) != int and v not in list(cls.entityList.keys()):
             id = cls.unknown_entity_top + 1
             cls.entityList[v] = cls.entityList['Entity %s' % id] = id
             cls.unknown_entity_top += 1

@@ -2,7 +2,7 @@
 # Albow - Screen
 #
 
-from albow.widget import Widget
+from .widget import Widget
 
 
 # ------------------------------------------------------------------------------

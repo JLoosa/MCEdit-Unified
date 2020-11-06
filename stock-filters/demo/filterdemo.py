@@ -52,9 +52,9 @@ def perform(level, box, options):
     # The first is using level.blockAt and level.setBlockAt
     # These are slower than the other two methods, but easier to start using
     if method == "Use blockAt":
-        for x in xrange(box.minx, box.maxx):
-            for z in xrange(box.minz, box.maxz):
-                for y in xrange(box.miny, box.maxy):  # nested loops can be slow
+        for x in range(box.minx, box.maxx):
+            for z in range(box.minz, box.maxz):
+                for y in range(box.miny, box.maxy):  # nested loops can be slow
 
                     # replaces gold with TNT. straightforward.
                     if level.blockAt(x, y, z) == 14:

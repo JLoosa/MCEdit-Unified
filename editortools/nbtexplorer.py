@@ -16,10 +16,8 @@ from pygame import draw, image, Rect
 
 from albow import Column, Row, Label, Tree, TableView, TableColumn, Button, \
     FloatField, IntField, TextFieldWrapped, AttrRef, ItemRef, CheckBox, Widget, \
-    ask, alert, input_text_buttons, Frame
+    ScrollPanel, ask, alert, input_text_buttons, CheckBoxLabel, ChoiceButton, Frame
 from albow.dialogs import Dialog
-from albow.extended_widgets import CheckBoxLabel, ChoiceButton
-from albow.scrollpanel import ScrollPanel
 from albow.theme import root
 from albow.translate import _, getLang
 from albow.tree import setup_map_types_item
@@ -53,14 +51,14 @@ map_block = {}
 def build_map_block():
     from pymclevel.materials import block_map
     global map_block
-    for k, v in block_map.items():
+    for k, v in list(block_map.items()):
         map_block[v] = k
 
 
 from pymclevel.items import items as mcitems
 
 map_items = {}
-for k, v in mcitems.items.items():
+for k, v in list(mcitems.items.items()):
     if isinstance(v, dict):
         names = []
         if isinstance(v['name'], list):
@@ -68,7 +66,7 @@ for k, v in mcitems.items.items():
         else:
             names = [v['name']]
         for name in names:
-            if name is not None and name not in map_items.keys():
+            if name is not None and name not in list(map_items.keys()):
                 map_items[name] = (k, names.index(name))
 
 # # DEBUG
@@ -213,7 +211,7 @@ item_types_map = {TAG_Byte: ("Byte", IntField, 0),
 
 map_types_item = setup_map_types_item(item_types_map)
 
-TAG_List_Type.choices = map_types_item.keys()
+TAG_List_Type.choices = list(map_types_item.keys())
 
 
 # -----------------------------------------------------------------------------
@@ -254,7 +252,7 @@ class NBTTree(Tree):
         self.map_types_item = setup_map_types_item(item_types_map)
         Tree.__init__(self, *args, **kwargs)
         for t in self.item_types:
-            if 'create_%s' % t.__name__ in globals().keys():
+            if 'create_%s' % t.__name__ in list(globals().keys()):
                 setattr(self, 'create_%s' % t.__name__, globals()['create_%s' % t.__name__])
 
     def _draw_opened_bullet(self, *args, **kwargs):
@@ -269,10 +267,10 @@ class NBTTree(Tree):
         else:
             self.draw_opened_bullet = self._draw_opened_bullet
             self.draw_closed_bullet = self._draw_closed_bullet
-        for key in styles.keys():
+        for key in list(styles.keys()):
             if hasattr(key, '__name__'):
                 name = key.__name__
-            elif isinstance(key, (str, bytes)):
+            elif isinstance(key, str):
                 name = key
             else:
                 name = repr(key)
@@ -297,7 +295,7 @@ class NBTTree(Tree):
                 if p_type == TAG_List:
                     k = parent[9].list_type
                     v = None
-                    for key, value in item_types_map.items():
+                    for key, value in list(item_types_map.items()):
                         if globals().get(key.__name__.upper(), -1) == k:
                             v = value
                             break
@@ -313,7 +311,7 @@ class NBTTree(Tree):
             if p_type == TAG_List:
                 k = parent[9].list_type
                 v = None
-                for key, value in item_types_map.items():
+                for key, value in list(item_types_map.items()):
                     if globals().get(key.__name__.upper(), -1) == k:
                         v = value
                         break
@@ -337,7 +335,7 @@ class NBTTree(Tree):
 
     def rename_item(self):
         result = input_text_buttons("Choose a name", 300, self.selected_item[3])
-        if isinstance(result, (str, bytes)):
+        if isinstance(result, str):
             self.selected_item[3] = result
             self.selected_item[9].name = result
             self.build_layout()
@@ -383,7 +381,7 @@ class NBTTree(Tree):
                     value_name = value_name.value
             else:
                 value_name = value.name
-            values[value_name or u"%s #%03d" % (name, i)] = value
+            values[value_name or "%s #%03d" % (name, i)] = value
             i += 1
         return values
 
@@ -545,7 +543,7 @@ class SlotEditor(Dialog):
                    Label("Damage"), self.damage,
                    ])
 
-        self.matching_items = [mclangres.translate(k) for k in map_items.keys()]
+        self.matching_items = [mclangres.translate(k) for k in list(map_items.keys())]
         self.matching_items.sort()
         self.selected_item_index = None
         if id in self.matching_items:
@@ -594,7 +592,7 @@ class SlotEditor(Dialog):
         if self.former_id_text == text:
             return
         results = []
-        for k in map_items.keys():
+        for k in list(map_items.keys()):
             k = mclangres.translate(k)
             if text.lower() in k.lower():
                 results.append(k)
@@ -883,13 +881,13 @@ class NBTExplorerToolPanel(Panel):
     @staticmethod
     def build_field(itm):
         fields = []
-        if type(itm) in field_types.keys():
+        if type(itm) in list(field_types.keys()):
             f, bounds = field_types[type(itm)]
             if bounds:
                 fields = [f(ref=AttrRef(itm, 'value'), min=bounds[0], max=bounds[1]), ]
             else:
                 fields = [f(ref=AttrRef(itm, 'value')), ]
-        elif type(itm) in array_types.keys():
+        elif type(itm) in list(array_types.keys()):
             idx = 0
             for _itm in itm.value.tolist():
                 f, bounds = array_types[type(itm)]
@@ -901,8 +899,8 @@ class NBTExplorerToolPanel(Panel):
                     Label("%s" % (_itm.name or "%s #%03d" % (itm.name or _("Item"), itm.value.index(_itm))), align='l',
                           doNotTranslate=True))
                 fields += NBTExplorerToolPanel.build_field(_itm)
-        elif not isinstance(itm, (str, bytes)):
-            if not isinstance(getattr(itm, 'value', itm), (str, bytes, int, float)):
+        elif not isinstance(itm, str):
+            if not isinstance(getattr(itm, 'value', itm), (str, int, float)):
                 fld = Label
                 kw = {'align': 'l'}
             else:
@@ -926,7 +924,7 @@ class NBTExplorerToolPanel(Panel):
                             margin=0))
             mods = item.get('Modifiers', [])
             for mod in mods:
-                keys = mod.keys()
+                keys = list(mod.keys())
                 keys.remove('Name')
                 rows.append(Row([Label("-> Name", align='l')] + NBTExplorerToolPanel.build_field(mod['Name']),
                                 margin=0))
@@ -966,7 +964,7 @@ class NBTExplorerToolPanel(Panel):
             parent = parent[9]
         else:
             parent = self.data
-        if 'playerGameType' in parent.keys():
+        if 'playerGameType' in list(parent.keys()):
             player = True
         else:
             player = False
@@ -999,7 +997,7 @@ class NBTExplorerToolPanel(Panel):
             slots_set.append(s)
             if s >= 100:
                 s = s - 100 + 36
-            if isinstance(item_name, (bytes, str)):
+            if isinstance(item_name, str):
                 translated_item_name = mclangres.translate(item_name)
             else:
                 translated_item_name = item_name
@@ -1072,8 +1070,8 @@ class NBTExplorerToolPanel(Panel):
                         if not i or int(c) < 1:
                             del inventory[s_idx]
                             i = ""
-                            c = u'0'
-                            d = u'0'
+                            c = '0'
+                            d = '0'
                         else:
                             # &# Prototype for blocks/items names
                             # slot['id'].value = 'minecraft:%s'%i
@@ -1212,7 +1210,7 @@ class NBTExplorerTool(EditorTool):
 # ------------------------------------------------------------------------------
 def loadFile(fName):
     """Loads a NBT file.
-    :fName: str/bytes: full file path to load.
+    :fName: str/unicode: full file path to load.
     Returns a 5 element tuple: (object nbtObject, string dataKeyName, int savePolicy, int/None magic).
     'magic' is used for PE support."""
     if not fName:
@@ -1263,7 +1261,7 @@ def loadFile(fName):
 
 def saveFile(fName, data, savePolicy, magic):
     """Saves the NBT data to the disk.
-    :fName: str/bytes: full file path to save data to.
+    :fName: str/unicode: full file path to save data to.
     :data: object: NBT data to be saved.
     :savePolicy: int (-1, 0 or 1): special bit to handle different data types.
     :magic: int/None: 'magic' number for PE worlds."""

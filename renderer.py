@@ -218,6 +218,7 @@ import logging
 import sys
 from collections import defaultdict, deque
 from datetime import datetime, timedelta
+from functools import reduce
 
 import numpy
 from OpenGL import GL
@@ -300,7 +301,7 @@ class ChunkRenderer(object):
         if self.renderstateLists is not None:
             # print "Discarded {0}, gained {1} bytes".format(self.chunkPosition,self.bufferSize)
 
-            for k in states or self.renderstateLists.iterkeys():
+            for k in states or iter(self.renderstateLists.keys()):
                 a = self.renderstateLists.get(k, [])
                 # print a
                 for i in a:
@@ -816,7 +817,7 @@ class ChunkCalculator(object):
             if "Session lock lost" in e.message:
                 yield
                 return
-            logging.warn(u"Error reading chunk: %s", e)
+            logging.warn("Error reading chunk: %s", e)
             traceback.print_exc()
             yield
             return
@@ -1561,7 +1562,7 @@ class LowDetailBlockRenderer(BlockRenderer):
         gridaxes = (gridaxes[0], gridaxes[1], h)
 
         depths = numpy.zeros((chunkWidth, chunkLength), dtype='uint16')
-        depths[1:-1, 1:-1] = numpy.reduce(numpy.minimum, (h[1:-1, :-2], h[1:-1, 2:], h[:-2, 1:-1]), h[2:, 1:-1])
+        depths[1:-1, 1:-1] = reduce(numpy.minimum, (h[1:-1, :-2], h[1:-1, 2:], h[:-2, 1:-1]), h[2:, 1:-1])
         yield
 
         try:
@@ -3265,13 +3266,13 @@ class MCRenderer(object):
             self.visibleLayers.add(layer)
         else:
             self.visibleLayers.discard(layer)
-        for cr in self.chunkRenderers.itervalues():
+        for cr in self.chunkRenderers.values():
             cr.invalidLayers.add(layer)
 
         self.loadNearbyChunks()
 
     def layerProperty(layer, default=True):  # @NoSelf
-        attr = numpy.intern("_draw" + layer)
+        attr = sys.intern("_draw" + layer)
 
         def _get(self):
             return getattr(self, attr, default)
@@ -3463,7 +3464,7 @@ class MCRenderer(object):
         if not len(self.chunkRenderers):
             return
         (ox, oz) = origin
-        chunks = numpy.fromiter(self.chunkRenderers.iterkeys(), dtype='i,i', count=len(self.chunkRenderers))
+        chunks = numpy.fromiter(iter(self.chunkRenderers.keys()), dtype='i,i', count=len(self.chunkRenderers))
         chunks.dtype = 'int32'
         chunks.shape = len(self.chunkRenderers), 2
 
@@ -3560,10 +3561,10 @@ class MCRenderer(object):
         self.loadNearbyChunks()
 
     def invalidateAllChunks(self, layers=None):
-        self.invalidateChunks(self.chunkRenderers.iterkeys(), layers)
+        self.invalidateChunks(iter(self.chunkRenderers.keys()), layers)
 
     def forgetAllDisplayLists(self):
-        for cr in self.chunkRenderers.itervalues():
+        for cr in self.chunkRenderers.values():
             cr.forgetDisplayLists()
 
     def invalidateMasterList(self):
@@ -3668,7 +3669,7 @@ class MCRenderer(object):
             GL.glColor(1.0, 1.0, 1.0, 1.0)
 
             self.floorTexture.bind()
-            for size, chunks in sizedChunks.iteritems():
+            for size, chunks in sizedChunks.items():
                 if not len(chunks):
                     continue
                 chunks = numpy.array(chunks, dtype='float32')
@@ -3700,7 +3701,7 @@ class MCRenderer(object):
             pass
 
         def callMasterLists(self):
-            for cr in self.chunkRenderers.itervalues():
+            for cr in self.chunkRenderers.values():
                 cr.debugDraw()
     else:
         def createMasterLists(self):
@@ -3710,7 +3711,7 @@ class MCRenderer(object):
                 chunksPerFrame = 80
                 shouldRecreateAgain = False
 
-                for ch in self.chunkRenderers.itervalues():
+                for ch in self.chunkRenderers.values():
                     if chunksPerFrame:
                         if ch.needsRedisplay:
                             chunksPerFrame -= 1
@@ -3811,8 +3812,8 @@ class MCRenderer(object):
 
         addDebugString("CR: {0}, ".format(len(self.chunkRenderers), ))
 
-    def next(self):
-        self.chunkWorker.next()
+    def __next__(self):
+        next(self.chunkWorker)
 
     def makeWorkIterator(self):
         ''' does chunk face and vertex calculation work. returns a generator that can be
@@ -3836,12 +3837,12 @@ class MCRenderer(object):
                     raise StopIteration
 
                 else:
-                    c = self.chunkIterator.next()
+                    c = next(self.chunkIterator)
                     if self.vertexBufferLimit:
                         while self.bufferUsage > (0.9 * (self.vertexBufferLimit << 20)):
                             deadChunk = None
                             deadDistance = self.chunkDistance(c)
-                            for cr in self.chunkRenderers.itervalues():
+                            for cr in self.chunkRenderers.values():
                                 dist = self.chunkDistance(cr.chunkPosition)
                                 if dist > deadDistance:
                                     deadChunk = cr
@@ -3909,7 +3910,7 @@ class MCRenderer(object):
                 traceback.print_exc()
                 fn = c
 
-                logging.info(u"Skipped chunk {f}: {e}".format(e=e, f=fn))
+                logging.info("Skipped chunk {f}: {e}".format(e=e, f=fn))
 
     redrawChunks = 0
 
@@ -3950,7 +3951,7 @@ def rendermain():
     try:
         while True:
             # for i in range(100):
-            renderer.next()
+            next(renderer)
     except StopIteration:
         pass
     except Exception as e:

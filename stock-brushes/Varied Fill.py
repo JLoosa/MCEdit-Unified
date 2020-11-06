@@ -43,8 +43,7 @@ def applyToChunkSlices(self, op, chunk, slices, brushBox, brushBoxThisChunk):
     totalChance = chanceA + chanceB + chanceC + chanceD
 
     if totalChance == 0:
-        print
-        "Total Chance value can't be 0."
+        print("Total Chance value can't be 0.")
         return
 
     if not airFill:

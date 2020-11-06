@@ -40,16 +40,14 @@ def applyToChunkSlices(self, op, chunk, slices, brushBox, brushBoxThisChunk):
     totalChance = chanceA + chanceB + chanceC + chanceD
 
     if totalChance == 0:
-        print
-        "Total Chance value can't be 0."
+        print("Total Chance value can't be 0.")
         return
 
     blocks = chunk.Blocks[slices]
     data = chunk.Data[slices]
 
     if op.options['Block'].wildcard:
-        print
-        "Wildcard replace"
+        print("Wildcard replace")
         blocksToReplace = []
         for i in range(16):
             blocksToReplace.append(op.editor.level.materials.blockWithID(op.options['Block'].ID, i))

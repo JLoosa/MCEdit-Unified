@@ -20,8 +20,7 @@ def apply(self, op, point):
     brushBox = op.tool.getDirtyBox(point, op.tool).expand(1)
 
     if brushBox.volume > 1048576:
-        print
-        "Affected area is too big for this brush mode"
+        print("Affected area is too big for this brush mode")
         return
 
     erosionStrength = op.options["Strength"]

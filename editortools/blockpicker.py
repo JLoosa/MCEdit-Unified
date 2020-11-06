@@ -1,9 +1,7 @@
 # &# Prototype for blocks/items names
-# &# Prototype for blocks/items names
 import mclangres
-from albow import Label, TextFieldWrapped, Row, TableView, TableColumn, Column, Widget, Button, AttrRef
+from albow import Label, TextFieldWrapped, Row, TableView, TableColumn, Column, Widget, Button, AttrRef, CheckBoxLabel
 from albow.dialogs import Dialog
-from albow.extended_widgets import CheckBoxLabel
 from albow.root import get_root
 from albow.translate import getLang
 from editortools import blockview
@@ -205,12 +203,12 @@ class BlockPicker(Dialog):
             block = self.matchingBlocks[x]
             # &#
             # r = "{name}".format(name=block.name)
-            r = u"{name}".format(name=mclangres.translate(block.name))
+            r = "{name}".format(name=mclangres.translate(block.name))
             # &#
             if block.aka:
                 # &#
                 # r += " [{0}]".format(block.aka)
-                r += u" [{0}]".format(mclangres.translate(block.aka))
+                r += " [{0}]".format(mclangres.translate(block.aka))
                 # &#
 
             return r

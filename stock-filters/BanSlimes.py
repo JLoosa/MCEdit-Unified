@@ -13,10 +13,10 @@ class Random:
         self.setSeed(randseed)
 
     def setSeed(self, randseed):
-        self.randseed = (randseed ^ 0x5DEECE66DL) & ((1L << 48) - 1)
+        self.randseed = (randseed ^ 0x5DEECE66D) & ((1 << 48) - 1)
 
     def next(self, bits):
-        self.randseed = long(self.randseed * 0x5DEECE66DL + 0xBL) & ((1L << 48) - 1)
+        self.randseed = int(self.randseed * 0x5DEECE66D + 0xB) & ((1 << 48) - 1)
         return int(self.randseed >> (48 - bits))
 
     def nextInt(self, n):
@@ -31,7 +31,7 @@ class Random:
 
 # Algorithm found here: http://www.minecraftforum.net/topic/397835-find-slime-spawning-chunks-125/
 def slimeChunk(seed, x, z):
-    randseed = long(seed) + long(x * x * 0x4c1906) + long(x * 0x5ac0db) + long(z * z) * 0x4307a7L + long(
+    randseed = int(seed) + int(x * x * 0x4c1906) + int(x * 0x5ac0db) + int(z * z) * 0x4307a7 + int(
         z * 0x5f24f) ^ 0x3ad8025f
     r = Random(randseed)
     i = r.nextInt(10)
@@ -42,8 +42,8 @@ def goodSeed(box, seed):
     minx = int(box.minx / 16) * 16
     minz = int(box.minz / 16) * 16
 
-    for x in xrange(minx, box.maxx, 16):
-        for z in xrange(minz, box.maxz, 16):
+    for x in range(minx, box.maxx, 16):
+        for z in range(minz, box.maxz, 16):
             if slimeChunk(seed, x, z):
                 return False
 
@@ -56,12 +56,10 @@ inputs = (
 
 
 def perform(level, box, options):
-    for seed in xrange(options["Max Seed"]):
-        if goodSeed(box, long(seed)):
+    for seed in range(options["Max Seed"]):
+        if goodSeed(box, int(seed)):
             level.root_tag["Data"]["RandomSeed"] = TAG_Long(seed)
-            print
-            "Found good seed: " + str(seed)
+            print("Found good seed: " + str(seed))
             return
 
-    print
-    "Didn't find good seed."
+    print("Didn't find good seed.")

@@ -4,10 +4,10 @@ import struct
 
 from numpy import array, fromstring, zeros
 
-from pymclevel.level import FakeChunk
-from pymclevel.materials import pocketMaterials
-from pymclevel.mclevelbase import ChunkNotPresent, notclosing
-from pymclevel.nbt import TAG_List
+from .level import FakeChunk
+from .materials import pocketMaterials
+from .mclevelbase import ChunkNotPresent, notclosing
+from .nbt import TAG_List
 
 # values are usually little-endian, unlike Minecraft PC
 
@@ -21,7 +21,7 @@ class PocketChunksFile(object):
 
     @property
     def file(self):
-        openfile = lambda: open(self.path, "rb+")
+        openfile = lambda: file(self.path, "rb+")
         if PocketChunksFile.holdFileOpen:
             if self._file is None:
                 self._file = openfile()
@@ -38,7 +38,7 @@ class PocketChunksFile(object):
         self.path = path
         self._file = None
         if not os.path.exists(path):
-            open(path, "w").close()
+            file(path, "w").close()
 
         with self.file as f:
 
@@ -130,7 +130,7 @@ class PocketChunksFile(object):
     #                    zPos = lev["zPos"].value
     #                    overlaps = False
     #
-    #                    for i in range(sectorStart, sectorStart + sectorCount):
+    #                    for i in xrange(sectorStart, sectorStart + sectorCount):
     #                        if _freeSectors[i] is False:
     #                            overlaps = True
     #                        _freeSectors[i] = False
@@ -296,8 +296,8 @@ class PocketChunksFile(object):
         return coords
 
 
-from pymclevel.infiniteworld import ChunkedLevelMixin
-from pymclevel.level import MCLevel, LightedChunk
+from .infiniteworld import ChunkedLevelMixin
+from .level import MCLevel, LightedChunk
 
 
 class PocketWorld(ChunkedLevelMixin, MCLevel):
@@ -346,7 +346,7 @@ class PocketWorld(ChunkedLevelMixin, MCLevel):
         return all([os.path.exists(os.path.join(filename, fl)) for fl in clp])
 
     def saveInPlaceGen(self):
-        for chunk in self._loadedChunks.itervalues():
+        for chunk in self._loadedChunks.values():
             if chunk.dirty:
                 self.chunkFile.saveChunk(chunk)
                 chunk.dirty = False
@@ -359,7 +359,7 @@ class PocketWorld(ChunkedLevelMixin, MCLevel):
 
     @property
     def chunksNeedingLighting(self):
-        for chunk in self._loadedChunks.itervalues():
+        for chunk in self._loadedChunks.values():
             if chunk.needsLighting:
                 yield chunk.chunkPosition
 

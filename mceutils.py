@@ -336,7 +336,7 @@ def normalize(x):
     size = numpy.sqrt(l)
     if size <= 0.0:
         return [0, 0, 0]
-    return map(lambda a: a / size, x)
+    return [a / size for a in x]
 
 
 def normalize_size(x):
@@ -369,7 +369,7 @@ class HotkeyColumn(Widget):
                 tooltipText = None
             else:
                 (hotkey, title, action, tooltipText) = t
-            if isinstance(title, (str, bytes)):
+            if isinstance(title, str):
                 button = Button(title, action=action)
             else:
                 button = ValueButton(ref=title, action=action, width=200)
@@ -538,7 +538,7 @@ def TextInputRow(title, *args, **kw):
 def setWindowCaption(prefix):
     caption = display.get_caption()[0]
     prefix = _(prefix)
-    if isinstance(prefix, bytes):
+    if isinstance(prefix, str):
         prefix = prefix.encode("utf8")
 
     class ctx:
@@ -576,7 +576,7 @@ def showProgress(progressText, progressIterator, cancel=False):
 
             try:
                 while datetime.now() < frameStart + frameInterval:
-                    amount = progressIterator.next()
+                    amount = next(progressIterator)
                     if self.firstDraw is False:
                         self.firstDraw = True
                         break
@@ -599,7 +599,7 @@ def showProgress(progressText, progressIterator, cancel=False):
                 if amount is None:
                     self.progressBar.width = maxwidth
                     self.progressBar.bg_color = (255, 255, 25, 255)
-                elif isinstance(amount, (str, bytes)):
+                elif isinstance(amount, str):
                     self.statusText = amount
                 else:
                     self.progressAmount = amount

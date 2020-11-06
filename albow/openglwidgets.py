@@ -4,11 +4,10 @@
 #
 # -------------------------------------------------------------------------
 
-from __future__ import division
 
 from OpenGL import GL, GLU
 
-from albow.widget import Widget
+from .widget import Widget
 
 
 class GLViewport(Widget):

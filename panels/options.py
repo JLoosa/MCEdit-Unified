@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 import logging
 import os
 import sys
@@ -250,9 +248,9 @@ class OptionsPanel(Dialog):
                 langName = albow.translate.getLangName(file)
                 langs[langName] = name
                 sgnal[name] = langName
-        if "English (US)" not in langs.keys():
-            langs[u"English (US)"] = "en_US"
-            sgnal["en_US"] = u"English (US)"
+        if "English (US)" not in list(langs.keys()):
+            langs["English (US)"] = "en_US"
+            sgnal["en_US"] = "English (US)"
         self.langs = langs
         self.sgnal = sgnal
         logging.debug("Detected languages: %s" % self.langs)
@@ -321,7 +319,7 @@ class OptionsPanel(Dialog):
                 [directories.goPortable, directories.goFixed][directories.portable](useExisting)
             except Exception as e:
                 traceback.print_exc()
-                albow.alert(_(u"Error while moving files: {0}").format(repr(e)))
+                albow.alert(_("Error while moving files: {0}").format(repr(e)))
         else:
             self.goPortableButton.selectedChoice = self.saveOldPortable
 
@@ -339,7 +337,7 @@ class OptionsPanel(Dialog):
             self.mcedit.editor.set_update_ui(False)
 
         self.reshowNumberFields()
-        for key in self.saveOldConfig.keys():
+        for key in list(self.saveOldConfig.keys()):
             self.saveOldConfig[key] = key.get()
 
         config.save()
@@ -348,7 +346,7 @@ class OptionsPanel(Dialog):
     def cancel(self, *args, **kwargs):
         Changes = False
         self.reshowNumberFields()
-        for key in self.saveOldConfig.keys():
+        for key in list(self.saveOldConfig.keys()):
             if key.get() != self.saveOldConfig[key]:
                 Changes = True
         oldLanguage = self.saveOldConfig[config.settings.langCode]
@@ -376,7 +374,7 @@ class OptionsPanel(Dialog):
             self.portableVar.set(newPortable)
             self.togglePortable()
 
-        for key in self.saveOldConfig.keys():
+        for key in list(self.saveOldConfig.keys()):
             key.set(self.saveOldConfig[key])
 
         config.save()
@@ -384,7 +382,7 @@ class OptionsPanel(Dialog):
 
     def resetDefault(self):
         self.reshowNumberFields()
-        for key in self.saveOldConfig.keys():
+        for key in list(self.saveOldConfig.keys()):
             if "AttrRef" in str(key):
                 key.set(config.settings.blockBuffer.default / 1048576)
             elif "lang" not in str(key):

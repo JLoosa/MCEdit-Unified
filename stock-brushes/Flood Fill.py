@@ -63,7 +63,7 @@ def apply(self, op, point):
         return
 
     tileEntity = None
-    if op.options['Block'].stringID in TileEntity.stringNames.keys():
+    if op.options['Block'].stringID in list(TileEntity.stringNames.keys()):
         tileEntity = TileEntity.stringNames[op.options['Block'].stringID]
 
     x, y, z = point

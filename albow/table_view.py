@@ -4,10 +4,10 @@
 # -# Modified by D.C.-G. for translation purpose
 from pygame import Rect
 
-from albow.layout import Column
-from albow.palette_view import PaletteView
-from albow.translate import _
-from albow.utils import blit_in_rect
+from .layout import Column
+from .palette_view import PaletteView
+from .translate import _
+from .utils import blit_in_rect
 
 
 class TableView(Column):
@@ -76,7 +76,7 @@ class TableView(Column):
         self.draw_text_cell(surf, i, text, cell_rect, column.alignment, self.font)
 
     def draw_text_cell(self, surf, i, data, cell_rect, align, font):
-        buf = font.render(bytes(data), True, self.fg_color)
+        buf = font.render(str(data), True, self.fg_color)
         blit_in_rect(surf, buf, cell_rect, align)
 
     @staticmethod
@@ -113,7 +113,7 @@ class TableColumn(object):
         self.width = width
         self.alignment = align
         if fmt:
-            if isinstance(fmt, (str, bytes)):
+            if isinstance(fmt, str):
                 self.format_string = fmt
             else:
                 self.formatter = fmt

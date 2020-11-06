@@ -43,7 +43,8 @@ class TimeEditor(Widget):
         return day, hour, minute, tick
 
     @classmethod
-    def toTicks(cls, day, hour, minute, ticks):
+    def toTicks(cls, xxx_todo_changeme):
+        (day, hour, minute, ticks) = xxx_todo_changeme
         time = (day * cls.ticksPerDay) + (hour * cls.ticksPerHour) + (minute * cls.ticksPerMinute) + ticks
         return time
 
@@ -63,7 +64,8 @@ class TimeEditor(Widget):
         return ticks - self._time_adjustment
 
     # -- Special Callback -- #
-    def _timeFieldCallback(self, h, m):
+    def _timeFieldCallback(self, xxx_todo_changeme1):
+        (h, m) = xxx_todo_changeme1
         ticks = self.undoTimeAdjustment(self.toTicks((1, h, m, 0)))
         deg = 0
         if ticks > 0:

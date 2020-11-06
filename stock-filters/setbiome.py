@@ -144,19 +144,19 @@ biomes = {
 
 
 def perform(level, box, options):
-    biome = dict([(trn._(a), b) for a, b in biomes.items()])[options["Biome"]]
+    biome = dict([(trn._(a), b) for a, b in list(biomes.items())])[options["Biome"]]
 
     minx = int(box.minx / 16) * 16
     minz = int(box.minz / 16) * 16
 
-    for x in xrange(minx, box.maxx, 16):
-        for z in xrange(minz, box.maxz, 16):
+    for x in range(minx, box.maxx, 16):
+        for z in range(minz, box.maxz, 16):
             # Pocket chunks root tag don't have any 'Level' member
             # But a 'Biome' member instead.
             chunk = level.getChunk(x / 16, z / 16)
             chunk.dirty = True
             chunk_root_tag = None
-            if chunk.root_tag and 'Level' in chunk.root_tag.keys() and 'Biomes' in chunk.root_tag["Level"].keys():
+            if chunk.root_tag and 'Level' in list(chunk.root_tag.keys()) and 'Biomes' in list(chunk.root_tag["Level"].keys()):
                 chunk_root_tag = chunk.root_tag
                 array = chunk_root_tag["Level"]["Biomes"].value
             else:
@@ -166,8 +166,8 @@ def perform(level, box, options):
             chunkx = int(x / 16) * 16
             chunkz = int(z / 16) * 16
 
-            for bx in xrange(max(box.minx, chunkx), min(box.maxx, chunkx + 16)):
-                for bz in xrange(max(box.minz, chunkz), min(box.maxz, chunkz + 16)):
+            for bx in range(max(box.minx, chunkx), min(box.maxx, chunkx + 16)):
+                for bz in range(max(box.minz, chunkz), min(box.maxz, chunkz + 16)):
                     idx = 16 * (bz - chunkz) + (bx - chunkx)
                     array[idx] = biome
             if chunk_root_tag:

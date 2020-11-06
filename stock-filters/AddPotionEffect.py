@@ -34,7 +34,7 @@ Effects = {
 }
 
 EffectKeys = ()
-for key in Effects.keys():
+for key in list(Effects.keys()):
     EffectKeys = EffectKeys + (key,)
 
 inputs = (
@@ -45,7 +45,7 @@ inputs = (
 
 
 def perform(level, box, options):
-    effect = dict([(trn._(a), b) for a, b in Effects.items()])[options["Effect"]]
+    effect = dict([(trn._(a), b) for a, b in list(Effects.items())])[options["Effect"]]
     amp = options["Level"]
     duration = options["Duration (Seconds)"] * 20
 

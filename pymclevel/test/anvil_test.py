@@ -11,7 +11,7 @@ from pymclevel import nbt
 from pymclevel.box import BoundingBox
 from pymclevel.infiniteworld import MCInfdevOldLevel
 from pymclevel.schematic import MCSchematic
-from pymclevel.test.templevel import mktemp, TempLevel
+from .templevel import mktemp, TempLevel
 
 __author__ = 'Rio'
 
@@ -86,7 +86,7 @@ class TestAnvilLevel(unittest.TestCase):
 
     def testImportSchematic(self):
         level = self.anvilLevel.level
-        cx, cz = level.allChunks.next()
+        cx, cz = next(level.allChunks)
 
         schem = mclevel.fromFile("schematics/CreativeInABox.schematic")
         box = BoundingBox((cx * 16, 64, cz * 16), schem.bounds.size)
@@ -106,7 +106,7 @@ class TestAnvilLevel(unittest.TestCase):
 
     def testFill(self):
         level = self.anvilLevel.level
-        cx, cz = level.allChunks.next()
+        cx, cz = next(level.allChunks)
         box = BoundingBox((cx * 16, 0, cz * 16), (32, level.Height, 32))
         level.fillBlocks(box, level.materials.WoodPlanks)
         level.fillBlocks(box, level.materials.WoodPlanks, [level.materials.Stone])
@@ -137,7 +137,7 @@ class TestAnvilLevel(unittest.TestCase):
 
     def testRecompress(self):
         level = self.anvilLevel.level
-        cx, cz = level.allChunks.next()
+        cx, cz = next(level.allChunks)
 
         ch = level.getChunk(cx, cz)
         ch.dirty = True

@@ -144,7 +144,7 @@ def iter_modules(path=None, prefix=''):
     if path is None:
         importers = iter_importers()
     else:
-        importers = map(get_importer, path)
+        importers = list(map(get_importer, path))
 
     yielded = {}
     for i in importers:
@@ -331,7 +331,7 @@ try:
 
 
     def iter_zipimport_modules(importer, prefix=''):
-        dirlist = zipimport._zip_directory_cache[importer.archive].keys()
+        dirlist = list(zipimport._zip_directory_cache[importer.archive].keys())
         dirlist.sort()
         _prefix = importer.prefix
         plen = len(_prefix)
@@ -379,7 +379,7 @@ def get_importer(path_item):
     The cache (or part of it) can be cleared manually if a
     rescan of sys.path_hooks is necessary.
     """
-    if type(path_item) == bytes:
+    if type(path_item) == str:
         path_item = path_item.encode(sys.getfilesystemencoding())
     try:
         importer = sys.path_importer_cache[path_item]
@@ -533,7 +533,7 @@ def extend_path(path, name):
     path = path[:]  # Start with a copy of the existing path
 
     for dir in sys.path:
-        if not isinstance(dir, (str, bytes)) or not os.path.isdir(dir):
+        if not isinstance(dir, str) or not os.path.isdir(dir):
             continue
         subdir = os.path.join(dir, pname)
         # XXX This may still add duplicate entries to path on

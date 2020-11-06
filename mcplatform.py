@@ -126,7 +126,7 @@ if sys.platform == "win32":
 
     try:
         import win32com.client
-        from win32comext.shell import shell, shellcon  # @UnresolvedImport
+        from win32com.shell import shell, shellcon  # @UnresolvedImport
     except:
         pass
 
@@ -228,7 +228,7 @@ lastSaveDir = None
 
 def buildFileTypes(filetypes):
     result = ""
-    for key in reversed(filetypes[0].keys()):
+    for key in reversed(list(filetypes[0].keys())):
         ftypes = []
         result += key + " ("
         for ftype in filetypes[0][key]:
@@ -373,7 +373,7 @@ def askSaveSchematic(initialDir, displayName, fileFormats):
     dt = datetime.now().strftime("%Y-%m-%d--%H-%M-%S")
     return askSaveFile(initialDir,
                        title=_('Save this schematic...'),
-                       defaultName=displayName + "_" + dt + "." + fileFormats[0][fileFormats[0].keys()[1]][0],
+                       defaultName=displayName + "_" + dt + "." + fileFormats[0][list(fileFormats[0].keys())[1]][0],
                        filetype=fileFormat,
                        suffix=fileFormat,
                        )
@@ -853,7 +853,7 @@ class XWindowHandler(BaseWindowHandler):
                 if prop:
                     print(dir(prop))
                 print("* Geometry")
-                print(") ", win.get_geometry())
+                print(" ", win.get_geometry())
                 parent = win.query_tree().parent
                 p = '%s.parent' % name
                 while parent.id != root.id:

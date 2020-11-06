@@ -26,8 +26,7 @@ def applyToChunkSlices(self, op, chunk, slices, brushBox, brushBoxThisChunk):
     data = chunk.Data[slices]
 
     if op.options['Block'].wildcard:
-        print
-        "Wildcard replace"
+        print("Wildcard replace")
         blocksToReplace = []
         for i in range(16):
             blocksToReplace.append(op.editor.level.materials.blockWithID(op.options['Block'].ID, i))

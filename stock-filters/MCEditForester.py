@@ -75,7 +75,7 @@ def perform(level, box, options):
         OPT = optmap.get(opt, opt.replace(" ", "").upper())
         if OPT in dir(Forester):
             val = reverse_trn.get(options[opt], options[opt])
-            if isinstance(val, (str, unicode)):
+            if isinstance(val, str):
                 val = val.replace(" ", "").lower()
 
             setattr(Forester, OPT, val)
@@ -108,7 +108,7 @@ def perform(level, box, options):
     Forester.X = x_center
     Forester.Z = z_center
     Forester.RADIUS = planting_radius
-    print("Plant radius = " + str(planting_radius))
+    print(("Plant radius = " + str(planting_radius)))
 
     # set the Forester settings that are not in the inputs
     # and should be a specific value

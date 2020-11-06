@@ -16,8 +16,7 @@ import numpy
 from OpenGL import GL
 
 import pymclevel
-from albow import Label, Button, Column, alert, AttrRef
-from albow.extended_widgets import showProgress, CheckBoxLabel
+from albow import Label, Button, Column, alert, AttrRef, showProgress, CheckBoxLabel
 from albow.root import get_root
 from albow.translate import _
 from config import config
@@ -25,12 +24,12 @@ from depths import DepthOffset
 from editortools.blockpicker import BlockPicker
 from editortools.blockview import BlockButton
 from editortools.editortool import EditorTool
-from editortools.operation import Operation
 from editortools.tooloptions import ToolOptions
 from glbackground import Panel
 from glutils import Texture
 from mceutils import alertException, setWindowCaption
 from pymclevel.blockrotation import Roll, RotateLeft, FlipVertical, FlipEastWest, FlipNorthSouth
+from .operation import Operation
 
 
 class BlockFillOperation(Operation):

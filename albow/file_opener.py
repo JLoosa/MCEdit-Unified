@@ -71,7 +71,7 @@ class FileOpener(albow.Widget):
                     lev = pymclevel.MCInfdevOldLevel(world, readonly=True)
                     shortname = lev.LevelName
                     if lev.LevelName != lev.displayName:
-                        shortname = u"{0} ({1})".format(lev.LevelName, lev.displayName)
+                        shortname = "{0} ({1})".format(lev.LevelName, lev.displayName)
             except Exception as e:
                 logging.warning(
                     'Couldn\'t get name from recent world: {0!r}'.format(e))
@@ -89,7 +89,7 @@ class FileOpener(albow.Widget):
                        ('F{0}'.format(i + 1), shortnames[i], self.createLoadButtonHandler(world))
                        for i, world in enumerate(self.mcedit.recentWorlds())])
 
-        self.root.commandRow = commandRow = albow.HotkeyColumn(hotkeys, keysColumn, buttonsColumn, translateButtons=range(3))
+        self.root.commandRow = commandRow = albow.HotkeyColumn(hotkeys, keysColumn, buttonsColumn, translateButtons=list(range(3)))
         commandRow.anchor = 'lrh'
 
         sideColumn1 = self.mcedit.makeSideColumn1()

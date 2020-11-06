@@ -11,7 +11,9 @@ ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
 WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE."""
-from __future__ import unicode_literals
+
+# -# Modified by D.C.-G. for translation purpose
+# .# Marks the layout modifications. -- D.C.-G.
 
 import logging
 import os
@@ -24,26 +26,22 @@ import pygame
 from OpenGL import GL
 
 import pymclevel
-from albow import Row, Label, Button, AttrRef, Column, ask, alert
-from albow.extended_widgets import ChoiceButton, CheckBoxLabel, IntInputRow, \
+from albow import Row, Label, Button, AttrRef, Column, ask, alert, ChoiceButton, CheckBoxLabel, IntInputRow, \
     showProgress, TextInputRow
 from albow.root import get_root
 from albow.translate import _
 from config import config
 from depths import DepthOffset
 from editortools.editortool import EditorTool
-from editortools.fill import BlockFillOperation
 from editortools.nudgebutton import NudgeButton
-from editortools.operation import Operation
 from editortools.tooloptions import ToolOptions
 from fileEdits import fileEdit, GetSort
 from glbackground import Panel
 from mceutils import alertException, drawCube, drawFace, drawTerrainCuttingWire, setWindowCaption
 from pymclevel import nbt
 from pymclevel.box import Vector, BoundingBox, FloatBox
-
-# -# Modified by D.C.-G. for translation purpose
-# .# Marks the layout modifications. -- D.C.-G.
+from .fill import BlockFillOperation
+from .operation import Operation
 
 log = logging.getLogger(__name__)
 
@@ -54,7 +52,7 @@ def GetSelectionColor(colorWord=None):
 
 class SelectionToolOptions(ToolOptions):
     def updateColors(self):
-        names = [name.lower() for (name, value) in config.selectionColors.items()]
+        names = [name.lower() for (name, value) in list(config.selectionColors.items())]
         self.colorPopupButton.choices = [name.capitalize() for name in names]
 
         color = config.selection.color.get()
@@ -375,7 +373,7 @@ class SelectionTool(EditorTool):
     def nudgeBlocks(self, direction):
         if self.editor.rightClickNudge:
             if config.fastNudgeSettings.blocksWidth.get():
-                direction = map(int.__mul__, direction, self.selectionBox().size)
+                direction = list(map(int.__mul__, direction, self.selectionBox().size))
             else:
                 nudgeWidth = config.fastNudgeSettings.blocksWidthNumber.get()
                 direction = [x * nudgeWidth for x in direction]
@@ -394,7 +392,7 @@ class SelectionTool(EditorTool):
     def nudgeSelection(self, direction):
         if self.editor.rightClickNudge == 1:
             if config.fastNudgeSettings.selectionWidth.get():
-                direction = map(int.__mul__, direction, self.selectionBox().size)
+                direction = list(map(int.__mul__, direction, self.selectionBox().size))
             else:
                 nudgeWidth = config.fastNudgeSettings.selectionWidthNumber.get()
                 direction = [x * nudgeWidth for x in direction]
@@ -413,7 +411,7 @@ class SelectionTool(EditorTool):
             return
         if self.editor.rightClickNudge == 1:
             if config.fastNudgeSettings.pointsWidth.get():
-                n = map(int.__mul__, n, self.selectionBox().size)
+                n = list(map(int.__mul__, n, self.selectionBox().size))
             else:
                 nudgeWidth = config.fastNudgeSettings.pointsWidthNumber.get()
                 n = [x * nudgeWidth for x in n]
@@ -739,7 +737,7 @@ class SelectionTool(EditorTool):
 
         mouseVector = self.editor.mainViewport.mouseVector
         scale = distance / (mouseVector[dim] or 0.0001)
-        point = map(lambda a, b: a * scale + b, mouseVector, pos)
+        point = list(map(lambda a, b: a * scale + b, mouseVector, pos))
         return point
 
     def draggingSelectionBox(self):
@@ -771,7 +769,7 @@ class SelectionTool(EditorTool):
 
         o, m = list(box.origin), list(box.maximum)
         (m, o)[side][dragdim] = int(numpy.floor(point[dragdim] + 0.5))
-        m = map(lambda a: a - 1, m)
+        m = [a - 1 for a in m]
         return o, m
 
     def option1(self):
@@ -936,7 +934,7 @@ class SelectionTool(EditorTool):
                     GL.glDisable(GL.GL_BLEND)
                     GL.glDisable(GL.GL_DEPTH_TEST)
 
-        selectionColor = map(lambda a: a * a * a * a, self.selectionColor)
+        selectionColor = [a * a * a * a for a in self.selectionColor]
 
         # draw a colored box representing the possible selection
         otherCorner = self.dragStartPoint
@@ -970,7 +968,7 @@ class SelectionTool(EditorTool):
         pos, direction = self.editor.blockFaceUnderCursor
 
         # draw a selection-colored box for the cursor reticle
-        selectionColor = map(lambda a: a * a * a * a, self.selectionColor)
+        selectionColor = [a * a * a * a for a in self.selectionColor]
         r, g, b = selectionColor
         alpha = 0.3
 
@@ -1006,7 +1004,7 @@ class SelectionTool(EditorTool):
 
     @staticmethod
     def selectionPointsFromBox(box):
-        return box.origin, map(lambda x: x - 1, box.maximum)
+        return box.origin, [x - 1 for x in box.maximum]
 
     def selectNone(self):
         self.setSelectionPoints(None)
@@ -1197,7 +1195,7 @@ class SelectionTool(EditorTool):
             fileFormat = "schematic.zip"
 
         if fileFormat == "schematic.zip":
-            missingChunks = filter(lambda x: not self.editor.level.containsChunk(*x), box.chunkPositions)
+            missingChunks = [x for x in box.chunkPositions if not self.editor.level.containsChunk(*x)]
             if len(missingChunks):
                 if not ((box.origin[0] & 0xf == 0) and (box.origin[2] & 0xf == 0)):
                     if ask(

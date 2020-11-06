@@ -2,7 +2,7 @@ import unittest
 
 from pymclevel.box import BoundingBox
 from pymclevel.entity import Entity, TileEntity
-from pymclevel.test.templevel import TempLevel
+from .templevel import TempLevel
 
 __author__ = 'Rio'
 

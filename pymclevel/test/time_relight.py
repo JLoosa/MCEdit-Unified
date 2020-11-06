@@ -2,7 +2,7 @@ from timeit import timeit
 
 from pymclevel import mclevel
 from pymclevel.infiniteworld import MCInfdevOldLevel
-from pymclevel.test import templevel
+from . import templevel
 
 
 # import logging

@@ -14,14 +14,14 @@ from logging import getLogger
 
 from numpy import array, swapaxes, uint8, zeros, resize, ndenumerate
 
-import pymclevel.blockrotation
-import pymclevel.infiniteworld
-import pymclevel.nbt
-from pymclevel.box import BoundingBox
-from pymclevel.level import MCLevel, EntityLevel
-from pymclevel.materials import alphaMaterials, MCMaterials, namedMaterials
-from pymclevel.mclevelbase import exhaust
 from release import TAG as RELEASE_TAG
+from . import blockrotation
+from . import infiniteworld
+from . import nbt
+from .box import BoundingBox
+from .level import MCLevel, EntityLevel
+from .materials import alphaMaterials, MCMaterials, namedMaterials
+from .mclevelbase import exhaust
 
 log = getLogger(__name__)
 
@@ -44,7 +44,7 @@ class MCSchematic(EntityLevel):
         block coordinate order in the file is y,z,x to use the same code as classic/indev levels.
         in hindsight, this was a completely arbitrary decision.
 
-        the Entities and TileEntities are pymclevel.nbt.TAG_List objects containing TAG_Compounds.
+        the Entities and TileEntities are nbt.TAG_List objects containing TAG_Compounds.
         this makes it easy to copy entities without knowing about their insides.
 
         rotateLeft swaps the axes of the different arrays.  because of this, the Width, Height, and Length
@@ -52,18 +52,18 @@ class MCSchematic(EntityLevel):
         I'm not sure what happens when I try to re-save a rotated schematic.
         """
 
-        if DEBUG: log.debug(u"Creating schematic.")
+        if DEBUG: log.debug("Creating schematic.")
         if filename:
-            if DEBUG: log.debug(u"Using %s" % filename)
+            if DEBUG: log.debug("Using %s" % filename)
             self.filename = filename
             if None is root_tag and os.path.exists(filename):
-                root_tag = pymclevel.nbt.load(filename)
-                if DEBUG: log.debug(u"%s loaded." % filename)
+                root_tag = nbt.load(filename)
+                if DEBUG: log.debug("%s loaded." % filename)
         else:
             self.filename = None
 
         if mats in namedMaterials:
-            if DEBUG: log.debug(u"Using named materials.")
+            if DEBUG: log.debug("Using named materials.")
             self.materials = namedMaterials[mats]
         else:
             assert (isinstance(mats, MCMaterials))
@@ -71,22 +71,22 @@ class MCSchematic(EntityLevel):
 
         if root_tag:
             self.root_tag = root_tag
-            if DEBUG: log.debug(u"Processing materials.")
+            if DEBUG: log.debug("Processing materials.")
             if "Materials" in root_tag:
                 self.materials = namedMaterials[self.Materials]
             else:
-                root_tag["Materials"] = pymclevel.nbt.TAG_String(self.materials.name)
+                root_tag["Materials"] = nbt.TAG_String(self.materials.name)
 
-            if DEBUG: log.debug(u"Processing size.")
+            if DEBUG: log.debug("Processing size.")
             w = self.root_tag["Width"].value
             l = self.root_tag["Length"].value
             h = self.root_tag["Height"].value
 
-            if DEBUG: log.debug(u"Reshaping blocks.")
+            if DEBUG: log.debug("Reshaping blocks.")
             self._Blocks = self.root_tag["Blocks"].value.astype('uint16').reshape(h, l, w)  # _Blocks is y, z, x
             del self.root_tag["Blocks"]
             if "AddBlocks" in self.root_tag:
-                if DEBUG: log.debug(u"Processing AddBlocks.")
+                if DEBUG: log.debug("Processing AddBlocks.")
                 # Use WorldEdit's "AddBlocks" array to load and store the 4 high bits of a block ID.
                 # Unlike Minecraft's NibbleArrays, this array stores the first block's bits in the
                 # 4 high bits of the first byte.
@@ -113,26 +113,26 @@ class MCSchematic(EntityLevel):
             self.root_tag["Data"].value = self.root_tag["Data"].value.reshape(h, l, w)
 
             if "Biomes" in self.root_tag:
-                if DEBUG: log.debug(u"Processing Biomes.")
+                if DEBUG: log.debug("Processing Biomes.")
                 self.root_tag["Biomes"].value.shape = (l, w)
 
         else:
-            if DEBUG: log.debug(u"No root tag found, creating a blank schematic.")
+            if DEBUG: log.debug("No root tag found, creating a blank schematic.")
             assert shape is not None
-            root_tag = pymclevel.nbt.TAG_Compound(name="Schematic")
-            root_tag["Height"] = pymclevel.nbt.TAG_Short(shape[1])
-            root_tag["Length"] = pymclevel.nbt.TAG_Short(shape[2])
-            root_tag["Width"] = pymclevel.nbt.TAG_Short(shape[0])
+            root_tag = nbt.TAG_Compound(name="Schematic")
+            root_tag["Height"] = nbt.TAG_Short(shape[1])
+            root_tag["Length"] = nbt.TAG_Short(shape[2])
+            root_tag["Width"] = nbt.TAG_Short(shape[0])
 
-            root_tag["Entities"] = pymclevel.nbt.TAG_List()
-            root_tag["TileEntities"] = pymclevel.nbt.TAG_List()
-            root_tag["TileTicks"] = pymclevel.nbt.TAG_List()
-            root_tag["Materials"] = pymclevel.nbt.TAG_String(self.materials.name)
+            root_tag["Entities"] = nbt.TAG_List()
+            root_tag["TileEntities"] = nbt.TAG_List()
+            root_tag["TileTicks"] = nbt.TAG_List()
+            root_tag["Materials"] = nbt.TAG_String(self.materials.name)
 
             self._Blocks = zeros((shape[1], shape[2], shape[0]), 'uint16')
-            root_tag["Data"] = pymclevel.nbt.TAG_Byte_Array(zeros((shape[1], shape[2], shape[0]), uint8))
+            root_tag["Data"] = nbt.TAG_Byte_Array(zeros((shape[1], shape[2], shape[0]), uint8))
 
-            root_tag["Biomes"] = pymclevel.nbt.TAG_Byte_Array(zeros((shape[2], shape[0]), uint8))
+            root_tag["Biomes"] = nbt.TAG_Byte_Array(zeros((shape[2], shape[0]), uint8))
 
             self.root_tag = root_tag
 
@@ -143,11 +143,11 @@ class MCSchematic(EntityLevel):
         if filename is None:
             filename = self.filename
         if filename is None:
-            raise IOError(u"Attempted to save an unnamed schematic in place")
+            raise IOError("Attempted to save an unnamed schematic in place")
 
         self.Materials = self.materials.name
 
-        self.root_tag["Blocks"] = pymclevel.nbt.TAG_Byte_Array(self._Blocks.astype('uint8'))
+        self.root_tag["Blocks"] = nbt.TAG_Byte_Array(self._Blocks.astype('uint8'))
 
         add = self._Blocks >> 8
         if add.any():
@@ -166,7 +166,7 @@ class MCSchematic(EntityLevel):
 
             # Save only the even bytes, now that they contain the odd bytes in their lower bits.
             packed_add = packed_add[0::2]
-            self.root_tag["AddBlocks"] = pymclevel.nbt.TAG_Byte_Array(packed_add)
+            self.root_tag["AddBlocks"] = nbt.TAG_Byte_Array(packed_add)
 
         with open(filename, 'wb') as chunkfh:
             self.root_tag.save(chunkfh)
@@ -175,8 +175,8 @@ class MCSchematic(EntityLevel):
         self.root_tag.pop("AddBlocks", None)
 
     def __str__(self):
-        return u"MCSchematic(shape={0}, materials={2}, filename=\"{1}\")".format(self.size, self.filename or u"",
-                                                                                 self.Materials)
+        return "MCSchematic(shape={0}, materials={2}, filename=\"{1}\")".format(self.size, self.filename or "",
+                                                                                self.Materials)
 
     # these refer to the blocks array instead of the file's height because rotation swaps the axes
     # this will have an impact later on when editing schematics instead of just importing/exporting
@@ -213,7 +213,7 @@ class MCSchematic(EntityLevel):
         if "TileTicks" in self.root_tag:
             return self.root_tag["TileTicks"]
         else:
-            self.root_tag["TileTicks"] = pymclevel.nbt.TAG_List()
+            self.root_tag["TileTicks"] = nbt.TAG_List()
             return self.root_tag["TileTicks"]
 
     @property
@@ -223,7 +223,7 @@ class MCSchematic(EntityLevel):
     @Materials.setter
     def Materials(self, val):
         if "Materials" not in self.root_tag:
-            self.root_tag["Materials"] = pymclevel.nbt.TAG_String()
+            self.root_tag["Materials"] = nbt.TAG_String()
         self.root_tag["Materials"].value = val
 
     @property
@@ -237,15 +237,15 @@ class MCSchematic(EntityLevel):
     def _update_shape(self):
         root_tag = self.root_tag
         shape = self.Blocks.shape
-        root_tag["Height"] = pymclevel.nbt.TAG_Short(shape[2])
-        root_tag["Length"] = pymclevel.nbt.TAG_Short(shape[1])
-        root_tag["Width"] = pymclevel.nbt.TAG_Short(shape[0])
+        root_tag["Height"] = nbt.TAG_Short(shape[2])
+        root_tag["Length"] = nbt.TAG_Short(shape[1])
+        root_tag["Width"] = nbt.TAG_Short(shape[0])
 
     def rotateLeftBlocks(self):
         """
         rotateLeft the blocks direction without there location
         """
-        pymclevel.blockrotation.RotateLeft(self.Blocks, self.Data)
+        blockrotation.RotateLeft(self.Blocks, self.Data)
 
     def rotateLeft(self):
         self._fakeEntities = None
@@ -256,9 +256,9 @@ class MCSchematic(EntityLevel):
         self.root_tag["Data"].value = swapaxes(self.root_tag["Data"].value, 1, 2)[:, ::-1, :]  # x=z; z=-x
         self._update_shape()
 
-        pymclevel.blockrotation.RotateLeft(self.Blocks, self.Data)
+        blockrotation.RotateLeft(self.Blocks, self.Data)
 
-        log.info(u"Relocating entities...")
+        log.info("Relocating entities...")
         mcedit_ids_get = self.defsIds.mcedit_ids.get
         for entity in self.Entities:
             for p in "Pos", "Motion":
@@ -314,7 +314,7 @@ class MCSchematic(EntityLevel):
         """
         rolls the blocks direction without the block location
         """
-        pymclevel.blockrotation.Roll(self.Blocks, self.Data)
+        blockrotation.Roll(self.Blocks, self.Data)
 
     def roll(self):
         " xxx rotate stuff - destroys biomes"
@@ -325,9 +325,9 @@ class MCSchematic(EntityLevel):
         self.root_tag["Data"].value = swapaxes(self.root_tag["Data"].value, 2, 0)[:, :, ::-1]
         self._update_shape()
 
-        pymclevel.blockrotation.Roll(self.Blocks, self.Data)
+        blockrotation.Roll(self.Blocks, self.Data)
 
-        log.info(u"N/S Roll: Relocating entities...")
+        log.info("N/S Roll: Relocating entities...")
         mcedit_ids_get = self.defsIds.mcedit_ids.get
         for i, entity in enumerate(self.Entities):
             newX = self.Width - entity["Pos"][1].value
@@ -366,17 +366,17 @@ class MCSchematic(EntityLevel):
                 tileTick["y"].value = newY
 
     def flipVerticalBlocks(self):
-        pymclevel.blockrotation.FlipVertical(self.Blocks, self.Data)
+        blockrotation.FlipVertical(self.Blocks, self.Data)
 
     def flipVertical(self):
         " xxx delete stuff "
         self._fakeEntities = None
 
-        pymclevel.blockrotation.FlipVertical(self.Blocks, self.Data)
+        blockrotation.FlipVertical(self.Blocks, self.Data)
         self._Blocks = self._Blocks[::-1, :, :]  # y=-y
         self.root_tag["Data"].value = self.root_tag["Data"].value[::-1, :, :]
 
-        log.info(u"N/S Flip: Relocating entities...")
+        log.info("N/S Flip: Relocating entities...")
         mcedit_ids_get = self.defsIds.mcedit_ids.get
         for entity in self.Entities:
             ent_id_val = entity["id"].value
@@ -420,7 +420,7 @@ class MCSchematic(EntityLevel):
                    'BurningSkull': 4}
 
     def flipNorthSouthBlocks(self):
-        pymclevel.blockrotation.FlipNorthSouth(self.Blocks, self.Data)
+        blockrotation.FlipNorthSouth(self.Blocks, self.Data)
 
     def flipNorthSouth(self):
         if "Biomes" in self.root_tag:
@@ -428,13 +428,13 @@ class MCSchematic(EntityLevel):
 
         self._fakeEntities = None
 
-        pymclevel.blockrotation.FlipNorthSouth(self.Blocks, self.Data)
+        blockrotation.FlipNorthSouth(self.Blocks, self.Data)
         self._Blocks = self._Blocks[:, :, ::-1]  # x=-x
         self.root_tag["Data"].value = self.root_tag["Data"].value[:, :, ::-1]
 
         northSouthPaintingMap = [0, 3, 2, 1]
 
-        log.info(u"N/S Flip: Relocating entities...")
+        log.info("N/S Flip: Relocating entities...")
         mcedit_ids_get = self.defsIds.mcedit_ids.get
         for entity in self.Entities:
 
@@ -498,7 +498,7 @@ class MCSchematic(EntityLevel):
                 tileTick["x"].value = self.Width - tileTick["x"].value - 1
 
     def flipEastWestBlocks(self):
-        pymclevel.blockrotation.FlipEastWest(self.Blocks, self.Data)
+        blockrotation.FlipEastWest(self.Blocks, self.Data)
 
     def flipEastWest(self):
         if "Biomes" in self.root_tag:
@@ -506,13 +506,13 @@ class MCSchematic(EntityLevel):
 
         self._fakeEntities = None
 
-        pymclevel.blockrotation.FlipEastWest(self.Blocks, self.Data)
+        blockrotation.FlipEastWest(self.Blocks, self.Data)
         self._Blocks = self._Blocks[:, ::-1, :]  # z=-z
         self.root_tag["Data"].value = self.root_tag["Data"].value[:, ::-1, :]
 
         eastWestPaintingMap = [2, 1, 0, 3]
 
-        log.info(u"E/W Flip: Relocating entities...")
+        log.info("E/W Flip: Relocating entities...")
         mcedit_ids_get = self.defsIds.mcedit_ids.get
         for entity in self.Entities:
 
@@ -592,15 +592,15 @@ class MCSchematic(EntityLevel):
         """ Creates a chest with a stack of 'itemID' in each slot.
         Optionally specify the count of items in each stack. Pass a negative
         value for damage to create unnaturally sturdy tools. """
-        root_tag = pymclevel.nbt.TAG_Compound()
-        invTag = pymclevel.nbt.TAG_List()
+        root_tag = nbt.TAG_Compound()
+        invTag = nbt.TAG_List()
         root_tag["Inventory"] = invTag
         for slot in range(9, 36):
-            itemTag = pymclevel.nbt.TAG_Compound()
-            itemTag["Slot"] = pymclevel.nbt.TAG_Byte(slot)
-            itemTag["Count"] = pymclevel.nbt.TAG_Byte(count)
-            itemTag["id"] = pymclevel.nbt.TAG_Short(itemID)
-            itemTag["Damage"] = pymclevel.nbt.TAG_Short(damage)
+            itemTag = nbt.TAG_Compound()
+            itemTag["Slot"] = nbt.TAG_Byte(slot)
+            itemTag["Count"] = nbt.TAG_Byte(count)
+            itemTag["id"] = nbt.TAG_Short(itemID)
+            itemTag["Damage"] = nbt.TAG_Short(damage)
             invTag.append(itemTag)
 
         chest = INVEditChest(root_tag, "")
@@ -621,7 +621,7 @@ class INVEditChest(MCSchematic):
     Height = 1
     Length = 1
     Data = array([[[0]]], 'uint8')
-    Entities = pymclevel.nbt.TAG_List()
+    Entities = nbt.TAG_List()
     Materials = alphaMaterials
 
     @classmethod
@@ -636,9 +636,9 @@ class INVEditChest(MCSchematic):
             self.filename = filename
             if None is root_tag:
                 try:
-                    root_tag = pymclevel.nbt.load(filename)
+                    root_tag = nbt.load(filename)
                 except IOError as e:
-                    log.info(u"Failed to load file {0}".format(e))
+                    log.info("Failed to load file {0}".format(e))
                     raise
         else:
             assert root_tag, "Must have either root_tag or filename"
@@ -655,7 +655,7 @@ class INVEditChest(MCSchematic):
 
     @property
     def TileEntities(self):
-        chestTag = pymclevel.nbt.TAG_Compound()
+        chestTag = nbt.TAG_Compound()
         chest_id = "Chest"
         if self.gamePlatform == "Java":
             split_ver = self.gameVersionNumber.split('.')
@@ -663,16 +663,16 @@ class INVEditChest(MCSchematic):
             split_ver = self.gamePlatform.split('.')
         if int(split_ver[0]) >= 1 and int(split_ver[1]) >= 11:
             chest_id = "minecraft:chest"
-        chestTag["id"] = pymclevel.nbt.TAG_String(chest_id)
-        chestTag["Items"] = pymclevel.nbt.TAG_List(self.root_tag["Inventory"])
-        chestTag["x"] = pymclevel.nbt.TAG_Int(0)
-        chestTag["y"] = pymclevel.nbt.TAG_Int(0)
-        chestTag["z"] = pymclevel.nbt.TAG_Int(0)
+        chestTag["id"] = nbt.TAG_String(chest_id)
+        chestTag["Items"] = nbt.TAG_List(self.root_tag["Inventory"])
+        chestTag["x"] = nbt.TAG_Int(0)
+        chestTag["y"] = nbt.TAG_Int(0)
+        chestTag["z"] = nbt.TAG_Int(0)
 
-        return pymclevel.nbt.TAG_List([chestTag], name="TileEntities")
+        return nbt.TAG_List([chestTag], name="TileEntities")
 
 
-class ZipSchematic(pymclevel.infiniteworld.MCInfdevOldLevel):
+class ZipSchematic(infiniteworld.MCInfdevOldLevel):
     def __init__(self, filename, create=False):
         self.zipfilename = filename
 
@@ -688,7 +688,7 @@ class ZipSchematic(pymclevel.infiniteworld.MCInfdevOldLevel):
         atexit.register(shutil.rmtree, self.worldFolder.filename, True)
 
         try:
-            schematicDat = pymclevel.nbt.load(self.worldFolder.getFilePath("schematic.dat"))
+            schematicDat = nbt.load(self.worldFolder.getFilePath("schematic.dat"))
 
             self.Width = schematicDat['Width'].value
             self.Height = schematicDat['Height'].value
@@ -710,13 +710,13 @@ class ZipSchematic(pymclevel.infiniteworld.MCInfdevOldLevel):
         yield
 
     def saveToFile(self, filename):
-        schematicDat = pymclevel.nbt.TAG_Compound()
+        schematicDat = nbt.TAG_Compound()
         schematicDat.name = "Mega Schematic"
 
-        schematicDat["Width"] = pymclevel.nbt.TAG_Int(self.size[0])
-        schematicDat["Height"] = pymclevel.nbt.TAG_Int(self.size[1])
-        schematicDat["Length"] = pymclevel.nbt.TAG_Int(self.size[2])
-        schematicDat["Materials"] = pymclevel.nbt.TAG_String(self.materials.name)
+        schematicDat["Width"] = nbt.TAG_Int(self.size[0])
+        schematicDat["Height"] = nbt.TAG_Int(self.size[1])
+        schematicDat["Length"] = nbt.TAG_Int(self.size[2])
+        schematicDat["Materials"] = nbt.TAG_String(self.materials.name)
 
         schematicDat.save(self.worldFolder.getFilePath("schematic.dat"))
 
@@ -756,28 +756,28 @@ class StructureNBT(object):
         self.blockstate = mats.blockstate_api
 
         if filename:
-            root_tag = pymclevel.nbt.load(filename)
+            root_tag = nbt.load(filename)
 
         if root_tag:
             self._root_tag = root_tag
             self._size = (self._root_tag["size"][0].value, self._root_tag["size"][1].value, self._root_tag["size"][2].value)
 
-            self._author = self._root_tag.get("author", pymclevel.nbt.TAG_String()).value
-            self._version = self._root_tag.get("DataVersion", pymclevel.nbt.TAG_Int(1)).value
+            self._author = self._root_tag.get("author", nbt.TAG_String()).value
+            self._version = self._root_tag.get("DataVersion", nbt.TAG_Int(1)).value
 
             self._palette = self.__toPythonPrimitive(self._root_tag["palette"])
 
             self._blocks = zeros(self.Size, dtype=tuple)
             self._blocks.fill((0, 0))
             self._entities = []
-            self._tile_entities = zeros(self.Size, dtype=pymclevel.nbt.TAG_Compound)
+            self._tile_entities = zeros(self.Size, dtype=nbt.TAG_Compound)
             self._tile_entities.fill({})
 
             for block in self._root_tag["blocks"]:
                 x, y, z = [p.value for p in block["pos"].value]
                 self._blocks[x, y, z] = self.blockstate.blockstateToID(*self.get_state(block["state"].value))
                 if "nbt" in block:
-                    compound = pymclevel.nbt.TAG_Compound()
+                    compound = nbt.TAG_Compound()
                     compound.update(block["nbt"])
                     self._tile_entities[x, y, z] = compound
 
@@ -786,13 +786,13 @@ class StructureNBT(object):
                 entity["Pos"] = e["pos"]
                 self._entities.append(entity)
         elif size:
-            self._root_tag = pymclevel.nbt.TAG_Compound()
+            self._root_tag = nbt.TAG_Compound()
             self._size = size
 
             self._blocks = zeros(self.Size, dtype=tuple)
             self._blocks.fill((0, 0))
             self._entities = []
-            self._tile_entities = zeros(self.Size, dtype=pymclevel.nbt.TAG_Compound)
+            self._tile_entities = zeros(self.Size, dtype=nbt.TAG_Compound)
             self._tile_entities.fill({})
 
     def toSchematic(self):
@@ -806,12 +806,12 @@ class StructureNBT(object):
             if not value:
                 continue
             tag = value
-            tag["x"] = pymclevel.nbt.TAG_Int(x)
-            tag["y"] = pymclevel.nbt.TAG_Int(y)
-            tag["z"] = pymclevel.nbt.TAG_Int(z)
+            tag["x"] = nbt.TAG_Int(x)
+            tag["y"] = nbt.TAG_Int(y)
+            tag["z"] = nbt.TAG_Int(z)
             schem.addTileEntity(tag)
 
-        entity_list = pymclevel.nbt.TAG_List()
+        entity_list = nbt.TAG_List()
         for e in self._entities:
             entity_list.append(e)
         schem.root_tag["Entities"] = entity_list
@@ -839,15 +839,15 @@ class StructureNBT(object):
         return structure
 
     def __toPythonPrimitive(self, _nbt):
-        if isinstance(_nbt, pymclevel.nbt.TAG_Compound):
+        if isinstance(_nbt, nbt.TAG_Compound):
             d = {}
-            for key in _nbt.keys():
-                if isinstance(_nbt[key], pymclevel.nbt.TAG_Compound):
+            for key in list(_nbt.keys()):
+                if isinstance(_nbt[key], nbt.TAG_Compound):
                     d[key] = self.__toPythonPrimitive(_nbt[key])
-                elif isinstance(_nbt[key], pymclevel.nbt.TAG_List):
+                elif isinstance(_nbt[key], nbt.TAG_List):
                     l = []
                     for value in _nbt[key]:
-                        if isinstance(value, pymclevel.nbt.TAG_Compound):
+                        if isinstance(value, nbt.TAG_Compound):
                             l.append(self.__toPythonPrimitive(value))
                         else:
                             l.append(value.value)
@@ -855,12 +855,12 @@ class StructureNBT(object):
                 else:
                     d[key] = _nbt[key].value
             return d
-        elif isinstance(_nbt, pymclevel.nbt.TAG_List):
+        elif isinstance(_nbt, nbt.TAG_List):
             l = []
             for tag in _nbt:
-                if isinstance(tag, pymclevel.nbt.TAG_Compound):
+                if isinstance(tag, nbt.TAG_Compound):
                     l.append(self.__toPythonPrimitive(tag))
-                elif isinstance(tag, pymclevel.nbt.TAG_List):
+                elif isinstance(tag, nbt.TAG_List):
                     l.append(self.__toPythonPrimitive(tag))
                 else:
                     l.append(tag.value)
@@ -872,7 +872,7 @@ class StructureNBT(object):
             block = {"Name": state["Name"].value}
             if "Properties" in state:
                 block["Properties"] = {}
-                for (key, value) in state["Properties"].iteritems():
+                for (key, value) in state["Properties"].items():
                     block["Properties"][key] = value.value
             palette.append(block)
         return palette
@@ -886,7 +886,7 @@ class StructureNBT(object):
         for i in range(len(self._palette)):
             if self._palette[i]["Name"] == name:
                 if properties and "Properties" in self._palette[i]:
-                    for (key, value) in properties.iteritems():
+                    for (key, value) in properties.items():
                         if not self._palette[i]["Properties"].get(key, None) == value:
                             continue
                     return i
@@ -901,27 +901,27 @@ class StructureNBT(object):
         return -1
 
     def save(self, filename=""):
-        structure_tag = pymclevel.nbt.TAG_Compound()
-        blocks_tag = pymclevel.nbt.TAG_List()
-        palette_tag = pymclevel.nbt.TAG_List()
-        entities_tag = pymclevel.nbt.TAG_List()
+        structure_tag = nbt.TAG_Compound()
+        blocks_tag = nbt.TAG_List()
+        palette_tag = nbt.TAG_List()
+        entities_tag = nbt.TAG_List()
 
         palette = []
 
         if not self._author:
             self._author = "MCEdit-Unified v{}".format(RELEASE_TAG)
 
-        structure_tag["author"] = pymclevel.nbt.TAG_String(self._author)
+        structure_tag["author"] = nbt.TAG_String(self._author)
         if self._version:
-            structure_tag["DataVersion"] = pymclevel.nbt.TAG_Int(self.DataVersion)
+            structure_tag["DataVersion"] = nbt.TAG_Int(self.DataVersion)
         else:
-            structure_tag["DataVersion"] = pymclevel.nbt.TAG_Int(self.SUPPORTED_VERSIONS[-1])
+            structure_tag["DataVersion"] = nbt.TAG_Int(self.SUPPORTED_VERSIONS[-1])
 
-        structure_tag["size"] = pymclevel.nbt.TAG_List(
+        structure_tag["size"] = nbt.TAG_List(
             [
-                pymclevel.nbt.TAG_Int(self.Size[0]),
-                pymclevel.nbt.TAG_Int(self.Size[1]),
-                pymclevel.nbt.TAG_Int(self.Size[2])
+                nbt.TAG_Int(self.Size[0]),
+                nbt.TAG_Int(self.Size[1]),
+                nbt.TAG_Int(self.Size[2])
             ]
         )
 
@@ -941,13 +941,13 @@ class StructureNBT(object):
                         palette.append(blockstate)
                     index = palette.index(blockstate)
 
-                    block = pymclevel.nbt.TAG_Compound()
-                    block["state"] = pymclevel.nbt.TAG_Int(index)
-                    block["pos"] = pymclevel.nbt.TAG_List(
+                    block = nbt.TAG_Compound()
+                    block["state"] = nbt.TAG_Int(index)
+                    block["pos"] = nbt.TAG_List(
                         [
-                            pymclevel.nbt.TAG_Int(x),
-                            pymclevel.nbt.TAG_Int(y),
-                            pymclevel.nbt.TAG_Int(z)
+                            nbt.TAG_Int(x),
+                            nbt.TAG_Int(y),
+                            nbt.TAG_Int(z)
                         ]
                     )
 
@@ -960,26 +960,26 @@ class StructureNBT(object):
         for blockstate in palette:
             name, properties = blockstate_api.deStringifyBlockstate(blockstate)
 
-            state = pymclevel.nbt.TAG_Compound()
-            state["Name"] = pymclevel.nbt.TAG_String(name)
+            state = nbt.TAG_Compound()
+            state["Name"] = nbt.TAG_String(name)
 
             if properties:
-                props = pymclevel.nbt.TAG_Compound()
-                for (key, value) in properties.iteritems():
-                    props[key] = pymclevel.nbt.TAG_String(value)
+                props = nbt.TAG_Compound()
+                for (key, value) in properties.items():
+                    props[key] = nbt.TAG_String(value)
                 state["Properties"] = props
 
             palette_tag.insert(palette.index(blockstate), state)
         structure_tag["palette"] = palette_tag
 
         for e in self._entities:
-            entity = pymclevel.nbt.TAG_Compound()
+            entity = nbt.TAG_Compound()
             pos = e["Pos"]
             entity["pos"] = pos
             entity["nbt"] = e
-            blockPos = pymclevel.nbt.TAG_List()
+            blockPos = nbt.TAG_List()
             for coord in pos:
-                blockPos.append(pymclevel.nbt.TAG_Int(math.floor(coord.value)))
+                blockPos.append(nbt.TAG_Int(math.floor(coord.value)))
             entity["blockPos"] = blockPos
 
             entities_tag.append(entity)
@@ -1130,7 +1130,7 @@ def extractAnySchematic(level, box):
 
 
 def extractAnySchematicIter(level, box):
-    if box.chunkCount < pymclevel.infiniteworld.MCInfdevOldLevel.loadedChunkLimit:
+    if box.chunkCount < infiniteworld.MCInfdevOldLevel.loadedChunkLimit:
         for i in level.extractSchematicIter(box):
             yield i
     else:

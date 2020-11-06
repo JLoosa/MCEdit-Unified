@@ -12,10 +12,10 @@ from numpy import fromstring
 from pygame import Rect, Surface, image
 from pygame.locals import SRCALPHA
 
-from albow.theme import ThemeProperty, FontProperty
-from albow.translate import _  # useless?
-from albow.utils import brighten
-from albow.widget import Widget
+from .theme import ThemeProperty, FontProperty
+from .translate import _  # useless?
+from .utils import brighten
+from .widget import Widget
 
 
 class TabPanel(Widget):

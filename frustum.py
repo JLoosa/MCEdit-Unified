@@ -38,7 +38,7 @@ def viewingMatrix(projection=None, model=None):
         model = GL.glGetDoublev(GL.GL_MODELVIEW_MATRIX)
     # hmm, this will likely fail on 64-bit platforms :(
     if projection is None or model is None:
-        context_log.warning(
+        context_log.warn(
             """A NULL matrix was returned from glGetDoublev: proj=%s modelView=%s""",
             projection, model,
         )
@@ -49,13 +49,13 @@ def viewingMatrix(projection=None, model=None):
         else:
             return numpy.identity(4, 'd')
     if numpy.allclose(projection, -1.79769313e+308):
-        context_log.warning(
+        context_log.warn(
             """Attempt to retrieve projection matrix when uninitialised %s, model=%s""",
             projection, model,
         )
         return model
     if numpy.allclose(model, -1.79769313e+308):
-        context_log.warning(
+        context_log.warn(
             """Attempt to retrieve model-view matrix when uninitialised %s, projection=%s""",
             model, projection,
         )

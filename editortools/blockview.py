@@ -1,14 +1,14 @@
 from OpenGL import GL
 from numpy import array
 
-import editortools.blockpicker as blockpicker
-import editortools.thumbview as thumbview
 # &# Prototype for blocks/items names
 import mclangres
 from albow import ButtonBase, ValueDisplay, AttrRef, Row
 from albow.openglwidgets import GLOrtho
 from glbackground import Panel, GLBackground
 from glutils import DisplayList
+from . import blockpicker
+from . import thumbview
 
 
 # &#
@@ -79,7 +79,7 @@ class BlockButton(ButtonBase, Panel):
 
     def __init__(self, materials, blockInfo=None, ref=None, recentBlocks=None, *a, **kw):
         self.allowWildcards = False
-        if 'name' not in kw.keys():
+        if 'name' not in list(kw.keys()):
             kw['name'] = 'Panel.BlockButton'
         Panel.__init__(self, *a, **kw)
 

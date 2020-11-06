@@ -32,7 +32,7 @@ all    Build all extensions.
 In case setuptools commands like 'build' or 'install are given after a doule
 dash ('--'), you can expect unwanted behaviour, because the 'build_ext' and
  '--inplace' are forced (added dynamicaly on the command line).
-""" % "\n".join(["%s    %s" % (k, v["description"]) for k, v in modules_map.items()])
+""" % "\n".join(["%s    %s" % (k, v["description"]) for k, v in list(modules_map.items())])
 
 # Let people choose what to build.
 # If no argument is given on the command line, display help message.
@@ -57,8 +57,8 @@ else:
                 sys.exit(0)
             elif arg == 'all':
                 ext_list = list(modules_map.keys())
-                ext_modules = [v["source"] for v in modules_map.values()]
-            elif arg not in modules_map.keys():
+                ext_modules = [v["source"] for v in list(modules_map.values())]
+            elif arg not in list(modules_map.keys()):
                 print("'%s' is not a valid argument. Use 'help' one for information." % arg)
                 sys.exit(1)
             else:

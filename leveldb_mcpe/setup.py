@@ -37,6 +37,7 @@ elif sys.platform == "darwin":
     libraries = ["boost_python", "leveldb"]
 
 elif sys.platform == "linux2":
+
     if sys.argv[-1] == 'setup.py':
         print('No command specified. Aborting.')
         print('Please, use `python setup.py build` to build Pocket Edition support for MCEdit.')

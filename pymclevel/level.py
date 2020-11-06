@@ -12,12 +12,12 @@ from math import floor
 
 from numpy import argmax, swapaxes, zeros, zeros_like
 
-import pymclevel.id_definitions as id_definitions
-import pymclevel.materials as materials
-import pymclevel.nbt as nbt
-from pymclevel.box import BoundingBox
-from pymclevel.entity import Entity, TileEntity, TileTick
-from pymclevel.mclevelbase import ChunkMalformed, ChunkNotPresent
+from . import id_definitions
+from . import materials
+from . import nbt
+from .box import BoundingBox
+from .entity import Entity, TileEntity, TileTick
+from .mclevelbase import ChunkMalformed, ChunkNotPresent
 
 log = getLogger(__name__)
 
@@ -216,7 +216,7 @@ class MCLevel(object):
         if hasattr(cls, "_isLevel"):
             return cls._isLevel(filename)
 
-        with open(filename) as f:
+        with file(filename) as f:
             data = f.read()
 
         if hasattr(cls, "_isDataLevel"):
@@ -604,7 +604,7 @@ class EntityLevel(MCLevel):
         def differentPosition(a):
             return not ((tileEntityTag is a) or TileEntity.pos(a) == TileEntity.pos(tileEntityTag))
 
-        self.TileEntities.value[:] = filter(differentPosition, self.TileEntities)
+        self.TileEntities.value[:] = list(filter(differentPosition, self.TileEntities))
 
         self.TileEntities.append(tileEntityTag)
         self._fakeEntities = None
@@ -615,7 +615,7 @@ class EntityLevel(MCLevel):
             def differentPosition(a):
                 return not ((tickTag is a) or TileTick.pos(a) == TileTick.pos(tickTag))
 
-            self.TileTicks.value[:] = filter(differentPosition, self.TileTicks)
+            self.TileTicks.value[:] = list(filter(differentPosition, self.TileTicks))
 
             self.TileTicks.append(tickTag)
             self._fakeEntities = None
@@ -634,7 +634,7 @@ class EntityLevel(MCLevel):
             for i, e in enumerate((self.Entities, self.TileEntities, self.TileTicks)):
                 for ent in e:
                     x, y, z = [Entity, TileEntity, TileTick][i].pos(ent)
-                    ecx, ecz = map(lambda x: (int(floor(x)) >> 4), (x, z))
+                    ecx, ecz = [(int(floor(x)) >> 4) for x in (x, z)]
 
                     self._fakeEntities[ecx, ecz][i].append(ent)
 
@@ -721,7 +721,7 @@ class LightedChunk(ChunkBase):
         for x, z in itertools.product(range(16), range(16)):
             skylight[x, z, heightmap[z, x]:] = 15
             lv = 15
-            for y in reversed(range(heightmap[z, x])):
+            for y in reversed(list(range(heightmap[z, x]))):
                 lv -= (la[blocks[x, z, y]] or 1)
 
                 if lv <= 0:

@@ -6,9 +6,9 @@
 #
 from pygame import event, Surface, SRCALPHA, Rect, draw, mouse
 
-from albow.layout import Column
-from albow.palette_view import PaletteView
-from albow.utils import blit_in_rect
+from .layout import Column
+from .palette_view import PaletteView
+from .utils import blit_in_rect
 
 
 # -----------------------------------------------------------------------------
@@ -175,7 +175,7 @@ class ScrollRow(PaletteView):
 
     def draw_hscrollbar(self, surface):
         r = self.hscrollbar_rect()
-        c = map(lambda x: min(255, max(0, x + 10)), self.scroll_button_color)
+        c = [min(255, max(0, x + 10)) for x in self.scroll_button_color]
         draw.rect(surface, c, r)
 
     def draw(self, surface):
@@ -295,7 +295,7 @@ class ScrollPanel(Column):
                 cell_rect.right -= self.scrollRow.scroll_button_size
         elif self.align.lower() == 'c':
             cell_rect.left = self.centerx - (cell_rect.width / 2)
-        if isinstance(data, (str, bytes)):
+        if isinstance(data, str):
             self.draw_text_cell(surf, i, data, cell_rect, self.align, self.font)
         else:
             self.draw_image_cell(surf, i, data, cell_rect, column)
@@ -305,7 +305,7 @@ class ScrollPanel(Column):
         blit_in_rect(surf, data, cell_rect, self.align, self.margin)
 
     def draw_text_cell(self, surf, i, data, cell_rect, align, font):
-        buf = font.render(bytes(data), True, self.fg_color)
+        buf = font.render(str(data), True, self.fg_color)
         blit_in_rect(surf, buf, cell_rect, align)
 
     def num_rows(self):

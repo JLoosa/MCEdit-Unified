@@ -132,7 +132,7 @@ def getDataDir(path=""):
     #         dataDir = os.path.dirname(__file__)
     #     """  #
     # else:
-    dataDir = os.getcwdu()
+    dataDir = os.getcwd()
     if len(path) > 0:
         return os.path.join(dataDir, path)
     return dataDir
@@ -153,7 +153,7 @@ def win32_appdata():
     except Exception as e:
         print("Error while getting AppData folder using WScript.Shell.SpecialFolders: {0!r}".format(e))
         try:
-            from win32comext.shell import shell, shellcon
+            from win32com.shell import shell, shellcon
 
             return shell.SHGetPathFromIDListEx(
                 shell.SHGetSpecialFolderLocation(0, shellcon.CSIDL_APPDATA)
@@ -166,9 +166,9 @@ def win32_appdata():
 
 def getMinecraftProfileJSON():
     """Returns a dictionary object with the minecraft profile information"""
-    if os.path.isfile(os.path.join(getMinecraftLauncherDirectory(), u"launcher_profiles.json")):
+    if os.path.isfile(os.path.join(getMinecraftLauncherDirectory(), "launcher_profiles.json")):
         try:
-            with open(os.path.join(getMinecraftLauncherDirectory(), u"launcher_profiles.json"), 'rb') as jsonString:
+            with open(os.path.join(getMinecraftLauncherDirectory(), "launcher_profiles.json"), 'rb') as jsonString:
                 minecraftProfilesJSON = json.loads(jsonString.read().decode(sys.getfilesystemencoding()))
             return minecraftProfilesJSON
         except:
@@ -200,7 +200,7 @@ def getDocumentsFolder():
     if sys.platform == "win32":
         try:
             import win32com.client
-            from win32comext.shell import shell, shellcon
+            from win32com.shell import shell, shellcon
             objShell = win32com.client.Dispatch("WScript.Shell")
             docsFolder = objShell.SpecialFolders("MyDocuments")
 
@@ -241,14 +241,14 @@ _minecraftSaveFileDir = None
 def getMinecraftSaveFileDir():
     global _minecraftSaveFileDir
     if _minecraftSaveFileDir is None:
-        _minecraftSaveFileDir = os.path.join(getMinecraftProfileDirectory(getSelectedProfile()), u"saves")
+        _minecraftSaveFileDir = os.path.join(getMinecraftProfileDirectory(getSelectedProfile()), "saves")
     return _minecraftSaveFileDir
 
 
 minecraftSaveFileDir = getMinecraftSaveFileDir()
 
-ini = u"mcedit.ini"
-cache = u"usercache.ini"
+ini = "mcedit.ini"
+cache = "usercache.ini"
 
 parentDir = os.path.dirname(getDataDir())
 docsFolder = os.path.join(getDocumentsFolder(), 'MCEdit')
@@ -258,20 +258,20 @@ if sys.platform != "darwin":
     portableConfigFilePath = os.path.join(parentDir, ini)
     portableCacheFilePath = os.path.join(parentDir, cache)
     portableGenericSupportPath = os.path.join(parentDir)
-    portableSchematicsDir = os.path.join(parentDir, u"Schematics")
-    portableBrushesDir = os.path.join(parentDir, u"Brushes")
-    portableJarStorageDir = os.path.join(parentDir, u"ServerJarStorage")
-    portableFiltersDir = os.path.join(parentDir, u"Filters")
+    portableSchematicsDir = os.path.join(parentDir, "Schematics")
+    portableBrushesDir = os.path.join(parentDir, "Brushes")
+    portableJarStorageDir = os.path.join(parentDir, "ServerJarStorage")
+    portableFiltersDir = os.path.join(parentDir, "Filters")
     if not os.path.exists(parentDir):
         os.makedirs(parentDir)
 
     fixedCacheFilePath = os.path.join(docsFolder, cache)
     fixedConfigFilePath = os.path.join(docsFolder, ini)
     fixedGenericSupportPath = os.path.join(docsFolder)
-    fixedSchematicsDir = os.path.join(docsFolder, u"Schematics")
-    fixedBrushesDir = os.path.join(docsFolder, u"Brushes")
-    fixedJarStorageDir = os.path.join(docsFolder, u"ServerJarStorage")
-    fixedFiltersDir = os.path.join(docsFolder, u"Filters")
+    fixedSchematicsDir = os.path.join(docsFolder, "Schematics")
+    fixedBrushesDir = os.path.join(docsFolder, "Brushes")
+    fixedJarStorageDir = os.path.join(docsFolder, "ServerJarStorage")
+    fixedFiltersDir = os.path.join(docsFolder, "Filters")
     if not os.path.exists(docsFolder):
         os.makedirs(docsFolder)
 
@@ -436,9 +436,9 @@ def getCacheDir():
 
 if sys.platform == "darwin":
     configFilePath = os.path.expanduser("~/Library/Preferences/mcedit.ini")
-    schematicsDir = os.path.join(getCacheDir(), u"Schematics")
-    brushesDir = os.path.join(getCacheDir(), u"Brushes")
-    filtersDir = os.path.join(getCacheDir(), u"Filters")
+    schematicsDir = os.path.join(getCacheDir(), "Schematics")
+    brushesDir = os.path.join(getCacheDir(), "Brushes")
+    filtersDir = os.path.join(getCacheDir(), "Filters")
     if not os.path.exists(getCacheDir()):
         os.makedirs(getCacheDir())
 

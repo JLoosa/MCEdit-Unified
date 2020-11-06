@@ -20,7 +20,7 @@ Professions = {
 }
 
 ProfessionKeys = ("N/A",)
-for key in Professions.keys():
+for key in list(Professions.keys()):
     ProfessionKeys = ProfessionKeys + (key,)
 
 noop = -1337

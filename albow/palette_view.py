@@ -1,8 +1,8 @@
 from pygame import Rect, draw
 
-from albow.grid_view import GridView
-from albow.theme import ThemeProperty
-from albow.utils import frame_rect
+from .grid_view import GridView
+from .theme import ThemeProperty
+from .utils import frame_rect
 
 
 class PaletteView(GridView):
@@ -255,5 +255,5 @@ class PaletteView(GridView):
 
     def draw_scrollbar(self, surface):
         r = self.scrollbar_rect()
-        c = map(lambda x: min(255, max(0, x + 10)), self.scroll_button_color)
+        c = [min(255, max(0, x + 10)) for x in self.scroll_button_color]
         draw.rect(surface, c, r)

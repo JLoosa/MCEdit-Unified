@@ -17,12 +17,9 @@ from pygame import key
 from pygame.event import Event
 from pygame.locals import *
 
-import albow.widget as widget
 import directories
-from albow.dialogs import Dialog, Label, Button, Row, Column
 from albow.dialogs import wrapped_label
 from albow.translate import _
-from albow.widget import Widget
 # -# This need to be changed. We need albow.translate in the config module.
 # -# he solution can be a set of functions wich let us define the needed MCEdit 'config' data
 # -# without importing it.
@@ -30,6 +27,9 @@ from albow.widget import Widget
 from config import config
 from glbackground import *
 from pymclevel.box import Vector
+from . import widget
+from .dialogs import Dialog, Label, Button, Row, Column
+from .widget import Widget
 
 start_time = datetime.now()
 
@@ -373,7 +373,7 @@ class RootWidget(Widget):
                             if self.editor.level is not None and hasattr(self.editor.level, "checkSessionLock"):
                                 self.editor.level.checkSessionLock()
                         except Exception as e:
-                            log.warn(u"Error reading chunk (?): %s", e)
+                            log.warn("Error reading chunk (?): %s", e)
                             traceback.print_exc()
                             if not config.session.override.get():
                                 self.sessionStolen = True
@@ -467,15 +467,15 @@ class RootWidget(Widget):
                 self.nudge.nudge(Vector(0, -1, 0))
 
             Z = self.editor.mainViewport.cameraVector
-            absZ = map(abs, Z)
+            absZ = list(map(abs, Z))
             if absZ[0] < absZ[2]:
                 forward = (0, 0, (-1 if Z[2] < 0 else 1))
             else:
                 forward = ((-1 if Z[0] < 0 else 1), 0, 0)
 
-            back = map(int.__neg__, forward)
+            back = list(map(int.__neg__, forward))
             left = forward[2], forward[1], -forward[0]
-            right = map(int.__neg__, left)
+            right = list(map(int.__neg__, left))
 
             if keyname == self.editor.movements[2]:
                 self.nudge.nudge(Vector(*forward))
@@ -506,7 +506,7 @@ class RootWidget(Widget):
                 print("Idle ref died!")
             return bool(widget)
 
-        self.idle_handlers = filter(call, self.idle_handlers)
+        self.idle_handlers = list(filter(call, self.idle_handlers))
 
     def add_idle_handler(self, widget):
         from weakref import ref
@@ -612,7 +612,7 @@ class RootWidget(Widget):
 
     @staticmethod
     def music_end():
-        import albow.music as music
+        from . import music
 
         music.music_end()
 

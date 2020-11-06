@@ -11,22 +11,22 @@ import copy
 from pygame import Surface, Rect, SRCALPHA, draw, event
 
 from albow.controls import CheckBox, AttrRef, Label, Button
-from albow.dialogs import Dialog
 from albow.dialogs import alert, input_text_buttons
-from albow.extended_widgets import ChoiceButton
 from albow.fields import IntField, FloatField, TextFieldWrapped
-from albow.layout import Column, Row
 from albow.menu import Menu
-from albow.scrollpanel import ScrollRow
-from albow.theme import ThemeProperty
 from albow.translate import _
-from albow.utils import blit_in_rect
+from .dialogs import Dialog
+from .extended_widgets import ChoiceButton
+from .layout import Column, Row
+from .scrollpanel import ScrollRow
+from .theme import ThemeProperty
+from .utils import blit_in_rect
 
 # -----------------------------------------------------------------------------
 item_types_map = {dict: ("Compound", None, {}),
                   int: ("Integer", IntField, 0),
                   float: ("Floating point", FloatField, 0.0),
-                  bytes: ("Text", TextFieldWrapped, ""),
+                  str: ("Text", TextFieldWrapped, ""),
                   bool: ("Boolean", CheckBox, True),
                   }
 
@@ -35,11 +35,11 @@ def setup_map_types_item(mp=None):
     if not mp:
         mp = item_types_map
     map_types_item = {}
-    for k, v in mp.items():
-        if v[0] in map_types_item.keys():
+    for k, v in list(mp.items()):
+        if v[0] in list(map_types_item.keys()):
             _v = map_types_item.pop(v[0])
-            map_types_item[u"%s (%s)" % (_(v[0]), _v[0].__name__)] = _v
-            map_types_item[u"%s (%s)" % (_(v[0]), k.__name__)] = (k, v[1], v[2])
+            map_types_item["%s (%s)" % (_(v[0]), _v[0].__name__)] = _v
+            map_types_item["%s (%s)" % (_(v[0]), k.__name__)] = (k, v[1], v[2])
         else:
             map_types_item[v[0]] = (k, v[1], v[2])
     return map_types_item
@@ -54,7 +54,7 @@ def create_base_item(self, i_type, i_name, i_value):
     return i_name, type(i_type)(i_value)
 
 
-create_dict = create_int = create_float = create_bytes = create_bool = create_base_item
+create_dict = create_int = create_float = create_unicode = create_bool = create_base_item
 
 
 # -----------------------------------------------------------------------------
@@ -64,7 +64,7 @@ class SetupNewItemPanel(Dialog):
         self.ok_action = ok_action
         title = Label("Choose default data")
         self.t, widget, self.v = types[type_string]
-        self.n = u""
+        self.n = ""
         w_name = TextFieldWrapped(ref=AttrRef(self, 'n'))
         self.w_value = self.get_widget(widget)
         col = Column([Column([title, ]), Label(_("Item Type: %s") % type_string, doNotTranslate=True), Row([Label("Name"), w_name], margin=0), Row([Label("Value"), self.w_value], margin=0),
@@ -105,12 +105,12 @@ class SelectItemTypePanel(Dialog):
 # -----------------------------------------------------------------------------
 def select_item_type(ok_action, types=map_types_item):
     if len(types) > 1:
-        choices = types.keys()
+        choices = list(types.keys())
         choices.sort()
         result = SelectItemTypePanel("Choose item type", responses=choices, default=None).present()
     else:
-        result = types.keys()[0]
-    if isinstance(result, (str, bytes)):
+        result = list(types.keys())[0]
+    if isinstance(result, str):
         return SetupNewItemPanel(result, types, ok_action).present()
     return None
 
@@ -166,9 +166,9 @@ class Tree(Column):
         self._parent = kwargs.pop('_parent', None)
         self.styles = kwargs.pop('styles', {})
         self.compound_types = [dict, ] + kwargs.pop('compound_types', [])
-        self.item_types = self.compound_types + kwargs.pop('item_types', [a[0] for a in self.map_types_item.values()] or [int, float, bytes, bool])
+        self.item_types = self.compound_types + kwargs.pop('item_types', [a[0] for a in list(self.map_types_item.values())] or [int, float, str, bool])
         for t in self.item_types:
-            if 'create_%s' % t.__name__ in globals().keys():
+            if 'create_%s' % t.__name__ in list(globals().keys()):
                 setattr(self, 'create_%s' % t.__name__, globals()['create_%s' % t.__name__])
         self.show_fields = kwargs.pop('show_fields', False)
         self.deployed = []
@@ -176,7 +176,7 @@ class Tree(Column):
         self.draw_zebra = draw_zebra = kwargs.pop('draw_zebra', True)
         #        self.inner_width = kwargs.pop('inner_width', 'auto')
         self.inner_width = kwargs.pop('inner_width', 500)
-        self.__num_rows = len(data.keys())
+        self.__num_rows = len(list(data.keys()))
         self.build_layout()
         #        row_height = self.font.size(' ')[1]
         row_height = self.font.get_linesize()
@@ -233,12 +233,12 @@ class Tree(Column):
     def paste_item(self):
         parent = self.get_item_parent(self.selected_item)
         name = self.copyBuffer[0][3]
-        old_name = u"%s" % self.copyBuffer[0][3]
+        old_name = "%s" % self.copyBuffer[0][3]
         if self.copyBuffer[1] == 0:
             name = input_text_buttons("Choose a name", 300, self.copyBuffer[0][3])
         else:
             old_name = ""
-        if name and isinstance(name, (str, bytes)) and name != old_name:
+        if name and isinstance(name, str) and name != old_name:
             new_item = copy.deepcopy(self.copyBuffer[0][9])
             if hasattr(new_item, 'name'):
                 new_item.name = name
@@ -246,7 +246,7 @@ class Tree(Column):
 
     def paste_child(self):
         name = self.copyBuffer[0][3]
-        old_name = u"%s" % self.copyBuffer[0][3]
+        old_name = "%s" % self.copyBuffer[0][3]
         names = []
         children = self.get_item_children(self.selected_item)
         if children:
@@ -255,7 +255,7 @@ class Tree(Column):
             name = input_text_buttons("Choose a name", 300, self.copyBuffer[0][3])
         else:
             old_name = ""
-        if name and isinstance(name, (str, bytes)) and name != old_name:
+        if name and isinstance(name, str) and name != old_name:
             new_item = copy.deepcopy(self.copyBuffer[0][9])
             if hasattr(new_item, 'name'):
                 new_item.name = name
@@ -265,7 +265,8 @@ class Tree(Column):
     def add_item_to_dict(parent, name, item):
         parent[name] = item
 
-    def add_item_to(self, parent, name, item):
+    def add_item_to(self, parent, xxx_todo_changeme):
+        (name, item) = xxx_todo_changeme
         if parent is None:
             tp = 'dict'
             parent = self.data
@@ -275,7 +276,7 @@ class Tree(Column):
         if not name:
             i = 0
             name = 'Item %03d' % i
-            for name in self.data.keys():
+            for name in list(self.data.keys()):
                 i += 1
                 name = 'Item %03d' % i
         meth = getattr(self, 'add_item_to_%s' % tp, None)
@@ -312,7 +313,7 @@ class Tree(Column):
 
     def rename_item(self):
         result = input_text_buttons("Choose a name", 300, self.selected_item[3])
-        if isinstance(result, (str, bytes)):
+        if isinstance(result, str):
             self.selected_item[3] = result
             self.build_layout()
 
@@ -343,7 +344,7 @@ class Tree(Column):
                     _v = meth(k, v)
                 else:
                     _v = v
-                ks = _v.keys()
+                ks = list(_v.keys())
                 ks.sort()
                 ks.reverse()
                 for a in ks:
@@ -395,7 +396,7 @@ class Tree(Column):
         data = self.data
         parent = 0
         children = []
-        keys = data.keys()
+        keys = list(data.keys())
         keys.sort()
         items = [[0, a, data[a], parent, children, keys.index(a) + 1] for a in keys]
         rows = []
@@ -409,9 +410,9 @@ class Tree(Column):
             c = [] + c
             # If the 'v' object is a dict containing the keys 'value' and 'tooltipText',
             # extract the text, and override the 'v' object with the 'value' value.
-            if isinstance(v, dict) and len(v.keys()) and ('value' in v.keys() and 'tooltipText' in v.keys()):
+            if isinstance(v, dict) and len(list(v.keys())) and ('value' in list(v.keys()) and 'tooltipText' in list(v.keys())):
                 t = v['tooltipText']
-                if not isinstance(t, (str, bytes)):
+                if not isinstance(t, str):
                     t = repr(t)
                 v = v['value']
             if isinstance(v, tuple(self.compound_types)):
@@ -420,7 +421,7 @@ class Tree(Column):
                     _v = meth(k, v)
                 else:
                     _v = v
-                ks = _v.keys()
+                ks = list(_v.keys())
                 ks.sort()
                 ks.reverse()
                 for a in ks:
@@ -501,7 +502,7 @@ class Tree(Column):
         return r
 
     def draw_item_text(self, surf, r, text):
-        buf = self.font.render(bytes(text), True, self.fg_color)
+        buf = self.font.render(str(text), True, self.fg_color)
         blit_in_rect(surf, buf, Rect(r.right, r.top, surf.get_width() - r.right, r.height), 'c')
 
     def draw_deadend_bullet(self, surf, bg, fg, shape, text, item_text, lvl):
@@ -521,7 +522,7 @@ class Tree(Column):
 
     def draw_tree_cell(self, surf, i, data, cell_rect, column):
         """..."""
-        if isinstance(data, (str, bytes)):
+        if isinstance(data, str):
             self.draw_text_cell(surf, i, data, cell_rect, 'l', self.font)
         else:
             self.draw_image_cell(surf, i, data, cell_rect, column)
@@ -532,7 +533,7 @@ class Tree(Column):
         blit_in_rect(surf, data, cell_rect, 'l')
 
     def draw_text_cell(self, surf, i, data, cell_rect, align, font):
-        buf = font.render(bytes(data), True, self.fg_color)
+        buf = font.render(str(data), True, self.fg_color)
         blit_in_rect(surf, buf, cell_rect, align)
 
     def num_rows(self):
@@ -555,7 +556,7 @@ class Tree(Column):
             for i in range(len(row_data[2])):
                 width = 50 * (i + 1)
                 data = row_data[2][i]
-                if not isinstance(data, (str, bytes)):
+                if not isinstance(data, str):
                     data = repr(data)
                 yield i, x + m, width - d, None, data
                 x += width

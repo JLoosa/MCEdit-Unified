@@ -15,6 +15,7 @@ import logging
 # -# Modified by D.C.-G. for translation purpose
 import os
 import traceback
+from functools import reduce
 
 import numpy
 import pygame
@@ -22,14 +23,12 @@ from OpenGL import GL
 
 import mcplatform
 import pymclevel
-from albow import Widget, IntField, Column, Row, Label, Button, CheckBox, AttrRef, FloatField, alert
-from albow.extended_widgets import CheckBoxLabel, IntInputRow, showProgress
+from albow import Widget, IntField, Column, Row, Label, Button, CheckBox, AttrRef, FloatField, alert, CheckBoxLabel, IntInputRow, \
+    showProgress
 from albow.translate import _
 from depths import DepthOffset
 from editortools.editortool import EditorTool
 from editortools.nudgebutton import NudgeButton
-from editortools.operation import Operation
-from editortools.select import SelectionOperation
 from editortools.tooloptions import ToolOptions
 from glbackground import Panel
 from glutils import gl
@@ -39,6 +38,8 @@ from pymclevel.box import Vector
 from pymclevel.leveldbpocket import PocketLeveldbWorld
 from pymclevel.pocket import PocketWorld
 from renderer import PreviewRenderer
+from .operation import Operation
+from .select import SelectionOperation
 
 log = logging.getLogger(__name__)
 
@@ -129,7 +130,7 @@ class BlockCopyOperation(Operation):
 
         blocksToCopy = None
         if not (self.copyAir and self.copyWater):
-            blocksToCopy = range(pymclevel.materials.id_limit)
+            blocksToCopy = list(range(pymclevel.materials.id_limit))
             if not self.copyAir:
                 blocksToCopy.remove(0)
             if not self.copyWater:
@@ -181,7 +182,7 @@ class CloneOperation(Operation):
 
         if len(dirtyBoxes):
             def enclosingBox(dirtyBoxes):
-                return numpy.reduce(lambda a, b: a.union(b), dirtyBoxes)
+                return reduce(lambda a, b: a.union(b), dirtyBoxes)
 
             self._dirtyBox = enclosingBox(dirtyBoxes)
 
@@ -469,9 +470,9 @@ class CloneTool(EditorTool):
 
     def quickNudge(self, nudge):
         if config.fastNudgeSettings.cloneWidth.get():
-            return map(int.__mul__, nudge, self.selectionBox().size)
+            return list(map(int.__mul__, nudge, self.selectionBox().size))
         nudgeWidth = config.fastNudgeSettings.cloneWidthNumber.get()
-        return map(lambda x: x * nudgeWidth, nudge)
+        return [x * nudgeWidth for x in nudge]
 
     copyAir = config.clone.copyAir.property()
     copyWater = config.clone.copyWater.property()
@@ -581,7 +582,7 @@ class CloneTool(EditorTool):
 
         roundedShape = oldshape
 
-        newshape = map(lambda x: int(x * factor), oldshape)
+        newshape = [int(x * factor) for x in oldshape]
         for i, part in enumerate(newshape):
             if part == 0:
                 newshape[i] = 1
@@ -591,8 +592,8 @@ class CloneTool(EditorTool):
         srcgrid = numpy.mgrid[0:roundedShape[0]:1.0 / factor, 0:roundedShape[1]:1.0 / factor,
                   0:roundedShape[2]:1.0 / factor].astype('uint')
         dstgrid = numpy.mgrid[0:newshape[0], 0:newshape[1], 0:newshape[2]].astype('uint')
-        srcgrid = srcgrid[map(slice, dstgrid.shape)]
-        dstgrid = dstgrid[map(slice, srcgrid.shape)]
+        srcgrid = srcgrid[list(map(slice, dstgrid.shape))]
+        dstgrid = dstgrid[list(map(slice, srcgrid.shape))]
 
         def copyArray(dest, src):
             dest[dstgrid[0], dstgrid[1], dstgrid[2]] = src[srcgrid[0], srcgrid[1], srcgrid[2]]
@@ -668,9 +669,9 @@ class CloneTool(EditorTool):
 
         # print size; raise SystemExit
         if any(direction) and pos[1] >= 0:
-            x, y, z = map(lambda p, s, d: p - s / 2 + s * d / 2 + (d > 0), pos, size, direction)
+            x, y, z = list(map(lambda p, s, d: p - s / 2 + s * d / 2 + (d > 0), pos, size, direction))
         else:
-            x, y, z = map(lambda p, s: p - s / 2, pos, size)
+            x, y, z = list(map(lambda p, s: p - s / 2, pos, size))
 
         if self.chunkAlign:
             x &= ~0xf
@@ -880,11 +881,11 @@ class CloneTool(EditorTool):
         return p
 
     def _draggingOrigin(self):
-        dragPos = map(int, map(numpy.floor, self.positionOnDraggingPlane()))
-        delta = map(lambda s, e: e - int(numpy.floor(s)), self.draggingStartPoint, dragPos)
+        dragPos = list(map(int, list(map(numpy.floor, self.positionOnDraggingPlane()))))
+        delta = list(map(lambda s, e: e - int(numpy.floor(s)), self.draggingStartPoint, dragPos))
 
         if self.snapCloneKey == 1:
-            ad = map(abs, delta)
+            ad = list(map(abs, delta))
             midx = ad.index(max(ad))
             d = [0, 0, 0]
             d[midx] = delta[midx]
@@ -908,7 +909,7 @@ class CloneTool(EditorTool):
 
         mouseVector = self.editor.mainViewport.mouseVector
         scale = distance / (mouseVector[dim] or 1)
-        point = map(lambda a, b: a * scale + b, mouseVector, pos)
+        point = list(map(lambda a, b: a * scale + b, mouseVector, pos))
         return point
 
     draggingY = 0
@@ -1007,7 +1008,7 @@ class CloneTool(EditorTool):
         box = self.selectionBox()
 
         # pick up the object. reset the tool distance to the object's distance from the camera
-        d = map(lambda a, b, c: abs(a - b - c / 2), self.editor.mainViewport.cameraPosition, self.destPoint, box.size)
+        d = list(map(lambda a, b, c: abs(a - b - c / 2), self.editor.mainViewport.cameraPosition, self.destPoint, box.size))
         self.cloneCameraDistance = numpy.sqrt(d[0] * d[0] + d[1] * d[1] + d[2] * d[2])
         self.destPoint = None
         # self.panel.performButton.enabled = False
@@ -1104,9 +1105,9 @@ class ConstructionTool(CloneTool):
 
     def quickNudge(self, nudge):
         if config.fastNudgeSettings.importWidth.get():
-            return map(int.__mul__, nudge, self.selectionBox().size)
+            return list(map(int.__mul__, nudge, self.selectionBox().size))
         nudgeWidth = config.fastNudgeSettings.importWidthNumber.get()
-        return map(lambda x: x * nudgeWidth, nudge)
+        return [x * nudgeWidth for x in nudge]
 
     def __init__(self, *args):
         CloneTool.__init__(self, *args)
@@ -1175,14 +1176,14 @@ class ConstructionTool(CloneTool):
         clipFilename = mcplatform.askOpenFile(title='Import a schematic or level...', schematics=True)
         # xxx mouthful
         if clipFilename:
-            if bytes(clipFilename).split(".")[-1] in ("schematic", "schematic.gz", "zip", "inv"):
+            if str(clipFilename).split(".")[-1] in ("schematic", "schematic.gz", "zip", "inv"):
                 self.loadSchematic(clipFilename)
-            elif bytes(clipFilename).split(".")[-1].lower() == "nbt":
+            elif str(clipFilename).split(".")[-1].lower() == "nbt":
                 structure = pymclevel.schematic.StructureNBT(filename=clipFilename)
                 self.loadLevel(structure.toSchematic())
-            elif bytes(clipFilename).split(".")[-1].lower() == "bo2":
+            elif str(clipFilename).split(".")[-1].lower() == "bo2":
                 self.loadLevel(BOParser.BO2(clipFilename).getSchematic())
-            elif bytes(clipFilename).split(".")[-1].lower() == "bo3":
+            elif str(clipFilename).split(".")[-1].lower() == "bo3":
                 self.loadLevel(BOParser.BO3(clipFilename).getSchematic())
             #                alert("BO3 support is currently not available")
             else:
@@ -1205,13 +1206,13 @@ class ConstructionTool(CloneTool):
             level = pymclevel.fromFile(filename, readonly=True)
             self.loadLevel(level)
         except Exception as e:
-            logging.warn(u"Unable to import file %s : %s", filename, e)
+            logging.warn("Unable to import file %s : %s", filename, e)
 
             traceback.print_exc()
             if filename:
                 # self.editor.toolbar.selectTool(-1)
                 alert(
-                    _(u"I don't know how to import this file: {0}.\n\nError: {1!r}").format(os.path.basename(filename), e))
+                    _("I don't know how to import this file: {0}.\n\nError: {1!r}").format(os.path.basename(filename), e))
 
             return
 

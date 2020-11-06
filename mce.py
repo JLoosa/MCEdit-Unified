@@ -11,7 +11,7 @@ from math import floor
 import numpy
 from numpy import zeros, bincount
 
-import pymclevel.mclevelbase
+import pymclevel.infiniteworld
 from pymclevel.box import BoundingBox, Vector
 
 mclevelbase = pymclevel.mclevelbase
@@ -20,7 +20,7 @@ materials = pymclevel.materials
 infiniteworld = pymclevel.infiniteworld
 
 try:
-    import readline  # if available, used by input()
+    import readline  # if available, used by raw_input()
 except:
     pass
 
@@ -187,7 +187,7 @@ class mce(object):
 
     def readIntPoint(self, command, isPoint=True):
         point = self.readPoint(command, isPoint)
-        point = map(int, map(floor, point))
+        point = list(map(int, list(map(floor, point))))
         return Vector(*point)
 
     def readPoint(self, command, isPoint=True):
@@ -252,7 +252,7 @@ class mce(object):
             try:
                 data = 0
                 if ":" in keyword:
-                    blockID, data = map(int, keyword.split(":"))
+                    blockID, data = list(map(int, keyword.split(":")))
                 else:
                     blockID = int(keyword)
                 blockInfo = self.level.materials.blockWithID(blockID, data)
@@ -276,7 +276,7 @@ class mce(object):
 
     @staticmethod
     def readBlocksToCopy(command):
-        blocksToCopy = range(materials.id_limit)
+        blocksToCopy = list(range(materials.id_limit))
         while len(command):
             word = command.pop()
             if word == "noair":
@@ -360,7 +360,7 @@ class mce(object):
 
         destPoint = self.readPoint(command)
 
-        destPoint = map(int, map(floor, destPoint))
+        destPoint = list(map(int, list(map(floor, destPoint))))
         blocksToCopy = self.readBlocksToCopy(command)
 
         tempSchematic = self.level.extractSchematic(box)
@@ -435,7 +435,7 @@ class mce(object):
     Create a chest filled with the specified item.
     Stacks are 64 if count is not given.
     """
-        point = map(lambda x: int(floor(float(x))), self.readPoint(command))
+        point = [int(floor(float(x))) for x in self.readPoint(command)]
         itemID = self.readInt(command)
         count = 64
         if len(command):
@@ -565,7 +565,7 @@ class mce(object):
     """
         if len(command):
             point = self.readPoint(command)
-            point = map(int, map(floor, point))
+            point = list(map(int, list(map(floor, point))))
 
             self.level.setPlayerSpawnPosition(point)
 
@@ -619,10 +619,10 @@ class mce(object):
                 if tileEntity["id"].value == "Sign":
                     signCount += 1
 
-                    outFile.write(str(map(lambda x: tileEntity[x].value, "xyz")) + "\n")
+                    outFile.write(str([tileEntity[x].value for x in "xyz"]) + "\n")
                     for i in range(4):
                         signText = tileEntity["Text{0}".format(i + 1)].value
-                        outFile.write(signText + u"\n")
+                        outFile.write(signText + "\n")
 
             if i % 100 == 0:
                 print("Chunk {0}...".format(i))
@@ -673,7 +673,7 @@ class mce(object):
 
         if len(command):
             if len(command) > 1:
-                rx, rz = map(int, command[:2])
+                rx, rz = list(map(int, command[:2]))
                 print("Calling allChunks to preload region files: %d chunks" % len(level.allChunks))
                 rf = level.regionFiles.get((rx, rz))
                 if rf is None:
@@ -702,7 +702,7 @@ class mce(object):
             else:
                 if command[0] == "free":
                     print("Calling allChunks to preload region files: %d chunks" % len(level.allChunks))
-                    for (rx, rz), rf in level.regionFiles.iteritems():
+                    for (rx, rz), rf in level.regionFiles.items():
 
                         runs = getFreeSectors(rf)
                         if len(runs):
@@ -733,7 +733,7 @@ class mce(object):
     """
         if self.level.version:
             self.level.preloadRegions()
-            for rf in self.level.regionFiles.itervalues():
+            for rf in self.level.regionFiles.values():
                 rf.repair()
 
     def _dumpchests(self, command):
@@ -763,7 +763,7 @@ class mce(object):
         else:
             filename = self.level.displayName + ".chests"
 
-        outFile = open(filename, "w")
+        outFile = file(filename, "w")
 
         print("Dumping chests...")
         chestCount = 0
@@ -778,7 +778,7 @@ class mce(object):
                 if tileEntity["id"].value == "Chest":
                     chestCount += 1
 
-                    outFile.write(str(map(lambda x: tileEntity[x].value, "xyz")) + "\n")
+                    outFile.write(str([tileEntity[x].value for x in "xyz"]) + "\n")
                     itemsTag = tileEntity["Items"]
                     if len(itemsTag):
                         for itemTag in itemsTag:
@@ -848,7 +848,7 @@ class mce(object):
                 print("Removing {0}...".format(", ".join(command)))
                 match_type = ENT_MATCHTYPE_ANY
 
-            match_words = map(lambda x: x.lower(), command)
+            match_words = [x.lower() for x in command]
 
         else:
             print("Removing all entities except Painting...")
@@ -946,7 +946,7 @@ class mce(object):
     """
         if len(command):
             box = self.readBox(command)
-            chunks = itertools.product(range(box.mincx, box.maxcx), range(box.mincz, box.maxcz))
+            chunks = itertools.product(list(range(box.mincx, box.maxcx)), list(range(box.mincz, box.maxcz)))
 
         else:
             chunks = self.level.allChunks
@@ -1309,10 +1309,10 @@ class mce(object):
                 return
 
         if self.level.parentWorld:
-            print(u"Parent world: {0} ('dimension parent' to return)".format(self.level.parentWorld.displayName))
+            print("Parent world: {0} ('dimension parent' to return)".format(self.level.parentWorld.displayName))
 
         if len(self.level.dimensions):
-            print(u"Dimensions in {0}:".format(self.level.displayName))
+            print("Dimensions in {0}:".format(self.level.displayName))
             for k in self.level.dimensions:
                 print("{0}: {1}".format(k, infiniteworld.MCAlphaDimension.dimensionNames.get(k, "Unknown")))
 
@@ -1374,7 +1374,7 @@ class mce(object):
     batchMode = False
 
     def run(self):
-        logging.basicConfig(format=u'%(levelname)s:%(message)s')
+        logging.basicConfig(format='%(levelname)s:%(message)s')
         logging.getLogger().level = logging.INFO
 
         sys.argv.pop(0)
@@ -1422,7 +1422,7 @@ class mce(object):
             self.batchMode = True
             while True:
                 try:
-                    command = input(u"{0}> ".format(self.level.displayName))
+                    command = input("{0}> ".format(self.level.displayName))
                     print()
                     self.processCommand(command)
 
@@ -1451,7 +1451,7 @@ class mce(object):
 
         keyword = commandWords.pop(0).lower()
         if keyword not in self.commands:
-            matches = filter(lambda x: x.startswith(keyword), self.commands)
+            matches = [x for x in self.commands if x.startswith(keyword)]
             if len(matches) == 1:
                 keyword = matches[0]
             elif len(matches):

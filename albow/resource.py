@@ -7,7 +7,7 @@ log = logging.getLogger(__name__)
 
 import pygame
 from pygame.locals import RLEACCEL
-from albow.translate import langPath
+from .translate import langPath
 
 optimize_images = True
 run_length_encode = False
@@ -173,7 +173,7 @@ def get_font(size, *names, **kwds):
             size = int(size * font_proportion / 1000)
             # try:
             # We don't need to add a file to the cache if it's already loaded.
-            if path not in font_file_cache.keys():
+            if path not in list(font_file_cache.keys()):
                 f = open(path, 'rb')
                 font_file_cache[path] = f
             else:
@@ -209,7 +209,7 @@ def reload_fonts(proportion=font_proportion):
     global font_proportion
     if proportion != font_proportion:
         font_proportion = proportion
-    keys = [(os.path.split(a)[-1], b) for a, b in font_cache.keys()]
+    keys = [(os.path.split(a)[-1], b) for a, b in list(font_cache.keys())]
     font_cache = {}
     while keys:
         name, size = keys.pop()

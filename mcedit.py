@@ -4,22 +4,19 @@
 
 # -# Modified by D.C.-G. for translation purpose
 # .# Marks the layout modifications. -- D.C.-G.
-from __future__ import unicode_literals
-# -# Modified by D.C.-G. for translation purpose
-# .# Marks the layout modifications. -- D.C.-G.
-from __future__ import unicode_literals
-
-import importlib
 
 """
 mcedit.py
 
 Startup, main menu, keyboard configuration, automatic updating.
 """
-import splash
-import OpenGL
-import sys
+import importlib
 import os
+import sys
+
+import OpenGL
+
+import splash
 
 if "--debug-ogl" not in sys.argv:
     OpenGL.ERROR_CHECKING = False
@@ -225,11 +222,11 @@ if __name__ == "__main__":
 
     # -# DEBUG
     if mcplatform.hasXlibDisplay and DEBUG_WM:
-        print('*** Xlib version', str(mcplatform.Xlib.__version__).replace(' ', '').replace(',', '.')[1:-1], 'found in', )
+        print('*** Xlib version', str(mcplatform.Xlib.__version__).replace(' ', '').replace(',', '.')[1:-1], 'found in', end=' ')
         if os.path.expanduser('~/.local/lib/python2.7/site-packages') in mcplatform.Xlib.__file__:
-            print('user\'s', )
+            print('user\'s', end=' ')
         else:
-            print('system\'s', )
+            print('system\'s', end=' ')
         print('libraries.')
     # -#
 from mcplatform import platform_open
@@ -667,7 +664,7 @@ class MCEdit(GLViewport):
 
         if win:
             maximized = win.get_state() == mcplatform.MAXIMIZED
-            sz = map(max, win.get_size(), (w, h))
+            sz = list(map(max, win.get_size(), (w, h)))
 
             if DEBUG_WM:
                 print("sz", sz)
@@ -747,7 +744,7 @@ class MCEdit(GLViewport):
                 albow.alert(e.message)
                 return None
             except Exception as e:
-                logging.error(u'Failed to load file {0}: {1!r}'.format(
+                logging.error('Failed to load file {0}: {1!r}'.format(
                     filename, e))
                 return None
 
@@ -894,8 +891,8 @@ class MCEdit(GLViewport):
                 exc_txt = traceback.format_exc()
                 if mcedit.editor.level:
                     if config.settings.savePositionOnClose.get():
-                        mcedit.editor.waypointManager.save_last_position(mcedit.editor.mainViewport,
-                                                                         mcedit.editor.level.dimNo)
+                        mcedit.editor.waypointManager.saveLastPosition(mcedit.editor.mainViewport,
+                                                                       mcedit.editor.level.dimNo)
                     mcedit.editor.waypointManager.save()
                 # The following Windows specific code won't be executed if we're using '--debug-wm' switch.
                 if not USE_WM and sys.platform == "win32" and config.settings.setWindowPlacement.get():
@@ -1035,7 +1032,7 @@ def getSelectedMinecraftVersion():
 
 
 def getLatestMinecraftVersion(snapshots=False):
-    import urllib.request
+    import urllib.request, urllib.parse
     import json
     versioninfo = json.loads(
         urllib.request.urlopen("http://s3.amazonaws.com/Minecraft.Download/versions/versions.json ").read())

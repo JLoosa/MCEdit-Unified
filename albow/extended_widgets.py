@@ -3,14 +3,14 @@
 # Moved albow related stuff from mceutils.
 from datetime import timedelta, datetime
 
-from albow.controls import Button, Label, ValueButton, CheckBox, AttrRef
-from albow.controls import ValueDisplay
-from albow.dialogs import Dialog
-from albow.fields import FloatField, IntField, TextFieldWrapped, TextField
-from albow.layout import Column, Row
-from albow.menu import Menu
-from albow.translate import _
-from albow.widget import Widget
+from .controls import Button, Label, ValueButton, CheckBox, AttrRef
+from .controls import ValueDisplay
+from .dialogs import Dialog
+from .fields import FloatField, IntField, TextFieldWrapped, TextField
+from .layout import Column, Row
+from .menu import Menu
+from .translate import _
+from .widget import Widget
 
 
 class HotkeyColumn(Widget):
@@ -66,7 +66,7 @@ class HotkeyColumn(Widget):
                 tooltipText = None
             else:
                 (hotkey, title, action, tooltipText) = t
-            if isinstance(title, (str, bytes)):
+            if isinstance(title, str):
                 button = Button(title, action=action, doNotTranslate=trn)
             else:
                 button = ValueButton(ref=title, action=action, width=200, doNotTranslate=trn)
@@ -276,7 +276,7 @@ def showProgress(progressText, progressIterator, cancel=False):
 
             try:
                 while datetime.now() < frameStart + frameInterval:
-                    amount = progressIterator.next()
+                    amount = next(progressIterator)
                     if self.firstDraw is False:
                         self.firstDraw = True
                         break
@@ -299,7 +299,7 @@ def showProgress(progressText, progressIterator, cancel=False):
                 if amount is None:
                     self.progressBar.width = maxwidth
                     self.progressBar.bg_color = (255, 255, 25, 255)
-                elif isinstance(amount, (str, bytes)):
+                elif isinstance(amount, str):
                     self.statusText = amount
                 else:
                     self.progressAmount = amount

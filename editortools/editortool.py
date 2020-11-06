@@ -62,7 +62,7 @@ class EditorTool(object):
     def drawTerrainPreview(self, origin):
         if self.previewRenderer is None:
             return
-        self.previewRenderer.origin = map(lambda a, b: a - b, origin, self.level.bounds.origin)
+        self.previewRenderer.origin = list(map(lambda a, b: a - b, origin, self.level.bounds.origin))
 
         GL.glPolygonOffset(DepthOffset.ClonePreview, DepthOffset.ClonePreview)
         GL.glEnable(GL.GL_POLYGON_OFFSET_FILL)
@@ -140,7 +140,7 @@ class EditorTool(object):
     def findBestTrackingPlane(self, face):
         cv = list(self.editor.mainViewport.cameraVector)
         cv[face >> 1] = 0
-        cv = map(abs, cv)
+        cv = list(map(abs, cv))
 
         return cv.index(max(cv))
 
@@ -204,7 +204,7 @@ class EditorTool(object):
                     if normal[dim]:
                         scale = d / normal[dim]
 
-                        point = map(lambda a, p: (a * scale + p), normal, p0)
+                        point = list(map(lambda a, p: (a * scale + p), normal, p0))
                         #                    glVertex3f(*point)
 
                         if pointInBounds(point, dim1) and pointInBounds(point, dim2):
@@ -217,7 +217,7 @@ class EditorTool(object):
 
         cp = self.editor.mainViewport.cameraPosition
         distances = dict(
-            (numpy.sum(map(lambda a, b: (b - a) ** 2, cp, point)), (face, point)) for face, point in points.iteritems())
+            (numpy.sum(list(map(lambda a, b: (b - a) ** 2, cp, point))), (face, point)) for face, point in points.items())
         if not len(distances):
             return None, None
 
@@ -226,7 +226,7 @@ class EditorTool(object):
         #    minmax = max
         # else:
 
-        face, point = distances[min(distances.iterkeys())]
+        face, point = distances[min(distances.keys())]
 
         # if the point is near the edge of the face, and the edge is facing away,
         # return the away-facing face
@@ -253,7 +253,7 @@ class EditorTool(object):
 
             if numpy.dot(facenormal, cv) > 0 or cameraBehind:
                 # the face adjacent to the clicked edge faces away from the cam
-                return distances[max(distances.iterkeys())]
+                return distances[max(distances.keys())]
 
         return face, point
 
@@ -284,7 +284,7 @@ class EditorTool(object):
 
             p2[i] += 1
 
-        size = map(lambda a, b: a - b, p2, p1)
+        size = list(map(lambda a, b: a - b, p2, p1))
 
         if p1[1] < 0:
             size[1] += p1[1]

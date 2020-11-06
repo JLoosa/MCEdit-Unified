@@ -25,7 +25,7 @@ def perform(level, box, options):
     schema.removeEntitiesInBox(schema.bounds)
     schema.removeTileEntitiesInBox(schema.bounds)
 
-    for i in xrange(repeatCount):
+    for i in range(repeatCount):
 
         terrainBlocks = terrainBlockmask[schema.Blocks]
 
@@ -44,7 +44,7 @@ def perform(level, box, options):
 
         newHeightmap = array(newHeightmap, dtype='uint16')
 
-        for x, z in itertools.product(xrange(1, schema.Width - 1), xrange(1, schema.Length - 1)):
+        for x, z in itertools.product(range(1, schema.Width - 1), range(1, schema.Length - 1)):
             oh = heightmap[x, z]
             nh = newHeightmap[x - 1, z - 1]
             d = nh - oh

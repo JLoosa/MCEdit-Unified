@@ -1,14 +1,14 @@
 import logging
 
-import pymclevel.materials as materials
+from . import materials
 
 log = logging.getLogger(__name__)
 
 import numpy
 
-from pymclevel.mclevelbase import exhaust
-from pymclevel.box import BoundingBox
-from pymclevel.entity import TileEntity
+from .mclevelbase import exhaust
+from .box import BoundingBox
+from .entity import TileEntity
 
 
 def blockReplaceTable(blocksToReplace):
@@ -50,7 +50,7 @@ def fillBlocksIter(level, box, blockInfo, blocksToReplace=(), noData=False):
                 changesLighting = True
 
     tileEntity = None
-    if blockInfo.stringID in TileEntity.stringNames.keys():
+    if blockInfo.stringID in list(TileEntity.stringNames.keys()):
         if level.gamePlatform == "Java":
             split_ver = level.gameVersionNumber.split('.')
         else:
@@ -79,7 +79,7 @@ def fillBlocksIter(level, box, blockInfo, blocksToReplace=(), noData=False):
     for (chunk, slices, point) in chunkIterator:
         i += 1
         if i % 100 == 0:
-            log.info(u"Chunk {0}...".format(i))
+            log.info("Chunk {0}...".format(i))
         yield i, box.chunkCount
 
         blocks = chunk.Blocks[slices]
@@ -105,10 +105,10 @@ def fillBlocksIter(level, box, blockInfo, blocksToReplace=(), noData=False):
 
             def include(tileEntity):
                 p = TileEntity.pos(tileEntity)
-                x, y, z = map(lambda a, b, c: (a - b) - c, p, point, box.origin)
+                x, y, z = list(map(lambda a, b, c: (a - b) - c, p, point, box.origin))
                 return not ((p in box) and mask[x, z, y])
 
-            chunk.TileEntities[:] = filter(include, chunk.TileEntities)
+            chunk.TileEntities[:] = list(filter(include, chunk.TileEntities))
 
         else:
             blocks[:] = blockInfo.ID
@@ -127,4 +127,4 @@ def fillBlocksIter(level, box, blockInfo, blocksToReplace=(), noData=False):
         chunk.chunkChanged(needsLighting)
 
     if len(blocksToReplace):
-        log.info(u"Replace: Skipped {0} chunks, replaced {1} blocks".format(skipped, replaced))
+        log.info("Replace: Skipped {0} chunks, replaced {1} blocks".format(skipped, replaced))

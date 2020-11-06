@@ -25,8 +25,6 @@ from albow.table_view import TableRowView
 from albow.translate import _
 from config import config
 from editortools.editortool import EditorTool
-from editortools.nbtexplorer import NBTExplorerToolPanel
-from editortools.operation import Operation
 from editortools.tooloptions import ToolOptions
 from glbackground import Panel
 from glutils import DisplayList
@@ -34,6 +32,8 @@ from mceutils import loadPNGTexture, alertException, drawTerrainCuttingWire, dra
 from player_cache import PlayerCache
 from pymclevel import nbt
 from pymclevel.box import BoundingBox, FloatBox
+from .nbtexplorer import NBTExplorerToolPanel
+from .operation import Operation
 
 log = logging.getLogger(__name__)
 
@@ -189,7 +189,7 @@ class PlayerAddOperation(Operation):
         self.tool.revPlayerPos[self.editor.level.dimNo][self.uuid] = (0, 0, 0)
         #         print 3
         r = self.playercache.getPlayerSkin(self.uuid, force_download=False)
-        if not isinstance(r, (str, bytes)):
+        if not isinstance(r, str):
             #             print 'r 1', r
             r = r.join()
         #             print 'r 2', r
@@ -271,7 +271,7 @@ class PlayerAddOperation(Operation):
                 self.tool.panel.player_UUID["Name"].append(self.player)
             #             print 4
             r = self.playercache.getPlayerSkin(self.uuid)
-            if isinstance(r, (str, bytes)):
+            if isinstance(r, str):
                 r = r.join()
             self.tool.playerTexture[self.uuid] = loadPNGTexture(r)
             self.tool.playerPos[(0, 0, 0)] = self.uuid
@@ -448,7 +448,7 @@ class PlayerPositionPanel(Panel):
                     self.player_UUID["UUID"].append("Player")
                     self.player_UUID["Name"].append("Player (Single Player)")
                 if "[No players]" not in players:
-                    self.player_names = sorted(self.player_UUID.values(), key=lambda x: False if x == "Player (Single Player)" else x)
+                    self.player_names = sorted(list(self.player_UUID.values()), key=lambda x: False if x == "Player (Single Player)" else x)
                 else:
                     self.player_UUID["UUID"].append("[No players]")
                     self.player_UUID["Name"].append("[No players]")
@@ -497,7 +497,7 @@ class PlayerPositionPanel(Panel):
         self.nbtpage = Column([self.nbttree])
         self.nbtpage.shrink_wrap()
         self.pages.add_page("NBT Data", self.nbtpage)
-        self.pages.set_rect(map(lambda x: x + self.margin, self.nbttree._rect))
+        self.pages.set_rect([x + self.margin for x in self.nbttree._rect])
 
         tableview = TableView(nrows=(h - (self.font.get_linesize() * 2.5)) / self.font.get_linesize(),
                               header_height=self.font.get_linesize(),
@@ -673,11 +673,11 @@ class PlayerPositionTool(EditorTool):
         # if result == "Ok":
         try:
             for player in self.editor.level.players:
-                if player != "Player" and player in self.playerTexture.keys():
+                if player != "Player" and player in list(self.playerTexture.keys()):
                     del self.playerTexture[player]
                     #                     print 6
                     r = self.playercache.getPlayerSkin(player, force_download=True, instance=self)
-                    if isinstance(r, (str, bytes)):
+                    if isinstance(r, str):
                         r = r.join()
                     self.playerTexture[player] = loadPNGTexture(r)
             # self.markerList.call(self._drawToolMarkers)
@@ -714,7 +714,7 @@ class PlayerPositionTool(EditorTool):
             cv = self.editor.mainViewport.cameraVector
 
             pos = self.editor.level.getPlayerPosition(player)
-            pos = map(lambda p, c: p - c * 5, pos, cv)
+            pos = list(map(lambda p, c: p - c * 5, pos, cv))
             self.editor.gotoDimension(self.editor.level.getPlayerDimension(player))
 
             self.editor.mainViewport.cameraPosition = pos
@@ -886,7 +886,7 @@ class PlayerPositionTool(EditorTool):
                 if player != "Player" and config.settings.downloadPlayerSkins.get():
                     #                     print 7
                     r = self.playercache.getPlayerSkin(player, force_download=False)
-                    if not isinstance(r, (str, bytes)):
+                    if not isinstance(r, str):
                         r = r.join()
                     self.playerTexture[player] = loadPNGTexture(r)
                 else:
@@ -1044,7 +1044,7 @@ class PlayerSpawnPositionTool(PlayerPositionTool):
         cv = self.editor.mainViewport.cameraVector
 
         pos = self.editor.level.playerSpawnPosition()
-        pos = map(lambda p, c: p - c * 5, pos, cv)
+        pos = list(map(lambda p, c: p - c * 5, pos, cv))
 
         self.editor.mainViewport.cameraPosition = pos
         self.editor.mainViewport.stopMoving()
@@ -1057,7 +1057,7 @@ class PlayerSpawnPositionTool(PlayerPositionTool):
 
     def drawToolReticle(self):
         pos, direction = self.editor.blockFaceUnderCursor
-        x, y, z = map(lambda p, d: p + d, pos, direction)
+        x, y, z = list(map(lambda p, d: p + d, pos, direction))
 
         color = (1.0, 1.0, 1.0, 0.5)
         if isinstance(self.editor.level, pymclevel.MCInfdevOldLevel) and self.spawnProtection:
@@ -1073,7 +1073,7 @@ class PlayerSpawnPositionTool(PlayerPositionTool):
         GL.glEnable(GL.GL_DEPTH_TEST)
         self.drawCage(x, y, z)
         self.drawCharacterHead(x + 0.5, y + 0.5, z + 0.5)
-        color2 = map(lambda a: a * 0.4, color)
+        color2 = [a * 0.4 for a in color]
         drawTerrainCuttingWire(BoundingBox((x, y, z), (1, 1, 1)), color2, color)
         GL.glDisable(GL.GL_DEPTH_TEST)
 
@@ -1116,7 +1116,7 @@ class PlayerSpawnPositionTool(PlayerPositionTool):
 
     @alertException
     def mouseDown(self, evt, pos, direction):
-        pos = map(lambda p, d: p + d, pos, direction)
+        pos = list(map(lambda p, d: p + d, pos, direction))
         op = PlayerSpawnMoveOperation(self, pos)
         try:
             self.editor.addOperation(op)

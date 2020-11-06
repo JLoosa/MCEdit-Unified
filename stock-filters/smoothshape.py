@@ -24,9 +24,9 @@ def perform(level, box, options):
 
     cache = {}
 
-    for dx in xrange(width):
-        for dy in xrange(height):
-            for dz in xrange(depth):
+    for dx in range(width):
+        for dy in range(height):
+            for dz in range(depth):
                 x = box.minx + dx
                 y = box.miny + dy
                 z = box.minz + dz
@@ -36,9 +36,9 @@ def perform(level, box, options):
                 blocks[dx, dy, dz] = block
                 dmgs[dx, dy, dz] = dmg
 
-    for dx in xrange(width):
-        for dy in xrange(height):
-            for dz in xrange(depth):
+    for dx in range(width):
+        for dy in range(height):
+            for dz in range(depth):
                 x = box.minx + dx
                 y = box.miny + dy
                 z = box.minz + dz
@@ -52,9 +52,9 @@ def perform(level, box, options):
 def getSmoothed(level, x, y, z, smoothing, cache):
     counts = {}
 
-    for dx in xrange(-smoothing, smoothing):
-        for dy in xrange(-smoothing, smoothing):
-            for dz in xrange(-smoothing, smoothing):
+    for dx in range(-smoothing, smoothing):
+        for dy in range(-smoothing, smoothing):
+            for dz in range(-smoothing, smoothing):
                 if dx * dx + dy * dy + dz * dz > smoothing * smoothing:
                     continue
 
@@ -80,7 +80,7 @@ def getSmoothed(level, x, y, z, smoothing, cache):
     maxcount = 0
     maxbl = (0, 0)
 
-    for (bl, count) in counts.iteritems():
+    for (bl, count) in counts.items():
         if count > maxcount:
             maxcount = count
             maxbl = bl

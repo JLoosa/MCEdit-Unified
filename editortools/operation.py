@@ -8,7 +8,7 @@ import numpy
 
 import albow
 import pymclevel
-from albow.extended_widgets import showProgress
+from albow import showProgress
 from albow.root import Cancel
 from albow.translate import _
 from pymclevel import BoundingBox

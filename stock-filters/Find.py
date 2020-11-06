@@ -121,15 +121,14 @@ def FindTagS(nbtData, name, value, tagtype):
         if name in nbtData.name or name == "":
             if value == "":
                 if type(nbtData) is tagtype or tagtype == 11:
-                    print
-                    "found in pre-area"
+                    print("found in pre-area")
                     return True
         if type(nbtData) is TAG_List:
             list = True
         else:
             list = False
 
-        for tag in range(0, len(nbtData)) if list else nbtData.keys():
+        for tag in list(range(0, len(nbtData))) if list else list(nbtData.keys()):
             if type(nbtData[tag]) is TAG_Compound:
                 if FindTagS(nbtData[tag], name, value, tagtype):
                     return True
@@ -138,26 +137,24 @@ def FindTagS(nbtData, name, value, tagtype):
                     return True
             else:
                 if name in nbtData[tag].name or name == "":
-                    if value in unicode(nbtData[tag].value):
+                    if value in str(nbtData[tag].value):
                         if type(nbtData[tag]) is tagtype or tagtype == 11:
-                            print
-                            "found in list/compound"
+                            print("found in list/compound")
                             return True
         else:
             return False
     else:
         if name in nbtData.name or name == "":
-            if value in unicode(nbtData.value):
+            if value in str(nbtData.value):
                 if type(nbtData[tag]) is tagtype or tagtype == 11:
-                    print
-                    "found outside"
+                    print("found outside")
                     return True
     return False
 
 
 def FindTagI(nbtData, name, value, tagtype):
     if type(nbtData) is TAG_List or type(nbtData) is TAG_Compound:
-        if name in (u"%s" % nbtData.name).upper() or name == "":
+        if name in ("%s" % nbtData.name).upper() or name == "":
             if value == "":
                 if type(nbtData) is tagtype or tagtype == 11:
                     return True
@@ -166,7 +163,7 @@ def FindTagI(nbtData, name, value, tagtype):
         else:
             list = False
 
-        for tag in range(0, len(nbtData)) if list else nbtData.keys():
+        for tag in list(range(0, len(nbtData))) if list else list(nbtData.keys()):
             if type(nbtData[tag]) is TAG_Compound:
                 if FindTagI(nbtData[tag], name, value, tagtype):
                     return True
@@ -174,15 +171,15 @@ def FindTagI(nbtData, name, value, tagtype):
                 if FindTagI(nbtData[tag], name, value, tagtype):
                     return True
             else:
-                if name in (u"%s" % nbtData[tag].name).upper() or name == "":
-                    if value in unicode(nbtData[tag].value).upper():
+                if name in ("%s" % nbtData[tag].name).upper() or name == "":
+                    if value in str(nbtData[tag].value).upper():
                         if type(nbtData[tag]) is tagtype or tagtype == 11:
                             return True
         else:
             return False
     else:
-        if name in (u"%s" % nbtData.name).upper() or name == "":
-            if value in unicode(nbtData.value).upper():
+        if name in ("%s" % nbtData.name).upper() or name == "":
+            if value in str(nbtData.value).upper():
                 if type(nbtData[tag]) is tagtype or tagtype == 11:
                     return True
     return False
@@ -209,8 +206,8 @@ def perform(level, box, options):
     matchblock = options["Match block:"]
     matchdata = options["Match block data:"]
     matchtile = options["Match tile entities (for Block searches):"]
-    matchname = u"" if options["Match Tag Name:"] == "None" else unicode(options["Match Tag Name:"])
-    matchval = u"" if options["Match Tag Value:"] == "None" else unicode(options["Match Tag Value:"])
+    matchname = "" if options["Match Tag Name:"] == "None" else str(options["Match Tag Name:"])
+    matchval = "" if options["Match Tag Value:"] == "None" else str(options["Match Tag Value:"])
     caseSensitive = not options["Case insensitive:"]
     matchtagtype = tagtypes.get(options["Match Tag Type:"], "Any")
     op = options["Operation:"]
@@ -229,9 +226,9 @@ def perform(level, box, options):
 
     if not search:
         if by == trn._("Block"):
-            for x in xrange(box.minx, box.maxx):
-                for z in xrange(box.minz, box.maxz):
-                    for y in xrange(box.miny, box.maxy):
+            for x in range(box.minx, box.maxx):
+                for z in range(box.minz, box.maxz):
+                    for y in range(box.miny, box.maxy):
                         block = level.blockAt(x, y, z)
                         data = level.blockDataAt(x, y, z)
                         if block == matchblock.ID and (not matchdata or data == matchblock.blockData):
@@ -298,10 +295,10 @@ def perform(level, box, options):
             # To set tooltip text to the items the need it, use a dict: {"value": <item to be added to the tree>, "tooltipText": "Some text"}
             for i in range(len(search)):
                 if by == trn._('Block'):
-                    treeData[u"%s" % (search[i],)] = {"value": datas[i], "tooltipText": "Double-click to go to this item."}
+                    treeData["%s" % (search[i],)] = {"value": datas[i], "tooltipText": "Double-click to go to this item."}
                 elif by == trn._('Entity'):
-                    treeData[u"%s" % ((datas[i]['Pos'][0].value, datas[i]['Pos'][1].value, datas[i]['Pos'][2].value),)] = {"value": datas[i], "tooltipText": "Double-click to go to this item."}
+                    treeData["%s" % ((datas[i]['Pos'][0].value, datas[i]['Pos'][1].value, datas[i]['Pos'][2].value),)] = {"value": datas[i], "tooltipText": "Double-click to go to this item."}
                 else:
-                    treeData[u"%s" % ((datas[i]['x'].value, datas[i]['y'].value, datas[i]['z'].value),)] = {"value": datas[i], "tooltipText": "Double-click to go to this item."}
+                    treeData["%s" % ((datas[i]['x'].value, datas[i]['y'].value, datas[i]['z'].value),)] = {"value": datas[i], "tooltipText": "Double-click to go to this item."}
             inputs[1][1][1][1] = {'Data': treeData}
             options[""](inputs[1])

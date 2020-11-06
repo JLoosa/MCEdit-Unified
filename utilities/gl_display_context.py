@@ -140,7 +140,7 @@ class GLDisplayContext(object):
         try:
             # iconpath = os.path.join(directories.getDataDir(), 'favicon.png')
             iconpath = directories.getDataFile('favicon.png')
-            iconfile = open(iconpath, 'rb')
+            iconfile = file(iconpath, 'rb')
             icon = pygame.image.load(iconfile, 'favicon.png')
             display.set_icon(icon)
         except Exception as e:

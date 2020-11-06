@@ -71,7 +71,7 @@ def perform(level, box, options):
 
         heightmap = extractHeights(maskedBlocks)
 
-        for x, z in itertools.product(*map(xrange, heightmap.shape)):
+        for x, z in itertools.product(*list(map(xrange, heightmap.shape))):
             h = heightmap[x, z]
             if depth > 0:
                 if replace:

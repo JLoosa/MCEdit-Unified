@@ -6,8 +6,8 @@ import zlib
 
 from numpy import fromstring
 
-import pymclevel.nbt as nbt
-from pymclevel.mclevelbase import notclosing, RegionMalformed, ChunkNotPresent
+from . import nbt
+from .mclevelbase import notclosing, RegionMalformed, ChunkNotPresent
 
 log = logging.getLogger(__name__)
 
@@ -163,7 +163,7 @@ class MCRegionFile(object):
                     self.setOffset(cx, cz, 0)
                     deleted += 1
 
-        for cPos, foundData in lostAndFound.iteritems():
+        for cPos, foundData in lostAndFound.items():
             cx, cz = cPos
             if self.getOffset(cx, cz) == 0:
                 log.info("Found chunk {found} and its slot is empty, recovering it".format(found=cPos))

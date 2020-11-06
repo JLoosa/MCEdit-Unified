@@ -1,6 +1,5 @@
 import itertools
 import math
-import operator
 from collections import namedtuple
 
 _Vector = namedtuple("_Vector", ("x", "y", "z"))
@@ -209,7 +208,7 @@ class BoundingBox(object):
         return True
 
     def __cmp__(self, b):
-        return operator.eq((self.origin, self.size), (b.origin, b.size))
+        return cmp((self.origin, self.size), (b.origin, b.size))
 
     # --- Chunk positions ---
 

@@ -3,7 +3,7 @@ import re
 
 from numpy import arange, zeros
 
-import pymclevel.materials as materials
+from . import materials
 
 
 class __Rotation:
@@ -900,7 +900,7 @@ def masterRotationTable(attrname):
 
                             # Test 'iter_obj'.
                             _iter_obj, _o_str = iter_obj.split('.', 1)
-                            if _iter_obj in globals().keys():
+                            if _iter_obj in list(globals().keys()):
                                 iter_obj = globals()[_iter_obj]
                                 while '.' in _o_str:
                                     _iter_obj, _ostr = _ostr.split('.')

@@ -1,7 +1,7 @@
 from pymclevel import BoundingBox
 from pymclevel import MCInfdevOldLevel
 from pymclevel.schematic import MCSchematic
-from pymclevel.test.templevel import TempLevel
+from .templevel import TempLevel
 
 __author__ = 'Rio'
 

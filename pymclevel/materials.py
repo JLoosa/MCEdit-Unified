@@ -1,5 +1,4 @@
 import json
-import operator
 import os
 import traceback
 from collections import defaultdict
@@ -10,7 +9,7 @@ from pprint import pformat
 import pkg_resources
 from numpy import zeros, rollaxis, indices
 
-import pymclevel.id_definitions as id_definitions
+from . import id_definitions
 
 NOTEX = (496, 496)
 
@@ -44,7 +43,7 @@ class Block(object):
         if not isinstance(other, Block):
             return -1
         key = lambda a: a and (a.ID, a.blockData)
-        return operator.eq(key(self), key(other))
+        return cmp(key(self), key(other))
 
     def __hash__(self):
         return hash((self.ID, self.blockData))
@@ -127,7 +126,7 @@ class BlockstateAPI(object):
         properties = {}
         for prop in self.blockstates["minecraft"][name]["properties"]:  # TODO: Change this if MCEdit's mod support ever improves
             if prop["<data>"] == data:
-                for field in prop.keys():
+                for field in list(prop.keys()):
                     if field == "<data>":
                         continue
                     properties[field] = prop[field]
@@ -159,7 +158,7 @@ class BlockstateAPI(object):
         bid = self.blockstates[prefix][name]["id"]
         for prop in self.blockstates[prefix][name]["properties"]:
             correct = True
-            for (key, value) in properties.iteritems():
+            for (key, value) in properties.items():
                 if key in prop:
                     correct = correct and (prop[key] == value)
             if correct:
@@ -181,7 +180,7 @@ class BlockstateAPI(object):
         if not name.startswith("minecraft:"):
             name = "minecraft:" + name  # This should be changed as soon as possible
         result = name + "["
-        for (key, value) in properties.iteritems():
+        for (key, value) in properties.items():
             result += "{}={},".format(key, value)
         if result.endswith("["):
             return result[:-1]
@@ -300,7 +299,7 @@ class MCMaterials(object):
                 level.materials["Lapis Lazuli Block"]  # in Classic
 
            """
-        if isinstance(key, (str, bytes)):
+        if isinstance(key, str):
             key = key.replace("minecraft:", "")
             key = key.lower()
             lowest_block = None
@@ -376,13 +375,13 @@ class MCMaterials(object):
 
             log.debug("Failed to read %s using pkg_resources. Trying %s instead." % (filename, path))
 
-            f = open(path)
+            f = file(path)
         try:
-            log.info(u"Loading block info from %s", f)
+            log.info("Loading block info from %s", f)
             blockyaml = json.load(f)
 
         except Exception as e:
-            log.warning(u"Exception while loading block info from %s: %s", f, e)
+            log.warn("Exception while loading block info from %s: %s", f, e)
             traceback.print_exc()
 
         if blockyaml:
@@ -404,7 +403,7 @@ class MCMaterials(object):
             f_name = 'classic.json'
             meth = build_classic_materials
         elif gamePlatform == 'indev':
-            f_name = 'indev.json'
+            f_name == 'indev.json'
             meth = build_indev_materials
         else:
             f_name = 'minecraft.json'
@@ -424,9 +423,9 @@ class MCMaterials(object):
             try:
                 self.addJSONBlock(block)
             except Exception as e:
-                log.warning(u"Exception while parsing block: %s", e)
+                log.warn("Exception while parsing block: %s", e)
                 traceback.print_exc()
-                log.warning(u"Block definition: \n%s", pformat(block))
+                log.warn("Block definition: \n%s", pformat(block))
 
     def addJSONBlock(self, kw):
         blockID = kw['id']
@@ -447,7 +446,7 @@ class MCMaterials(object):
         # # 'type'
         # ]
 
-        for val, data in kw.get('data', {0: {}}).items():
+        for val, data in list(kw.get('data', {0: {}}).items()):
             datakw = dict(kw)
             datakw.update(data)
             idStr = datakw.get('idStr', "")
@@ -461,7 +460,7 @@ class MCMaterials(object):
                 "TOP": 2,
                 "BOTTOM": 3,
             }
-            for dirname, dirtex in datakw.get('tex_direction', {}).items():
+            for dirname, dirtex in list(datakw.get('tex_direction', {}).items()):
                 if dirname == "SIDES":
                     for dirname in ("LEFT", "RIGHT"):
                         texture[texDirs[dirname]] = [t * 16 for t in dirtex]
@@ -488,7 +487,7 @@ class MCMaterials(object):
                 rot = (5, 0, 2, 3, 4, 1)
                 texture[:] = [texture[r] for r in rot]
 
-            for data, direction in tex_direction_data.items():
+            for data, direction in list(tex_direction_data.items()):
                 for _i in range(texDirMap.get(direction, 0)):
                     rot90cw()
                 self.blockTextures[blockID][int(data)] = texture
@@ -498,7 +497,7 @@ class MCMaterials(object):
         try:
             name = kw.pop('name', self.names[blockID][blockData])
         except:
-            print(blockID, blockData)
+            print((blockID, blockData))
         stringName = kw.pop('idStr', '')
 
         self.lightEmission[blockID] = kw.pop('brightness', self.defaultBrightness)
@@ -1395,6 +1394,6 @@ if '--find-blockstates' in os.sys.argv:
             pe_blockstates["minecraft"][block.stringID]["properties"] = []
         blockstate = idToBlockstate(block.ID, block.blockData)
         state = {"<data>": block.blockData}
-        for (key, value) in blockstate[1].iteritems():
+        for (key, value) in blockstate[1].items():
             state[key] = value
         pe_blockstates["minecraft"][block.stringID]['properties'].append(state)

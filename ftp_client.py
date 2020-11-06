@@ -59,7 +59,7 @@ class FTPClient:
             for folder in directory:
                 target = self._host.path.join(root.replace(path, ""), folder).replace("\\", "", 1).replace("\\", "/")
                 print("Target: " + target)
-                if "##MCEDIT.TEMP##" not in target:
+                if not "##MCEDIT.TEMP##" in target:
                     if not self._host.path.exists(target):
                         self._host.makedirs(target)
         for root, directory, files in os.walk(world.worldFolder.getFilePath("level.dat")[:-10]):
@@ -82,7 +82,7 @@ class FTPClient:
             for folder in directory:
                 target = self._host.path.join(root, folder).replace("ftp" + os.path.sep + self._worldname + "/", "").replace("\\", "", 1).replace("\\", "/")
                 target = target.replace("ftp" + self._worldname, "")
-                if "##MCEDIT.TEMP##" not in target:
+                if not "##MCEDIT.TEMP##" in target:
                     if not self._host.path.exists(target):
                         self._host.makedirs(target)
         for root, directory, files in os.walk(os.path.join('ftp', self._worldname)):

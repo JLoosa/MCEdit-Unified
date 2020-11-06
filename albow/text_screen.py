@@ -4,11 +4,11 @@
 
 from pygame.locals import *
 
-from albow.controls import Button
-from albow.resource import get_text
-from albow.screen import Screen
-from albow.theme import FontProperty
-from albow.vectors import add, maximum
+from .controls import Button
+from .resource import get_text
+from .screen import Screen
+from .theme import FontProperty
+from .vectors import add, maximum
 
 
 # ------------------------------------------------------------------------------

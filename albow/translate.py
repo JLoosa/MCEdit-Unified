@@ -28,7 +28,7 @@ Vous pouvez constater qu'elle est sur deux lignes.
 The 'oN' markers on the begining of a line marks the original string;
 the 'tN', the translations.
 Strings can be splited on several lines and contain any sort of
-characters (thus, be aware of bytes).
+characters (thus, be aware of unicode).
 
 Files are named according to their language name, e.g. fr_FR.trn for
 french.
@@ -55,7 +55,7 @@ import os
 import re
 import codecs
 import json
-import albow.resource as resource
+from . import resource
 import directories
 
 import platform, locale
@@ -77,7 +77,7 @@ def getPlatInfo(**kwargs):
     log.debug("    FS encoding: %s" % os.sys.getfilesystemencoding())
     reVer = re.compile(r"__version__|_version_|__version|_version|version|"
                        "__ver__|_ver_|__ver|_ver|ver", re.IGNORECASE)
-    for name, mod in kwargs.items():
+    for name, mod in list(kwargs.items()):
         s = "%s" % dir(mod)
         verObjNames = list(re.findall(reVer, s))
         if len(verObjNames) > 0:
@@ -85,7 +85,7 @@ def getPlatInfo(**kwargs):
                 verObjName = verObjNames.pop()
                 verObj = getattr(mod, verObjName, None)
                 if verObj:
-                    if isinstance(verObj, (str, bytes, int, list, tuple)):
+                    if isinstance(verObj, (str, int, list, tuple)):
                         ver = "%s" % verObj
                         break
                     elif "%s" % type(verObj) == "<type 'module'>":  # There is no define module type, so this should stay
@@ -147,10 +147,10 @@ buildTemplateMarker = """
 def _(string, doNotTranslate=False, hotKey=False):
     """Returns the translated 'string', or 'string' itself if no translation found."""
     if isinstance(string, str):
-        string = bytes(string, enc)
+        string = str(string, enc)
     if doNotTranslate:
         return string
-    if not isinstance(string, (str, bytes)):
+    if not isinstance(string, str):
         return string
     trn = string_cache.get(string, string)
     if trn == string and '-' in string:
@@ -161,8 +161,8 @@ def _(string, doNotTranslate=False, hotKey=False):
     if buildTemplate and not hotKey and string.strip():
         global template
         global strNum
-        if (string, None) not in [(a, None) for a, b in template.values()]:
-            template[len(template.keys())] = (string, "")
+        if (string, None) not in [(a, None) for a, b in list(template.values())]:
+            template[len(list(template.keys()))] = (string, "")
             strNum += 1
     return trn or string
 
@@ -179,15 +179,15 @@ def loadTemplate(fName="template.trn"):
     fName = os.path.join(getLangPath(), fName)
     if os.access(fName, os.F_OK) and os.path.isfile(fName) and os.access(fName, os.R_OK):
         oldData = codecs.open(fName, "r", "utf-8").read() + buildTemplateMarker
-        trnHeader = u""
+        trnHeader = ""
         # find the first oXX
-        start = re.search("^o\d+[ ]", oldData, re.M | re.S)
+        start = re.search(r"^o\d+[ ]", oldData, re.M | re.S)
         if start:
             start = start.start()
         else:
             print("*** %s malformed. Could not find entry point.\n    Template not loaded." % os.path.split(fName)[-1])
         trnHeader += oldData[:max(0, start - 1)]
-        trnPattern = re.compile("^o\d+[ ]|^t\d+[ ]", re.M | re.S)
+        trnPattern = re.compile(r"^o\d+[ ]|^t\d+[ ]", re.M | re.S)
         grps = re.finditer(trnPattern, oldData)
         oStart = -1
         oEnd = -1
@@ -199,11 +199,11 @@ def loadTemplate(fName="template.trn"):
         tNum = -1
         for grp in grps:
             g = grp.group()
-            if g.startswith(u"o"):
+            if g.startswith("o"):
                 oStart = grp.end()
                 tEnd = grp.start() - 1
                 oNum = int(g[1:])
-            elif g.startswith(u"t"):
+            elif g.startswith("t"):
                 oEnd = grp.start() - 1
                 tStart = grp.end()
                 tNum = int(g[1:])
@@ -228,11 +228,11 @@ def saveTemplate():
         fName = os.path.abspath(os.path.join(getLangPath(), "template.trn"))
         f = codecs.open(fName, "w", "utf-8")
         f.write(trnHeader)
-        keys = template.keys()
+        keys = list(template.keys())
         keys.sort()
         for key in keys:
             org, trn = template[key]
-            f.write(u"\no%s %s\nt%s %s" % (key, org, key, trn))
+            f.write("\no%s %s\nt%s %s" % (key, org, key, trn))
         f.close()
 
 
@@ -284,9 +284,9 @@ def setLang(newlang):
         if newlang == 'en_US':
             result = True
             try:
-                resource.setCurLang(u"English (US)")
+                resource.setCurLang("English (US)")
             except:
-                resource.__curLang = u"English (US)"
+                resource.__curLang = "English (US)"
     else:
         result = True
     return oldLang, lang, result
@@ -301,7 +301,7 @@ def correctEncoding(data, oldEnc="ascii", newEnc=enc):
     return data  # disabled for now, but can be use full in the future
     if type(data) == str:
         data = data.decode(newEnc)
-    elif type(data) == bytes:
+    elif type(data) == str:
         data = data.encode(oldEnc)
     if "\n" in data:
         data = data.replace("\n", "\n\n")
@@ -361,7 +361,7 @@ def buildTranslation(lang, extend=False, langPath=None):
     # str_cache = {}
     global string_cache
     fileFound = False
-    lang = u"%s" % lang
+    lang = "%s" % lang
     fName = os.path.join(langPath, lang + ".trn")
     log.debug("fName: %s" % fName)
     if os.access(fName, os.F_OK) and os.path.isfile(fName) and os.access(fName, os.R_OK):
@@ -400,19 +400,19 @@ def buildTranslation(lang, extend=False, langPath=None):
                 bugStrs += ["Not found in %s" % lst2N, lst2]
 
             if len(grps1) < len(grps2):
-                compLists(grps1, "grps1", grps2, "grps2", u"t")
+                compLists(grps1, "grps1", grps2, "grps2", "t")
                 log.warning("    Compared oXX tXX:")
                 log.warning("    %s" % bugStrs)
             else:
-                compLists(grps2, "grps2", grps1, "grps1", u"o")
+                compLists(grps2, "grps2", grps1, "grps1", "o")
                 log.warning("    Compared tXX oXX:")
                 log.warning("    %s" % bugStrs)
             return {}, False
         n1 = len(grps) / 2
-        result = u""
+        result = ""
         n = 1
         n2 = 0
-        r = u"" + data.replace(u"\\", u"\\\\").replace(u"\"", u'\\"').replace(u"\r\n", u"\n").replace(u"\r", u"\n")
+        r = "" + data.replace("\\", "\\\\").replace("\"", '\\"').replace("\r\n", "\n").replace("\r", "\n")
         log.debug("    Replacing oXX/tXX.")
         while n:
             r, n = re.subn(r"^o\d+[ ]|\no\d+[ ]", "\",\"", r, flags=re.M | re.S)
@@ -422,12 +422,12 @@ def buildTranslation(lang, extend=False, langPath=None):
                 n = 0
         log.debug("    Replaced %s occurences." % n2)
         result += r[2:]
-        result = u"{" + result.replace(u"\r\n", u"\\n").replace(u"\n", u"\\n").replace(u"\t", u"\\t") + u"\"}"
+        result = "{" + result.replace("\r\n", "\\n").replace("\n", "\\n").replace("\t", "\\t") + "\"}"
         log.debug("    Conversion done. Loading JSON resource.")
         try:
             str_cache = json.loads(result)
             if extend:
-                string_cache.update([(a, b) for (a, b) in str_cache.items() if a not in string_cache.keys()])
+                string_cache.update([(a, b) for (a, b) in list(str_cache.items()) if a not in list(string_cache.keys())])
         except Exception as e:
             log.debug("Error while loading JSON resource:")
             log.debug("    %s" % e)
@@ -471,7 +471,7 @@ if __name__ == "__main__":
     ### FOR TEST
     import sys
 
-    for k, v in buildTranslation("template").items():
+    for k, v in list(buildTranslation("template").items()):
         print(k, v)
     sys.exit()
     ###

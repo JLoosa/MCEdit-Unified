@@ -19,7 +19,6 @@ Copyright 2010 David Rio Vierra
 """
 import collections
 import gzip
-import itertools
 import logging
 import struct
 import zlib
@@ -33,6 +32,7 @@ from numpy import array, zeros, fromstring
 # TRACKING PE ERRORS
 #
 # DEBUG_PE and dump_fName are overridden by leveldbpocket module
+
 DEBUG_PE = False
 dump_fName = 'dump_pe.txt'
 
@@ -93,7 +93,7 @@ class TAG_Value(object):
     @name.setter
     def name(self, newVal):
         """Change the TAG's name. Coerced to a unicode."""
-        self._name = bytes(newVal)
+        self._name = str(newVal)
 
     @classmethod
     def load_from(cls, ctx):
@@ -263,7 +263,7 @@ class TAG_String(TAG_Value):
     __slots__ = ('_name', '_value')
 
     def data_type(self, value):
-        if isinstance(value, bytes):
+        if isinstance(value, str):
             return value
         else:
             decoded = self._decodeCache.get(value)
@@ -318,7 +318,7 @@ class TAG_Compound(TAG_Value, collections.MutableMapping):
         self.name = name
 
     def __repr__(self):
-        return "<%s name='%s' keys=%r>" % (str(self.__class__.__name__), self.name, self.keys())
+        return "<%s name='%s' keys=%r>" % (str(self.__class__.__name__), self.name, list(self.keys()))
 
     def data_type(self, val):
         for i in val:
@@ -376,7 +376,7 @@ class TAG_Compound(TAG_Value, collections.MutableMapping):
         if filename_or_buf is None:
             return data
 
-        if isinstance(filename_or_buf, (str, bytes)):
+        if isinstance(filename_or_buf, str):
             f = open(filename_or_buf, "wb")
             f.write(data)
             f.close()
@@ -402,10 +402,10 @@ class TAG_Compound(TAG_Value, collections.MutableMapping):
         raise KeyError("Key {0} not found".format(key))
 
     def __iter__(self):
-        return itertools.imap(lambda x: x.name, self.value)
+        return map(lambda x: x.name, self.value)
 
     def __contains__(self, key):
-        return key in map(lambda x: x.name, self.value)
+        return key in [x.name for x in self.value]
 
     def __len__(self):
         return self.value.__len__()
@@ -415,7 +415,7 @@ class TAG_Compound(TAG_Value, collections.MutableMapping):
         and unicodes in a TAG_String."""
         if isinstance(item, (list, tuple)):
             item = TAG_List(item)
-        elif isinstance(item, (str, bytes)):
+        elif isinstance(item, str):
             item = TAG_String(item)
 
         item.name = key
@@ -423,7 +423,7 @@ class TAG_Compound(TAG_Value, collections.MutableMapping):
 
         # remove any items already named "key".
         if not self.ALLOW_DUPLICATE_KEYS:
-            self._value = filter(lambda x: x.name != key, self._value)
+            self._value = [x for x in self._value if x.name != key]
 
         self._value.append(item)
 
@@ -550,7 +550,8 @@ def gunzip(data):
 def try_gunzip(data):
     try:
         data = gunzip(data)
-    except IOError as zlib.error:
+    except IOError as xxx_todo_changeme:
+        zlib.error = xxx_todo_changeme
         pass
     return data
 
@@ -609,7 +610,7 @@ def _load_buffer(buf):
     return tag
 
 
-__all__ = [a.__name__ for a in tag_classes.itervalues()] + ["load", "gunzip"]
+__all__ = [a.__name__ for a in tag_classes.values()] + ["load", "gunzip"]
 
 
 @contextmanager
@@ -672,7 +673,7 @@ def nested_string(tag, indent_string="  ", indent=0):
     if tag.tagID == TAG_COMPOUND:
         result += 'TAG_Compound({\n'
         indent += 1
-        for key, value in tag.iteritems():
+        for key, value in tag.items():
             result += indent_string * indent + '"%s": %s,\n' % (key, nested_string(value, indent_string, indent))
         indent -= 1
         result += indent_string * indent + '})'

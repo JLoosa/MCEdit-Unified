@@ -3,14 +3,13 @@
 #
 # -# Modified by D.C.-G. for translation purpose
 
-import albow.resource as resource
-
 from pygame import Rect, draw, transform
 from pygame.locals import K_RETURN, K_KP_ENTER, K_SPACE
 
-from albow.theme import ThemeProperty
-from albow.translate import _
-from albow.widget import Widget, overridable_property
+from . import resource
+from .theme import ThemeProperty
+from .translate import _
+from .widget import Widget, overridable_property
 
 
 class Control(object):
@@ -279,7 +278,7 @@ class Image(Widget):
     def __init__(self, image=None, rect=None, prefix="", **kwds):
         Widget.__init__(self, rect, **kwds)
         if image:
-            if isinstance(image, (str, bytes)):
+            if isinstance(image, str):
                 image = resource.get_image(image, prefix=prefix)
             w, h = image.get_size()
             d = 2 * self.margin

@@ -28,7 +28,9 @@ Down = (0, -1, 0)
 Up = (0, 1, 0)
 
 
-def getHorizDir((x1, y1, z1), (x2, y2, z2)):
+def getHorizDir(xxx_todo_changeme9, xxx_todo_changeme10):
+    (x1, y1, z1) = xxx_todo_changeme9
+    (x2, y2, z2) = xxx_todo_changeme10
     if abs(x2 - x1) > abs(z2 - z1):
         return sign(x2 - x1), 0, 0
     else:
@@ -38,22 +40,28 @@ def getHorizDir((x1, y1, z1), (x2, y2, z2)):
             return 0, 0, sign(z2 - z1)
 
 
-def getSecondaryDir((x1, y1, z1), (x2, y2, z2)):
+def getSecondaryDir(xxx_todo_changeme11, xxx_todo_changeme12):
+    (x1, y1, z1) = xxx_todo_changeme11
+    (x2, y2, z2) = xxx_todo_changeme12
     if abs(x2 - x1) > abs(z2 - z1):
         return 0, 0, sign(z2 - z1)
     else:
         return sign(x2 - x1), 0, 0
 
 
-def leftOf((dx1, dy1, dz1), (dx2, dy2, dz2)):
+def leftOf(xxx_todo_changeme13, xxx_todo_changeme14):
+    (dx1, dy1, dz1) = xxx_todo_changeme13
+    (dx2, dy2, dz2) = xxx_todo_changeme14
     return dx1 == dz2 or dz1 == dx2 * -1
 
 
-def rotateRight((dx, dy, dz)):
+def rotateRight(xxx_todo_changeme15):
+    (dx, dy, dz) = xxx_todo_changeme15
     return -dz, dy, dx
 
 
-def rotateLeft((dx, dy, dz)):
+def rotateLeft(xxx_todo_changeme16):
+    (dx, dy, dz) = xxx_todo_changeme16
     return dz, dy, -dx
 
 
@@ -168,23 +176,32 @@ def allAdjacentDown(dir, secondaryDir):
         )
 
 
-def getDir((x, y, z), (dx, dy, dz)):
+def getDir(xxx_todo_changeme17, xxx_todo_changeme18):
+    (x, y, z) = xxx_todo_changeme17
+    (dx, dy, dz) = xxx_todo_changeme18
     return x + dx, y + dy, z + dz
 
 
-def dist((x1, y1, z1), (x2, y2, z2)):
+def dist(xxx_todo_changeme19, xxx_todo_changeme20):
+    (x1, y1, z1) = xxx_todo_changeme19
+    (x2, y2, z2) = xxx_todo_changeme20
     return abs(x2 - x1) + abs(y2 - y1) + abs(z2 - z1)
 
 
-def above((x1, y1, z1), (x2, y2, z2)):
+def above(xxx_todo_changeme21, xxx_todo_changeme22):
+    (x1, y1, z1) = xxx_todo_changeme21
+    (x2, y2, z2) = xxx_todo_changeme22
     return y1 > y2
 
 
-def below((x1, y1, z1), (x2, y2, z2)):
+def below(xxx_todo_changeme23, xxx_todo_changeme24):
+    (x1, y1, z1) = xxx_todo_changeme23
+    (x2, y2, z2) = xxx_todo_changeme24
     return y1 < y2
 
 
-def insideBox(box, (x, y, z)):
+def insideBox(box, xxx_todo_changeme25):
+    (x, y, z) = xxx_todo_changeme25
     return box.minx <= x < box.maxx and box.miny <= y < box.maxy and box.minz <= z < box.maxz
 
 
@@ -220,9 +237,9 @@ class BusCreator:
         self.options = options
 
     def getTerminals(self):
-        for x in xrange(self.box.minx, self.box.maxx):
-            for y in xrange(self.box.miny, self.box.maxy):
-                for z in xrange(self.box.minz, self.box.maxz):
+        for x in range(self.box.minx, self.box.maxx):
+            for y in range(self.box.miny, self.box.maxy):
+                for z in range(self.box.minz, self.box.maxz):
                     (color, start) = self.isTerminal((x, y, z))
                     if color is not None and start is not None:
                         if start:
@@ -235,9 +252,9 @@ class BusCreator:
                             self.ends[color] = (x, y, z)
 
     def getGuides(self):
-        for x in xrange(self.box.minx, self.box.maxx):
-            for y in xrange(self.box.miny, self.box.maxy):
-                for z in xrange(self.box.minz, self.box.maxz):
+        for x in range(self.box.minx, self.box.maxx):
+            for y in range(self.box.miny, self.box.maxy):
+                for z in range(self.box.minz, self.box.maxz):
                     pos = (x, y, z)
                     if self.getBlockAt(pos) == 35:
                         color = self.getBlockDataAt(pos)
@@ -254,7 +271,8 @@ class BusCreator:
 
                         self.guides[color].append(rs)
 
-    def isTerminal(self, (x, y, z)):
+    def isTerminal(self, xxx_todo_changeme):
+        (x, y, z) = xxx_todo_changeme
         pos = (x, y, z)
         for dir in HorizDirs:
             otherPos = getDir(pos, dir)
@@ -409,7 +427,8 @@ class BusCreator:
         self.setBlockAt(pos, 55)  # redstone
         self.setBlockAt(getDir(pos, Down), 35, color)  # wool
 
-    def placeRepeater(self, pos, (dx, dy, dz), color):
+    def placeRepeater(self, pos, xxx_todo_changeme1, color):
+        (dx, dy, dz) = xxx_todo_changeme1
         if dz == -1:
             self.setBlockAt(pos, 93, 0)  # north
         elif dx == 1:
@@ -421,17 +440,22 @@ class BusCreator:
 
         self.setBlockAt(getDir(pos, Down), 35, color)  # wool
 
-    def getBlockAt(self, (x, y, z)):
+    def getBlockAt(self, xxx_todo_changeme2):
+        (x, y, z) = xxx_todo_changeme2
         return self.level.blockAt(x, y, z)
 
-    def getBlockDataAt(self, (x, y, z)):
+    def getBlockDataAt(self, xxx_todo_changeme3):
+        (x, y, z) = xxx_todo_changeme3
         return self.level.blockDataAt(x, y, z)
 
-    def setBlockAt(self, (x, y, z), id, dmg=0):
+    def setBlockAt(self, xxx_todo_changeme4, id, dmg=0):
+        (x, y, z) = xxx_todo_changeme4
         self.level.setBlockAt(x, y, z, id)
         self.level.setBlockDataAt(x, y, z, dmg)
 
-    def repeaterPointingTowards(self, (x1, y1, z1), (x2, y2, z2)):
+    def repeaterPointingTowards(self, xxx_todo_changeme5, xxx_todo_changeme6):
+        (x1, y1, z1) = xxx_todo_changeme5
+        (x2, y2, z2) = xxx_todo_changeme6
         blockid = self.getBlockAt((x1, y1, z1))
         if blockid != 93 and blockid != 94:
             return False
@@ -449,7 +473,9 @@ class BusCreator:
 
         return False
 
-    def repeaterPointingAway(self, (x1, y1, z1), (x2, y2, z2)):
+    def repeaterPointingAway(self, xxx_todo_changeme7, xxx_todo_changeme8):
+        (x1, y1, z1) = xxx_todo_changeme7
+        (x2, y2, z2) = xxx_todo_changeme8
         blockid = self.getBlockAt((x1, y1, z1))
         if blockid != 93 and blockid != 94:
             return False

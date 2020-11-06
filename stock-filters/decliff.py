@@ -217,7 +217,7 @@ def perform(level, box, options):
 
     # OK, newHeightMap has new height for each column
     # so it's just a matter of moving everything up/down
-    for x, z in itertools.product(xrange(1, schema.Width - 1), xrange(1, schema.Length - 1)):
+    for x, z in itertools.product(range(1, schema.Width - 1), range(1, schema.Length - 1)):
 
         if schema.Width > schema.Length:
             oh = heightmap[x, z]

@@ -11,16 +11,15 @@ ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
 WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE."""
-import numpy
 
 """
 config.py
 Configuration settings and storage.
 """
-import logging
 import collections
-import ConfigParser
-
+import configparser
+import logging
+import sys
 from locale import getdefaultlocale
 
 DEF_ENC = getdefaultlocale()[1]
@@ -36,17 +35,17 @@ log = logging.getLogger(__name__)
 class Config(object):
     def __init__(self, config_definitions):
         log.info("Loading config...")
-        self.config = ConfigParser.RawConfigParser([], ConfigDict)
+        self.config = configparser.RawConfigParser([], ConfigDict)
         self.config.observers = {}
         try:
             self.config.read(self.getPath())
         except Exception as e:
             log.error(e)
-            log.warning("Error while reading configuration file mcedit.ini: {0}".format(e))
+            log.warn("Error while reading configuration file mcedit.ini: {0}".format(e))
 
         self.transformConfig()
         self._sections = {}
-        for (sectionKey, sectionName), items in config_definitions.iteritems():
+        for (sectionKey, sectionName), items in config_definitions.items():
             self._sections[sectionKey] = ConfigSection(self.config, sectionName, items)
             setattr(self, sectionKey, self._sections[sectionKey])
         self.save()
@@ -122,7 +121,7 @@ class Config(object):
 
     def save(self):
         try:
-            cf = open(self.getPath(), 'w')
+            cf = file(self.getPath(), 'w')
             self.config.write(cf)
             cf.close()
         except Exception as e:
@@ -157,11 +156,11 @@ class ConfigSection(object):
         return self.__getitem__(key)
 
     def items(self):
-        return [(i.name, i.get()) for k, i in self._items.iteritems()]
+        return [(i.name, i.get()) for k, i in self._items.items()]
 
 
 class ConfigValue(object):
-    allowedTypes = [int, float, bool, (str, bytes), str, bytes]
+    allowedTypes = [int, float, bool, str, str, str]
 
     def __init__(self, key, name, default=None):
         if default is None:
@@ -178,7 +177,7 @@ class ConfigValue(object):
         try:
             if self.type is bool:
                 return self.config.getboolean(self.section, self.name)
-            if self.type is bytes:
+            if self.type is str:
                 return self.type(self.config.get(self.section, self.name).decode(DEF_ENC))
             return self.type(self.config.get(self.section, self.name))
         except Exception as e:
@@ -202,7 +201,7 @@ class ConfigValue(object):
 
     def set(self, value):
         log.debug("Property Change: %15s %30s = %s", self.section, self.name, value)
-        if self.type is bytes and isinstance(value, bytes):
+        if self.type is str and isinstance(value, str):
             value = value.encode(DEF_ENC)
         self.config.set(self.section, self.name, str(value))
         self._notifyObservers(value)
@@ -219,7 +218,7 @@ class ConfigValue(object):
             attr = self.key
         log.debug("Subscribing %s.%s", target, attr)
 
-        attr = numpy.intern(str(attr))
+        attr = sys.intern(str(attr))
         targetref = weakref.ref(target)
         observers.setdefault((targetref, attr), callback)
 
@@ -332,10 +331,10 @@ class ConfigDict(collections.MutableMapping):
         return list(self.__iteritems__())
 
     def __iteritems__(self):
-        return ((k, self.dict[k]) for k in self.keys())
+        return ((k, self.dict[k]) for k in list(self.keys()))
 
     def __iter__(self):
-        return self.keys().__iter__()
+        return list(self.keys()).__iter__()
 
     def __getitem__(self, k):
         return self.dict[k]
@@ -523,7 +522,7 @@ definitions = {
                                   ("viewMode", "View Mode", "Camera"),
                                   ("undoLimit", "Undo Limit", 20),
                                   ("recentWorlds", "Recent Worlds", ['']),
-                                  ("resourcePack", "Resource Pack", u"Default"),
+                                  ("resourcePack", "Resource Pack", "Default"),
                                   ("maxCopies", "Copy stack size", 32),
                                   ("superSecretSettings", "Super Secret Settings", False),
                                   ("compassToggle", "Compass Toggle", True),

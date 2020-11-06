@@ -12,8 +12,6 @@ WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE."""
 # -# Modified by D.C.-G. for translation purpose
-
-# -# Modified by D.C.-G. for translation purpose
 import traceback
 
 import numpy
@@ -23,9 +21,9 @@ from numpy import newaxis
 import mcplatform
 import pymclevel
 import renderer
-from albow import Label, ValueDisplay, AttrRef, Button, Column, ask, Row, alert, Widget, Menu
+from albow import Label, ValueDisplay, AttrRef, Button, Column, ask, Row, alert, Widget, Menu, showProgress, \
+    ChoiceButton, IntInputRow, CheckBoxLabel
 from albow.dialogs import Dialog
-from albow.extended_widgets import showProgress, ChoiceButton, IntInputRow, CheckBoxLabel
 from albow.translate import _
 from config import config
 from editortools.editortool import EditorTool
@@ -37,7 +35,7 @@ from pymclevel.minecraft_server import MCServerChunkGenerator
 
 class ChunkToolPanel(Panel):
     def __init__(self, tool, *a, **kw):
-        if 'name' not in kw.keys():
+        if 'name' not in list(kw.keys()):
             kw['name'] = 'Panel.ChunkToolPanel'
         Panel.__init__(self, *a, **kw)
 
@@ -150,7 +148,7 @@ class ChunkTool(EditorTool):
             # import renderer
 
             sizedChunks = renderer.chunkMarkers(self._selectedChunks)
-            for size, chunks in sizedChunks.iteritems():
+            for size, chunks in sizedChunks.items():
                 if not len(chunks):
                     continue
                 chunks = numpy.array(chunks, dtype='float32')

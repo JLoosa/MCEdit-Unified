@@ -1,14 +1,13 @@
+import configparser
 import logging
 import os
 import re
 from random import randint
 
-import ConfigParser
-
-import pymclevel.nbt as nbt
 from directories import getDataFile
 from pymclevel import schematic, materials
-from pymclevel.entity import TileEntity
+from . import nbt
+from .entity import TileEntity
 
 log = logging.getLogger(__name__)
 
@@ -20,7 +19,7 @@ if not os.path.exists(getDataFile('bo3.def')):
 else:
     # bo3_blocks.update([(a, int(b)) for a, b in re.findall(r'^([A-Z0-9_]+)\(([0-9]*).*\)', open(os.path.join(getDataDir(), 'bo3.def')).read(), re.M)])
     bo3_blocks.update([(a, int(b)) for a, b in re.findall(r'^([A-Z0-9_]+)\(([0-9]*).*\)', open(getDataFile('bo3.def')).read(), re.M)])
-    log.debug('BO3 block definitions loaded. %s entries found' % len(bo3_blocks.keys()))
+    log.debug('BO3 block definitions loaded. %s entries found' % len(list(bo3_blocks.keys())))
 
 # find another way for this.
 # keys are block ids in uppercase, values are tuples for ranges, lists for exact states
@@ -29,13 +28,13 @@ corrected_states = {'CHEST': (2, 6)}
 
 class BO3:
     def __init__(self, filename=''):
-        if isinstance(filename, (str, bytes)):
+        if isinstance(filename, str):
             self.delta_x, self.delta_y, self.delta_z = 0, 0, 0
             self.size_x, self.size_y, self.size_z = 0, 0, 0
             map_block = {}
             not_found = []
-            tileentities_list = [a.lower() for a in TileEntity.baseStructures.keys()]
-            for k, v in materials.block_map.items():
+            tileentities_list = [a.lower() for a in list(TileEntity.baseStructures.keys())]
+            for k, v in list(materials.block_map.items()):
                 map_block[v.replace('minecraft:', '')] = k
 
             def get_delta(x, y, z, debug=False, f_obj=None):
@@ -125,7 +124,7 @@ class BO3:
                 states = corrected_states.get(id, None)
                 if states:
                     if isinstance(states, tuple):
-                        if state not in range(*states):
+                        if state not in list(range(*states)):
                             state = states[0]
                     elif isinstance(states, list):
                         if state not in states:
@@ -171,7 +170,7 @@ class BO3:
 
 
 class BO2:
-    _parser = ConfigParser.RawConfigParser()
+    _parser = configparser.RawConfigParser()
 
     def __init__(self, filename=''):
         self.__meta = {}

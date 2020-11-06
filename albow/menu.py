@@ -8,10 +8,10 @@ import sys
 
 from pygame import Rect, draw
 
-from albow.dialogs import Dialog
-from albow.root import get_focus
-from albow.theme import ThemeProperty
-from albow.translate import _
+from .dialogs import Dialog
+from .root import get_focus
+from .theme import ThemeProperty
+from .translate import _
 
 
 # ---------------------------------------------------------------------------

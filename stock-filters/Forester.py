@@ -1159,7 +1159,7 @@ def planttrees(mcmap, treelist):
     while len(treelist) < TREECOUNT:
         if tries > max_tries:
             if VERBOSE:
-                print("Stopping search for tree locations after {0} tries".format(tries))
+                print(("Stopping search for tree locations after {0} tries".format(tries)))
                 print("If you don't have enough trees, check X, Y, RADIUS, and PLANTON")
             break
         tries += 1
@@ -1236,7 +1236,7 @@ def planttrees(mcmap, treelist):
         # generate the new tree
         newtree = Tree([x, y, z], height)
         if VERBOSE:
-            print(x, y, z, height)
+            print((x, y, z, height))
         treelist += [newtree]
 
 

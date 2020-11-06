@@ -5,12 +5,12 @@ from os.path import join
 import numpy
 
 from pymclevel import nbt
-from pymclevel.test.templevel import TempLevel
+from .templevel import TempLevel
 
 __author__ = 'Rio'
 
 
-class TestNBT:
+class TestNBT():
     @staticmethod
     def testLoad():
         "Load an indev level."

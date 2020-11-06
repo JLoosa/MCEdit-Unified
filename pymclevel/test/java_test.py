@@ -3,7 +3,7 @@ import unittest
 import numpy
 
 from pymclevel.box import BoundingBox
-from pymclevel.test.templevel import TempLevel
+from .templevel import TempLevel
 
 __author__ = 'Rio'
 

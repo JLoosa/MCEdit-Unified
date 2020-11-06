@@ -30,7 +30,7 @@ Professions = {
 }
 
 ProfessionKeys = ()
-for key in Professions.keys():
+for key in list(Professions.keys()):
     ProfessionKeys += (key,)
 
 CustomHeads = {
@@ -42,7 +42,7 @@ CustomHeads = {
 }
 
 HeadsKeys = ()
-for key in CustomHeads.keys():
+for key in list(CustomHeads.keys()):
     HeadsKeys += (key,)
 
 inputs = [(("Trade", "title"),
@@ -90,12 +90,12 @@ def perform(level, box, options):
     # Redefine Professions and CustomHeads with translated data
     profs = {}
     global Professions
-    for k, v in Professions.items():
+    for k, v in list(Professions.items()):
         profs[trn._(k)] = v
     Professions = profs
     cust_heads = {}
     global CustomHeads
-    for k, v in CustomHeads.items():
+    for k, v in list(CustomHeads.items()):
         cust_heads[trn._(k)] = v
     CustomHeads = cust_heads
     #

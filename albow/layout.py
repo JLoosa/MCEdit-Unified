@@ -4,7 +4,7 @@
 
 from pygame import Rect
 
-from albow.widget import Widget
+from .widget import Widget
 
 
 class RowOrColumn(Widget):
@@ -44,7 +44,7 @@ class RowOrColumn(Widget):
 
         # If the 'expand' value is in 'h' or 'v', resize the widgets according
         # to the larger one.
-        if type(expand) in (str, bytes):
+        if type(expand) in (str, str):
             w = 'n'
             h = 'n'
             if 'h' in expand:

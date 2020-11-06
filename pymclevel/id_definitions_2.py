@@ -5,6 +5,7 @@ from logging import getLogger
 
 # from pymclevel import MCEDIT_DEFS, MCEDIT_IDS
 # import pymclevel
+
 # import id_definitions
 
 log = getLogger(__name__)
@@ -22,7 +23,7 @@ def get_deps(base_version, file_name):
 
 
 def update(orig_dict, new_dict):
-    for key, val in new_dict.iteritems():
+    for key, val in new_dict.items():
         if isinstance(val, collections.Mapping):
             tmp = update(orig_dict.get(key, {}), val)
             orig_dict[key] = tmp

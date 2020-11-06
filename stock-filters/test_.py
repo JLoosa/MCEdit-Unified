@@ -5,8 +5,7 @@ from pymclevel.materials import BlockstateAPI
 def perform(level, box, options):
     block_api = level.materials.blockstate_api
     assert isinstance(block_api, BlockstateAPI)
-    print
-    block_api.idToBlockstate(251, 1)
+    print(block_api.idToBlockstate(251, 1))
 
     root = nbt.TAG_Compound()
     data = nbt.TAG_Compound()
@@ -17,6 +16,5 @@ def perform(level, box, options):
     # root['test'] = array
     root['data'] = data
 
-    print
-    root
+    print(root)
     root.save('test.nbt')

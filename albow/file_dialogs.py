@@ -25,9 +25,9 @@ from albow.fields import TextFieldWrapped
 from albow.layout import Row, Column
 from albow.scrollpanel import ScrollPanel
 from albow.theme import ThemeProperty
-from albow.translate import _
-from albow.tree import Tree
 from albow.widget import Widget
+from .translate import _
+from .tree import Tree
 
 log = logging.getLogger(__name__)
 
@@ -136,17 +136,16 @@ class FileListView(ScrollPanel):
 
         try:
             content = os.walk(dir)
-            content = os.walk(dir)
             for a, dirnames, filenames in content:
                 dirnames.sort()
                 filenames.sort()
                 break
             try:
-                self.names = [bytes(name, 'utf-8') for name in dirnames + filenames if filter(name)]
+                self.names = [str(name, 'utf-8') for name in dirnames + filenames if list(filter(name))]
             except:
-                self.names = [name for name in dirnames + filenames if filter(name)]
+                self.names = [name for name in dirnames + filenames if list(filter(name))]
         except EnvironmentError as e:
-            alert(u"%s: %s" % (dir, e))
+            alert("%s: %s" % (dir, e))
             self.names = []
         self.rows = [Row([Image(self.icons[os.path.isdir(os.path.join(dir, a))]),
                           Label(a, margin=0)], margin=0, spacing=2) for a in self.names]
@@ -260,10 +259,10 @@ class FSTree(Tree):
                 #                if len(folder) < 1: print '    ! ! ! ^ ^ ^ ! ! !'
                 #                if len(folder) < 1: log.debug('    ! ! ! ^ ^ ^ ! ! !')
                 if isinstance(folder, str):
-                    folder = bytes(folder, 'utf-8')
+                    folder = str(folder, 'utf-8')
                 d[folder] = {}
                 if isinstance(a, str):
-                    a = bytes(a, 'utf-8')
+                    a = str(a, 'utf-8')
                 cont = os.walk(os.path.join(a, folder))
                 for _a, fs, _b in cont:
                     for f in fs:
@@ -273,7 +272,7 @@ class FSTree(Tree):
                         #                        if len(f) < 1: print '    ! ! ! ^ ^ ^ ! ! !'
                         #                        if len(f) < 1: log.debug('    ! ! ! ^ ^ ^ ! ! !')
                         if isinstance(f, str):
-                            d[folder][bytes(f, 'utf-8')] = {}
+                            d[folder][str(f, 'utf-8')] = {}
                         else:
                             d[folder][f] = {}
                     break
@@ -381,7 +380,7 @@ class FileDialog(Dialog):
         self.add(cancel_button)
         self.shrink_wrap()
         self._directory = None
-        self.directory = os.getcwdu()
+        self.directory = os.getcwd()
         # print "FileDialog: cwd =", repr(self.directory) ###
         if self.saving:
             filename_box.focus()
@@ -402,7 +401,7 @@ class FileDialog(Dialog):
         while not os.path.exists(x):
             y = os.path.dirname(x)
             if y == x:
-                x = os.getcwdu()
+                x = os.getcwd()
                 break
             x = y
         if os.path.isfile(x):

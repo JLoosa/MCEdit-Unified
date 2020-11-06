@@ -5,7 +5,7 @@ import unittest
 from pymclevel import mclevel
 from pymclevel.box import BoundingBox
 from pymclevel.schematic import MCSchematic
-from pymclevel.test.templevel import TempLevel, mktemp
+from .templevel import TempLevel, mktemp
 
 __author__ = 'Rio'
 

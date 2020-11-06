@@ -18,6 +18,7 @@ import imp
 import os
 import sys
 import traceback
+from functools import reduce
 
 from OpenGL import GL
 
@@ -28,7 +29,7 @@ from albow.dialogs import Dialog
 _ = albow.translate._
 import ast
 import bresenham
-from editortools.clone import CloneTool
+from .clone import CloneTool
 from config import config
 import directories
 from editortools.blockpicker import BlockPicker
@@ -40,11 +41,11 @@ from glutils import gl
 from albow.root import get_root
 import logging
 from mceutils import alertException, drawTerrainCuttingWire
-from albow.extended_widgets import ChoiceButton, CheckBoxLabel, showProgress, IntInputRow, FloatInputRow
+from albow import ChoiceButton, CheckBoxLabel, showProgress, IntInputRow, FloatInputRow
 import mcplatform
 from numpy import newaxis
 import numpy
-from editortools.operation import Operation
+from .operation import Operation
 from pymclevel import BoundingBox, blockrotation
 import pymclevel
 from pymclevel.mclevelbase import exhaust
@@ -68,7 +69,7 @@ class BrushOperation(Operation):
         self.options = tool.options
         self.brushMode = tool.brushMode
         boxes = [self.tool.getDirtyBox(p, self.tool) for p in self.points]
-        self._dirtyBox = numpy.reduce(lambda a, b: a.union(b), boxes)
+        self._dirtyBox = reduce(lambda a, b: a.union(b), boxes)
         self.canUndo = False
 
     def dirtyBox(self):
@@ -152,7 +153,7 @@ class BrushPanel(Panel):
         """
         for r in tool.brushMode.inputs:
             row = []
-            for key, value in r.iteritems():
+            for key, value in r.items():
                 field = self.createField(key, value)
                 row.append(field)
             row = Row(row)
@@ -517,12 +518,12 @@ class BrushTool(CloneTool):
         embeded = bool(dir == "stock-brushes")
         try:
             path = os.path.join(dir, (name + ".py"))
-            if isinstance(path, bytes) and DEF_ENC != "UTF-8":
+            if isinstance(path, str) and DEF_ENC != "UTF-8":
                 path = path.encode(DEF_ENC)
             globals()[name] = m = imp.load_source(name, path)
             if not embeded:
                 old_trn_path = albow.translate.getLangPath()
-                if "trn" in sys.modules.keys():
+                if "trn" in list(sys.modules.keys()):
                     del sys.modules["trn"]
                 import albow.translate as trn
                 trn_path = os.path.join(directories.brushesDir, name)
@@ -540,7 +541,7 @@ class BrushTool(CloneTool):
             return m
         except Exception as e:
             print(traceback.format_exc())
-            alert(_(u"Exception while importing brush mode {}. See console for details.\n\n{}").format(name, e))
+            alert(_("Exception while importing brush mode {}. See console for details.\n\n{}").format(name, e))
             return object()
 
     def toolSelected(self):
@@ -898,7 +899,7 @@ class BrushTool(CloneTool):
         """
         if self.draggedPositions:
             direction = self.draggedDirection
-        return map(lambda a, b: a + (b * self.reticleOffset), pos, direction)
+        return list(map(lambda a, b: a + (b * self.reticleOffset), pos, direction))
 
     def increaseToolReach(self):
         """
@@ -940,7 +941,7 @@ class BrushTool(CloneTool):
             return self.brushMode.createDirtyBox(self.brushMode, point, tool)
         else:
             size = tool.getBrushSize()
-            origin = map(lambda x, s: x - (s >> 1), point, size)
+            origin = list(map(lambda x, s: x - (s >> 1), point, size))
             return BoundingBox(origin, size)
 
     def drawTerrainReticle(self):
@@ -967,7 +968,7 @@ class BrushTool(CloneTool):
                 GL.glColor4f(1.0, 1.0, 0.0, 0.7)
                 with gl.glBegin(GL.GL_LINES):
                     GL.glVertex3f(*[a + 0.5 for a in reticlePoint])  # Center of reticle block
-                    GL.glVertex3f(*map(lambda a, b: a + 0.5 + b * 0.5, pos, direction))  # Top side of surface block
+                    GL.glVertex3f(*list(map(lambda a, b: a + 0.5 + b * 0.5, pos, direction)))  # Top side of surface block
             dirtyBox = self.getDirtyBox(reticlePoint, self)
             self.drawTerrainPreview(dirtyBox.origin)
             if self.lineToolKey and self.lastPosition and getattr(self.brushMode, 'draggableBrush', True):  # If dragging mouse with Linetool pressed.
@@ -1163,7 +1164,7 @@ def createBrushMask(shape, style="Round", offset=(0, 0, 0), box=None, chance=100
 def createTileEntities(block, box, chunk, defsIds=None):
     # If defIds is not None, it must be an instance of pymclevel.id_definitions.MCEditDefsIds.
     # Every Level instance has such an object attached as defsIds.
-    if box is None or block.stringID not in TileEntity.stringNames.keys():
+    if box is None or block.stringID not in list(TileEntity.stringNames.keys()):
         return
 
     tileEntity = TileEntity.stringNames[block.stringID]

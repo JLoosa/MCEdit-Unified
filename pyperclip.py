@@ -74,7 +74,7 @@ def _copyCygwin(text):
     CF_UNICODETEXT = 13
     d = ctypes.cdll
     try:  # Python 2
-        if not isinstance(text, bytes):
+        if not isinstance(text, str):
             text = text.decode('mbcs')
     except NameError:
         if not isinstance(text, str):

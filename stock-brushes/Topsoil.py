@@ -35,9 +35,8 @@ def applyToChunkSlices(self, op, chunk, slices, brushBox, brushBoxThisChunk):
             blockmask[blocktype.ID] = True
             blocktypeMask = blockmask[blocks]
 
-        except Exception, e:
-            print
-            repr(e), " while using blockmask from filters.topsoil"
+        except Exception as e:
+            print(repr(e), " while using blockmask from filters.topsoil")
             blocktypeMask = blocks != 0
 
     else:
@@ -51,7 +50,7 @@ def applyToChunkSlices(self, op, chunk, slices, brushBox, brushBoxThisChunk):
         return
     heightmap = extractHeights(blocktypeMask)
 
-    for x, z in itertools.product(*map(xrange, heightmap.shape)):
+    for x, z in itertools.product(*list(map(xrange, heightmap.shape))):
         h = heightmap[x, z]
         if h >= brushBoxThisChunk.height:
             continue

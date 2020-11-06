@@ -1,5 +1,5 @@
 from pymclevel import fromFile
-from pymclevel.test.templevel import TempLevel
+from .templevel import TempLevel
 
 __author__ = 'Rio'
 

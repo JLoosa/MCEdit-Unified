@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 import albow
 import pymclevel
 from albow.dialogs import Dialog
@@ -108,7 +106,7 @@ class GraphicsPanel(Dialog):
     def dismiss(self, *args, **kwargs):
         self.reshowNumberFields()
         self.checkMaxView()
-        for key in self.saveOldConfig.keys():
+        for key in list(self.saveOldConfig.keys()):
             self.saveOldConfig[key] = key.get()
         self.saveOldResourcePack = self.resourcePackButton.selectedChoice
 
@@ -120,7 +118,7 @@ class GraphicsPanel(Dialog):
 
         self.reshowNumberFields()
 
-        for key in self.saveOldConfig.keys():
+        for key in list(self.saveOldConfig.keys()):
             if key.get() != self.saveOldConfig[key]:
                 Changes = True
         if self.saveOldResourcePack != self.resourcePackButton.selectedChoice:
@@ -137,7 +135,7 @@ class GraphicsPanel(Dialog):
             self.dismiss(*args, **kwargs)
             return
 
-        for key in self.saveOldConfig.keys():
+        for key in list(self.saveOldConfig.keys()):
             key.set(self.saveOldConfig[key])
         if self.resourcePackButton.selectedChoice != self.saveOldResourcePack:
             self.resourcePackButton.selectedChoice = self.saveOldResourcePack
@@ -146,7 +144,7 @@ class GraphicsPanel(Dialog):
         Dialog.dismiss(self, *args, **kwargs)
 
     def resetDefault(self):
-        for key in self.saveOldConfig.keys():
+        for key in list(self.saveOldConfig.keys()):
             key.set(key.default)
         self.reshowNumberFields()
         if self.resourcePackButton.selectedChoice != "Default Resource Pack":

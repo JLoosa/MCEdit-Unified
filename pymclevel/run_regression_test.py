@@ -177,7 +177,7 @@ def main(argv):
 
             if any(fnmatch.fnmatch(name, x) for x in do_these_regressions):
                 if options.profile:
-                    print(sys.stderr, "Starting to profile to %s.profile" % name)
+                    print("Starting to profile to %s.profile" % name, file=sys.stderr)
                     os.environ['MCE_PROFILE'] = '%s.profile' % name
                 try:
                     func(test_data, sha, args)

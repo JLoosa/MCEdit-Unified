@@ -59,7 +59,7 @@ log = getLogger(__name__)
 
 
 def update(orig_dict, new_dict):
-    for key, val in new_dict.iteritems():
+    for key, val in new_dict.items():
         if isinstance(val, collections.Mapping):
             if orig_dict.get(key, {}) == val:
                 continue
@@ -84,15 +84,15 @@ def _parse_data(data, prefix, namespace, defs_dict, ids_dict, ignore_load=False)
     :ids_dict: dict: the object to be populated with IDs; basically 'MCEDIT_IDS' dict.
     :ignore_load: bool: whether to break on the 'load' object if encountered in the JSON data. Used to track and load dependencies in the right order. Default to False.
     Return the 'load' object value if :ignore_load: is False and the object is present, or a tuple containing the updated 'defs_dict' and ids_dict' objects."""
-    if not ignore_load and 'load' in data.keys():
+    if not ignore_load and 'load' in list(data.keys()):
         return data['load']
     # Find if "autobuild" items are defined
     autobuilds = data.get("autobuild", {})
-    for a_name, a_value in autobuilds.items():
+    for a_name, a_value in list(autobuilds.items()):
         p = re.findall(r"(^|[ ])%s\['(\w+)'" % prefix, a_value)
         if p:
             for a in p[0][1:]:
-                if a not in data.keys():
+                if a not in list(data.keys()):
                     log.error("Found wrong reference while parsing autobuilds for %s: %s" % (prefix, a))
                     autobuilds.pop(a_name)
                 else:
@@ -101,17 +101,17 @@ def _parse_data(data, prefix, namespace, defs_dict, ids_dict, ignore_load=False)
             # Just remove stuff which is not related to data internal stuff
             autobuilds.pop(a_name)
 
-    for definition, value in data.iteritems():
+    for definition, value in data.items():
         if definition == prefix:
             # We're parsing the block/entity/whatever data
             for item in value:
-                _name = item.get('_name', item.get('idStr', u'%s' % item['id']))
+                _name = item.get('_name', item.get('idStr', '%s' % item['id']))
                 entry_name = "DEF_%s_%s" % (prefix.upper(), _name.upper())
                 defs_dict[entry_name] = item
                 ids_dict[item['id']] = ids_dict[_name] = entry_name
                 if item.get('idStr'):
-                    ids_dict[u'%s:%s' % (namespace, item['idStr'])] = ids_dict[item['idStr']] = entry_name
-                for a_name, a_value in autobuilds.items():
+                    ids_dict['%s:%s' % (namespace, item['idStr'])] = ids_dict[item['idStr']] = entry_name
+                for a_name, a_value in list(autobuilds.items()):
                     try:
                         v = eval(a_value)
                         #                             print "###", a_name, a_value, v
@@ -137,7 +137,7 @@ def _get_data(file_name):
     return data
 
 
-def ids_loader(gamePlatform, gameVersionNumber, namespace=u"minecraft", json_dict=False, timestamps=False):
+def ids_loader(gamePlatform, gameVersionNumber, namespace="minecraft", json_dict=False, timestamps=False):
     """Load the whole files from mcver directory.
     :game_version: str/unicode: the game version for which the resources will be loaded.
     :namespace: unicode: the name to be put in front of some IDs. default to 'minecraft'.
@@ -187,7 +187,7 @@ def ids_loader(gamePlatform, gameVersionNumber, namespace=u"minecraft", json_dic
                     r = ''
                     _data = {}
                     first = True
-                    while type(r) in (str, bytes):
+                    while type(r) in (str, str):
                         if first:
                             r = _parse_data(data, prefix, namespace, MCEDIT_DEFS, MCEDIT_IDS)
                             if json_dict:
@@ -197,7 +197,7 @@ def ids_loader(gamePlatform, gameVersionNumber, namespace=u"minecraft", json_dic
                             r = _parse_data(_data, prefix, namespace, MCEDIT_DEFS, MCEDIT_IDS)
                             if json_dict:
                                 _json.update(_data)
-                        if isinstance(r, (str, bytes)):
+                        if isinstance(r, str):
                             v = gameVersionNumber
                             if len(deps):
                                 v = deps[-1]
@@ -263,7 +263,7 @@ version_defs_ids = {}
 class MCEditDefsIds(object):
     """Class to handle MCEDIT_DEFS and MCEDIT_IDS dicts."""
 
-    def __init__(self, gamePlatform, gameVersionNumber, namespace=u"minecraft"):
+    def __init__(self, gamePlatform, gameVersionNumber, namespace="minecraft"):
         """:game_version, namespace: See 'ids_loader() docstring'."""
         global version_defs_ids
         self.mcedit_defs, self.mcedit_ids, self.timestamps = ids_loader(gamePlatform, gameVersionNumber, namespace, timestamps=True)
@@ -276,7 +276,7 @@ class MCEditDefsIds(object):
         :timestamps: dict: {"file_path": <modification timestamp>}
         Returns a list of files which has'nt same timestamp as stored."""
         result = []
-        for file_name, ts in timestamps.items():
+        for file_name, ts in list(timestamps.items()):
             if os.stat(file_name).st_mtime != ts:
                 result.append(file_name)
         return result
@@ -290,11 +290,11 @@ class MCEditDefsIds(object):
         return self.mcedit_defs[def_id]
 
 
-def get_defs_ids(gamePlatform, gameVersionNumber, namespace=u"minecraft"):
+def get_defs_ids(gamePlatform, gameVersionNumber, namespace="minecraft"):
     """Create a MCEditDefsIds instance only if one for the game version does not already exists, or a definition file has been changed.
     See MCEditDefsIds doc.
     Returns a MCEditDefsIds instance."""
-    if gamePlatform in version_defs_ids.keys() and gameVersionNumber in version_defs_ids[gamePlatform].keys():
+    if gamePlatform in list(version_defs_ids.keys()) and gameVersionNumber in list(version_defs_ids[gamePlatform].keys()):
         obj = version_defs_ids[gamePlatform][gameVersionNumber]
         timestamps = obj.timestamps
         if not obj.check_timestamps(timestamps):

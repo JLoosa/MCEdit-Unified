@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-from __future__ import print_function
 
 # png.py - PNG encoder/decoder in pure Python
 #
@@ -148,15 +147,14 @@ __version__ = "0.0.18"
 
 import itertools
 import math
-import re
 # http://www.python.org/doc/2.4.4/lib/module-operator.html
 import operator
+import re
 import struct
 import sys
 # http://www.python.org/doc/2.4.4/lib/module-warnings.html
 import warnings
 import zlib
-
 from array import array
 from functools import reduce
 
@@ -1380,7 +1378,7 @@ class Reader:
         if _guess is not None:
             if isarray(_guess):
                 kw["bytes"] = _guess
-            elif isinstance(_guess, (str, bytes)):
+            elif isinstance(_guess, str):
                 kw["filename"] = _guess
             elif hasattr(_guess, 'read'):
                 kw["file"] = _guess
@@ -1646,7 +1644,7 @@ class Reader:
                 out.extend([mask & (o >> i) for i in shifts])
             return out[:width]
 
-        return map(asvalues, rows)
+        return list(map(asvalues, rows))
 
     def serialtoflat(self, bytes, width=None):
         """Convert serial format (byte stream) pixel data to flat row
@@ -1943,8 +1941,8 @@ class Reader:
             arraycode = 'BH'[self.bitdepth > 8]
             # Like :meth:`group` but producing an array.array object for
             # each row.
-            pixels = map(lambda *row: array(arraycode, row),
-                         *[iter(self.deinterlace(raw))] * self.width * self.planes)
+            pixels = list(map(lambda *row: array(arraycode, row),
+                              *[iter(self.deinterlace(raw))] * self.width * self.planes))
         else:
             pixels = self.iterboxed(self.iterstraight(raw))
         meta = dict()
@@ -2082,11 +2080,11 @@ class Reader:
                     # True/False to 0/maxval (by multiplication),
                     # and add it as the extra channel.
                     row = group(row, planes)
-                    opa = map(it.__ne__, row)
-                    opa = map(maxval.__mul__, opa)
+                    opa = list(map(it.__ne__, row))
+                    opa = list(map(maxval.__mul__, opa))
                     opa = list(zip(opa))  # convert to 1-tuples
                     yield array(typecode,
-                                itertools.chain(*map(operator.add, row, opa)))
+                                itertools.chain(*list(map(operator.add, row, opa))))
 
             pixels = itertrns(pixels)
         targetbitdepth = None

@@ -1,9 +1,5 @@
-from __future__ import division
-
-import resource
 import sys
 
-import numpy
 from OpenGL import GL, GLU
 from numpy import fromstring
 from pygame import Rect, Surface, image
@@ -13,10 +9,11 @@ from pygame.mouse import set_cursor
 from pygame.transform import rotozoom
 
 import albow  # used for translation update
-import albow.theme as theme
-from albow.theme import ThemeProperty, FontProperty
-from albow.utils import frame_rect
-from albow.vectors import add, subtract
+from . import resource
+from . import theme
+from .theme import ThemeProperty, FontProperty
+from .utils import frame_rect
+from .vectors import add, subtract
 
 debug_rect = False
 debug_tab = True
@@ -30,8 +27,8 @@ def overridable_property(name, doc=None):
     the underlying object to get and set the property value, so that
     the property's behaviour may be easily overridden by subclasses."""
 
-    getter_name = numpy.intern('get_' + name)
-    setter_name = numpy.intern('set_' + name)
+    getter_name = sys.intern('get_' + name)
+    setter_name = sys.intern('set_' + name)
     return property(
         lambda self: getattr(self, getter_name)(),
         lambda self, value: getattr(self, setter_name)(value),
@@ -154,7 +151,7 @@ class Widget(object):
             self.spacing = new_size(self.spacing)
 
     def set(self, **kwds):
-        for name, value in kwds.iteritems():
+        for name, value in kwds.items():
             if not hasattr(self, name):
                 raise TypeError("Unexpected keyword argument '%s'" % name)
             setattr(self, name, value)
@@ -179,7 +176,8 @@ class Widget(object):
             anchor += chars[i]
         self.anchor = anchor + value
 
-    def _resized(self, old_width, old_height):
+    def _resized(self, xxx_todo_changeme):
+        (old_width, old_height) = xxx_todo_changeme
         new_width, new_height = self._rect.size
         dw = new_width - old_width
         dh = new_height - old_height
@@ -643,7 +641,7 @@ class Widget(object):
         if width is not None:
             font = self.font
             d = 2 * self.margin
-            if isinstance(width, (str, bytes)):
+            if isinstance(width, str):
                 width, height = font.size(width)
                 width += d + 2
             else:

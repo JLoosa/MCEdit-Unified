@@ -1,6 +1,6 @@
 from pygame import Rect
 
-from albow.widget import Widget
+from .widget import Widget
 
 
 class GridView(Widget):

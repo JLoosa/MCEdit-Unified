@@ -14,13 +14,13 @@ from math import floor, ceil, log
 
 import numpy
 
-import pymclevel.nbt as nbt
 from pymclevel import entity, BoundingBox, Entity, TileEntity
-from pymclevel.infiniteworld import ChunkedLevelMixin, SessionLockLost, AnvilChunkData, AnvilWorldFolder, unpackNibbleArray
-from pymclevel.level import FakeChunk, MCLevel
-from pymclevel.level import LightedChunk
-from pymclevel.materials import pocketMaterials
-from pymclevel.mclevelbase import ChunkNotPresent, ChunkMalformed
+from . import nbt
+from .infiniteworld import ChunkedLevelMixin, SessionLockLost, AnvilChunkData, AnvilWorldFolder, unpackNibbleArray
+from .level import FakeChunk, MCLevel
+from .level import LightedChunk
+from .materials import pocketMaterials
+from .mclevelbase import ChunkNotPresent, ChunkMalformed
 
 logger = logging.getLogger(__name__)
 
@@ -29,11 +29,11 @@ leveldb_available = True
 leveldb_mcpe = None
 
 try:
-    import pymclevel.leveldb as leveldb_mcpe
+    from . import leveldb as leveldb_mcpe
 except Exception as e:
     trace_msg = traceback.format_exc().splitlines()
-    logger.warning("Error while trying to import leveldb:")
-    [logger.warning(a) for a in trace_msg]
+    logger.warn("Error while trying to import leveldb:")
+    [logger.warn(a) for a in trace_msg]
 
 try:
     if leveldb_mcpe is None:
@@ -52,7 +52,7 @@ DEBUG_PE = False
 dump_fName = 'dump_pe.txt'
 longest_complist_len = 0
 longest_complist = ''
-shortest_complist_len = sys.maxint
+shortest_complist_len = sys.maxsize
 shortest_complist = ''
 
 if '--debug-pe' in sys.argv:
@@ -123,7 +123,7 @@ def loadNBTCompoundList(data, littleEndian=True, partNBT=False, count=None):
                                                                                        e=e, m2=msg2, d=repr(_data[idx:]), m3=msg3, l=len(data))
                         msg_len = len(dump_msg.splitlines())
                         write_dump(dump_msg)
-                        logger.warning("Error info and data dumped to %s at line %s (%s lines long)", dump_fName, dump_line, msg_len)
+                        logger.warn("Error info and data dumped to %s at line %s (%s lines long)", dump_fName, dump_line, msg_len)
                     except Exception as _e:
                         logger.error("Could not dump PE debug info:")
                         logger.error(_e)
@@ -280,7 +280,7 @@ class PocketLeveldbDatabase(object):
         self.dat_world_version = dat_world_version
         self.path = path
         if not os.path.exists(path):
-            open(path, 'w').close()
+            file(path, 'w').close()
         self.level = level
         self.compressors = compressors
 
@@ -838,7 +838,7 @@ class PocketLeveldbWorld(ChunkedLevelMixin, MCLevel):
     def players(self):
         if self._playerList is None:
             self._playerList = []
-            for key in self.playerData.keys():
+            for key in list(self.playerData.keys()):
                 self._playerList.append(key)
         return self._playerList
 
@@ -1055,8 +1055,8 @@ class PocketLeveldbWorld(ChunkedLevelMixin, MCLevel):
         :param box pymclevel.box.BoundingBox
         :return: None
         """
-        logger.info(u"Deleting {0} chunks in {1}".format((box.maxcx - box.mincx) * (box.maxcz - box.mincz),
-                                                         ((box.mincx, box.mincz), (box.maxcx, box.maxcz))))
+        logger.info("Deleting {0} chunks in {1}".format((box.maxcx - box.mincx) * (box.maxcz - box.mincz),
+                                                        ((box.mincx, box.mincz), (box.maxcx, box.maxcz))))
         i = 0
         ret = []
         batch = leveldb_mcpe.WriteBatch()
@@ -1069,7 +1069,7 @@ class PocketLeveldbWorld(ChunkedLevelMixin, MCLevel):
             assert not self.containsChunk(cx, cz), "Just deleted {0} but it didn't take".format((cx, cz))
 
             if i % 100 == 0:
-                logger.info(u"Chunk {0}...".format(i))
+                logger.info("Chunk {0}...".format(i))
 
         with self.worldFile.world_db() as db:
             wop = self.worldFile.writeOptions
@@ -1135,7 +1135,7 @@ class PocketLeveldbWorld(ChunkedLevelMixin, MCLevel):
         for c in self.chunksNeedingLighting:
             self.getChunk(*c).genFastLights()
 
-        for chunkCoords in self._loadedChunks.keys():
+        for chunkCoords in list(self._loadedChunks.keys()):
             chunk = self._loadedChunks[chunkCoords]
             if chunk.dirty:
                 dirtyChunkCount += 1
@@ -1157,7 +1157,7 @@ class PocketLeveldbWorld(ChunkedLevelMixin, MCLevel):
             db.Write(wop, batch)
 
         self.saving = False
-        logger.info(u"Saved {0} chunks to the database".format(dirtyChunkCount))
+        logger.info("Saved {0} chunks to the database".format(dirtyChunkCount))
         path = os.path.join(self.worldFile.path, 'level.dat')
         with nbt.littleEndianNBT():
             rootTagData = self.root_tag["Data"].save(compressed=False)
@@ -1167,7 +1167,7 @@ class PocketLeveldbWorld(ChunkedLevelMixin, MCLevel):
             #                 magic = 4
 
             magic = self.dat_world_version
-            if isinstance(magic, (str, bytes)):
+            if isinstance(magic, str):
                 magic = ord(magic)
 
             rootTagData = struct.Struct('<i').pack(magic) + struct.Struct('<i').pack(len(rootTagData)) + rootTagData
@@ -1235,7 +1235,7 @@ class PocketLeveldbWorld(ChunkedLevelMixin, MCLevel):
         Generator containing all chunks that need lighting.
         :yield: int (cx, cz) Coordinates of the chunk
         """
-        for chunkCoords in self._loadedChunks.keys():
+        for chunkCoords in list(self._loadedChunks.keys()):
             chunk = self._loadedChunks[chunkCoords]
             if chunk.needsLighting:
                 yield chunk.chunkPosition
@@ -1284,7 +1284,7 @@ class PocketLeveldbWorld(ChunkedLevelMixin, MCLevel):
         :return:
         """
         assert isinstance(entityTag, nbt.TAG_Compound)
-        x, y, z = map(lambda p: int(floor(p)), Entity.pos(entityTag))
+        x, y, z = [int(floor(p)) for p in Entity.pos(entityTag)]
 
         try:
             chunk = self.getChunk(x >> 4, z >> 4)
@@ -1421,13 +1421,14 @@ class PocketLeveldbWorld(ChunkedLevelMixin, MCLevel):
         """
         return 0
 
-    def setPlayerPosition(self, x, y, z, player="Player"):
+    def setPlayerPosition(self, xxx_todo_changeme, player="Player"):
         """
         Sets the players position to x, y, z
         :param (x, y, z): tuple of the coordinates of the player
         :param player: string of the name of the player. "Player" for SSP player, player_<client-id> for SMP player.
         :return:
         """
+        (x, y, z) = xxx_todo_changeme
         playerTag = self.getPlayerTag(player)
         nbt_type = type(playerTag["Pos"][0])
         posList = nbt.TAG_List([nbt_type(p) for p in (x, y - 1.75, z)])
@@ -1442,7 +1443,7 @@ class PocketLeveldbWorld(ChunkedLevelMixin, MCLevel):
         """
         playerTag = self.getPlayerTag(player)
         posList = playerTag["Pos"]
-        x, y, z = map(lambda c: c.value, posList)
+        x, y, z = [c.value for c in posList]
         return x, y + 1.75, z
 
     def setPlayerOrientation(self, yp, player="Player"):
@@ -1460,7 +1461,7 @@ class PocketLeveldbWorld(ChunkedLevelMixin, MCLevel):
         :param player: string of the name of the player. "Player" for SSP player, player_<client-id> for SMP player.
         :return: tuple int (yaw, pitch)
         """
-        yp = map(lambda x: x.value, self.getPlayerTag(player)["Rotation"])
+        yp = [x.value for x in self.getPlayerTag(player)["Rotation"]]
         y, p = yp
         if p == 0:
             p = 0.000000001
@@ -1862,7 +1863,7 @@ class PocketLeveldbChunk1Plus(LightedChunk):
         possible_dtypes = [2 ** x for x in range(3, 8)]
         max_blocks_dtype = int(ceil(log(max([i for i, x in enumerate(pocketMaterials.idStr) if x]), 2)))
         max_blocks_dtype = next(possible_dtype for possible_dtype in possible_dtypes if possible_dtype >= max_blocks_dtype)
-        max_data_dtype = int(ceil(log(max([x[1] for x in pocketMaterials.blocksByID.keys()]), 2)))
+        max_data_dtype = int(ceil(log(max([x[1] for x in list(pocketMaterials.blocksByID.keys())]), 2)))
         max_data_dtype = next(possible_dtype for possible_dtype in possible_dtypes if possible_dtype >= max_data_dtype)
 
         self._Blocks = PE1PlusDataContainer(4096, 'uint' + str(max_blocks_dtype), name='Blocks', chunk_height=self.Height)

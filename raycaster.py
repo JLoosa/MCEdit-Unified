@@ -28,7 +28,7 @@ def _rawRaycast(origin, direction):
             s %= 1
             return (1 - s) / ds
 
-    x, y, z = map(int, map(math.floor, origin))
+    x, y, z = list(map(int, list(map(math.floor, origin))))
     dx, dy, dz = direction
 
     if dx == 0:  # Yes, I know this is hacky. It works though.
@@ -38,8 +38,8 @@ def _rawRaycast(origin, direction):
     if dz == 0:
         dz = 0.000000001
 
-    stepX, stepY, stepZ = map(_signum, direction)
-    tMaxX, tMaxY, tMaxZ = map(_intbound, origin, (dx, dy, dz))
+    stepX, stepY, stepZ = list(map(_signum, direction))
+    tMaxX, tMaxY, tMaxZ = list(map(_intbound, origin, (dx, dy, dz)))
     tDeltaX = stepX / dx
     tDeltaY = stepY / dy
     tDeltaZ = stepZ / dz
@@ -83,7 +83,7 @@ Finds the first block from origin in the given direction by ray tracing
 def firstBlock(origin, direction, level, radius, viewMode=None):
     if viewMode == "Chunk":
         raise TooFarException("There are no valid blocks within range")
-    startPos = map(int, map(math.floor, origin))
+    startPos = list(map(int, list(map(math.floor, origin))))
     block = level.blockAt(*startPos)
     tooMuch = 0
     if block == 8 or block == 9:

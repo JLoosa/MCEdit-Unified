@@ -29,9 +29,9 @@ from editortools.blockview import BlockButton
 from editortools.editortool import EditorTool
 from glbackground import Panel
 from mceutils import setWindowCaption, alertException
-from albow.extended_widgets import ChoiceButton, showProgress, TextInputRow
+from albow import ChoiceButton, showProgress, TextInputRow
 import mcplatform
-from editortools.operation import Operation
+from .operation import Operation
 from albow.dialogs import wrapped_label, alert, Dialog
 import pymclevel
 # from pymclevel import BoundingBox, MCEDIT_DEFS, MCEDIT_IDS
@@ -41,7 +41,7 @@ import directories
 import sys
 import keys
 import imp
-from editortools.nbtexplorer import NBTExplorerToolPanel
+from .nbtexplorer import NBTExplorerToolPanel
 
 import logging
 
@@ -66,7 +66,7 @@ def alertFilterException(func):
             func(*args, **kw)
         except Exception as e:
             print(traceback.format_exc())
-            alert(_(u"Exception during filter operation. See console for details.\n\n{0}").format(e))
+            alert(_("Exception during filter operation. See console for details.\n\n{0}").format(e))
 
     return _func
 
@@ -122,7 +122,7 @@ class JsonDictProperty(dict):
         try:
             fp = open(self._filename, 'rb')
             filter_json = json.load(fp)
-            if "Macros" not in filter_json.keys():
+            if "Macros" not in list(filter_json.keys()):
                 filter_json["Macros"] = {}
             return filter_json
         except (ValueError, IOError):
@@ -191,7 +191,7 @@ class MacroModuleOptions(Widget):
     def __init__(self, macro_data, *args, **kw):
         self._parent = None
         self._macro_data = macro_data
-        if '_parent' in kw.keys():
+        if '_parent' in list(kw.keys()):
             self._parent = kw.pop('_parent')
 
         Widget.__init__(self, *args, **kw)
@@ -224,8 +224,8 @@ class MacroModuleOptions(Widget):
             for step in sorted(self._macro_data.keys()):
                 if step != "Number of steps":
                     filters.append(tool.filterModules[self._macro_data[step]["Name"]])
-                    for module_input in self._macro_data[step]["Inputs"].keys():
-                        if not isinstance(self._macro_data[step]["Inputs"][module_input], (str, bytes)):
+                    for module_input in list(self._macro_data[step]["Inputs"].keys()):
+                        if not isinstance(self._macro_data[step]["Inputs"][module_input], str):
                             continue
                         if not self._macro_data[step]["Inputs"][module_input].startswith("block-"):
                             continue
@@ -251,7 +251,7 @@ class FilterModuleOptions(Widget):
         self._parent = None
         self.nbttree = None
         self.module = module
-        if '_parent' in kw.keys():
+        if '_parent' in list(kw.keys()):
             self._parent = kw.pop('_parent')
         Widget.__init__(self, *args, **kw)
         self.spacing = 2
@@ -289,7 +289,7 @@ class FilterModuleOptions(Widget):
                 pages.show_page(pages.pages[0])
 
         for eachPage in pages.pages:
-            self.optionDict = dict(self.optionDict.items() + eachPage.optionDict.items())
+            self.optionDict = dict(list(self.optionDict.items()) + list(eachPage.optionDict.items()))
 
     def rebuildTabPage(self, inputs, **kwargs):
         title, page, rect = self.makeTabPage(self.tool, inputs, self.trn, **kwargs)
@@ -337,7 +337,7 @@ class FilterModuleOptions(Widget):
 
                     rows.append(addNumField(page, optionName, oName, val, min, max, increment))
 
-                if isinstance(optionType[0], (str, bytes)):
+                if isinstance(optionType[0], str):
                     isChoiceButton = False
 
                     if optionType[0] == "string":
@@ -345,7 +345,7 @@ class FilterModuleOptions(Widget):
                         wid = None
                         val = None
                         for keyword in optionType:
-                            if isinstance(keyword, (str, bytes)) and keyword != "string":
+                            if isinstance(keyword, str) and keyword != "string":
                                 kwds.append(keyword)
                         for keyword in kwds:
                             splitWord = keyword.split('=')
@@ -527,7 +527,7 @@ class FilterModuleOptions(Widget):
     @property
     def options(self):
         options = {}
-        for k, v in self.optionDict.iteritems():
+        for k, v in self.optionDict.items():
             options[k] = v.get() if not isinstance(v.get(), pymclevel.materials.Block) else copy.copy(v.get())
         if self.pages.current_page is not None:
             options["__page_index__"] = self.pages.pages.index(self.pages.current_page)
@@ -622,7 +622,7 @@ class FilterToolPanel(Panel):
             finally:
                 if fp:
                     fp.close()
-        if "Macros" not in filter_json.keys():
+        if "Macros" not in list(filter_json.keys()):
             filter_json["Macros"] = {}
         return filter_json
 
@@ -662,7 +662,7 @@ class FilterToolPanel(Panel):
                                       key=lambda x: x.split("]")[0][1:])
 
         names_list.extend(subfolder_names_list)
-        names_list.extend([macro for macro in self.filter_json["Macros"].keys()])
+        names_list.extend([macro for macro in list(self.filter_json["Macros"].keys())])
 
         if self.selectedName is None or self.selectedName not in names_list:
             self.selectedName = names_list[0]
@@ -759,7 +759,7 @@ class FilterToolPanel(Panel):
             self.filter_json["Macros"][macro_name]["Number of steps"] = len(self.macro_steps)
             self.filterSelect.choices.append(macro_name)
             for entry in self.macro_steps:
-                for inp in entry["Inputs"].keys():
+                for inp in list(entry["Inputs"].keys()):
                     if not isinstance(entry["Inputs"][inp], pymclevel.materials.Block):
                         if not entry["Inputs"][inp] == "blocktype":
                             continue
@@ -1015,7 +1015,7 @@ class FilterTool(EditorTool):
 
     def reloadFilters(self):
         filterFiles = []
-        bytes_module_names = []
+        unicode_module_names = []
 
         # Tracking stock and custom filters names in order to load correctly the translations.
         stock_filters = []
@@ -1041,7 +1041,7 @@ class FilterTool(EditorTool):
                     if root not in sys.path:
                         sys.path.append(root)
                 except UnicodeEncodeError:
-                    bytes_module_names.extend([filter_name for filter_name in files])
+                    unicode_module_names.extend([filter_name for filter_name in files])
 
                 for possible_filter in files:
                     if possible_filter.endswith(".py"):
@@ -1065,7 +1065,7 @@ class FilterTool(EditorTool):
 
         org_lang = albow.translate.lang
 
-        # If the path has bytes chars, there's no way of knowing what order to add the
+        # If the path has unicode chars, there's no way of knowing what order to add the
         # files to the sys.modules. To fix this, we keep trying to import until we import
         # fail to import all leftover files.
         shouldContinue = True
@@ -1074,7 +1074,7 @@ class FilterTool(EditorTool):
             for f in filterFiles:
                 if f[1] in self.not_imported_filters:
                     continue
-                module = tryImport(f[0], f[1], org_lang, f[2], f[3], f[1] in bytes_module_names, notify=(not self.optionsPanel.notifications_disabled))
+                module = tryImport(f[0], f[1], org_lang, f[2], f[3], f[1] in unicode_module_names, notify=(not self.optionsPanel.notifications_disabled))
                 if module is None:
                     self.not_imported_filters.append(f[1])
                     continue
@@ -1088,7 +1088,7 @@ class FilterTool(EditorTool):
                 m.displayName += "_"
             displayNames.append(m)
 
-        filterModules = filter(lambda mod: hasattr(mod, "perform"), filterModules)
+        filterModules = [mod for mod in filterModules if hasattr(mod, "perform")]
         self.filterModules = collections.OrderedDict(sorted(
             [(FilterTool.moduleDisplayName(x), x) for x in filterModules],
             key=lambda module_name: (module_name[0].lower(),
@@ -1103,7 +1103,7 @@ class FilterTool(EditorTool):
 
     @property
     def filterNames(self):
-        return [FilterTool.moduleDisplayName(module) for module in self.filterModules.itervalues()]
+        return [FilterTool.moduleDisplayName(module) for module in self.filterModules.values()]
 
 
 # -# WIP. Reworking on the filters translations.
@@ -1113,15 +1113,15 @@ class FilterTool(EditorTool):
 new_method = True
 
 
-def tryImport_old(_root, name, org_lang, stock=False, subFolderString="", bytes_name=False, notify=True):
+def tryImport_old(_root, name, org_lang, stock=False, subFolderString="", unicode_name=False, notify=True):
     with open(os.path.join(_root, name)) as module_file:
         module_name = name.split(os.path.sep)[-1].replace(".py", "")
         try:
-            if bytes_name:
+            if unicode_name:
                 source_code = module_file.read()
                 module = imp.new_module(module_name)
                 exec(source_code, module.__dict__)
-                if module_name not in sys.modules.keys():
+                if module_name not in list(sys.modules.keys()):
                     sys.modules[module_name] = module
             else:
                 module = imp.load_source(module_name, os.path.join(_root, name), module_file)
@@ -1129,9 +1129,9 @@ def tryImport_old(_root, name, org_lang, stock=False, subFolderString="", bytes_
             if not (hasattr(module, 'displayName')):
                 module.displayName = module_name  # Python is awesome
             if not stock:
-                if "trn" in sys.modules.keys():
+                if "trn" in list(sys.modules.keys()):
                     del sys.modules["trn"]
-                if "albow.translate" in sys.modules.keys():
+                if "albow.translate" in list(sys.modules.keys()):
                     del sys.modules["albow.translate"]
                 from albow import translate as trn
                 if directories.getFiltersDir() in name:
@@ -1156,20 +1156,20 @@ def tryImport_old(_root, name, org_lang, stock=False, subFolderString="", bytes_
         except Exception as e:
             traceback.print_exc()
             if notify:
-                alert(_(u"Exception while importing filter module {}. " +
-                        u"See console for details.\n\n{}").format(name, e))
+                alert(_("Exception while importing filter module {}. " +
+                        "See console for details.\n\n{}").format(name, e))
             return None
 
 
-def tryImport_new(_root, name, org_lang, stock=False, subFolderString="", bytes_name=False, notify=True):
+def tryImport_new(_root, name, org_lang, stock=False, subFolderString="", unicode_name=False, notify=True):
     with open(os.path.join(_root, name)) as module_file:
         module_name = name.split(os.path.sep)[-1].replace(".py", "")
         try:
-            if bytes_name:
+            if unicode_name:
                 source_code = module_file.read()
                 module = imp.new_module(module_name)
                 exec(source_code, module.__dict__)
-                if module_name not in sys.modules.keys():
+                if module_name not in list(sys.modules.keys()):
                     sys.modules[module_name] = module
             else:
                 module = imp.load_source(module_name, os.path.join(_root, name), module_file)
@@ -1193,8 +1193,8 @@ def tryImport_new(_root, name, org_lang, stock=False, subFolderString="", bytes_
         except Exception as e:
             traceback.print_exc()
             if notify:
-                alert(_(u"Exception while importing filter module {}. " +
-                        u"See console for details.\n\n{}").format(name, e))
+                alert(_("Exception while importing filter module {}. " +
+                        "See console for details.\n\n{}").format(name, e))
             return None
 
 
