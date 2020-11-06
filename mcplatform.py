@@ -51,13 +51,14 @@ elif sys.platform in ['linux2', 'darwin']:
         hasXlibDisplay = None
 
 # os.environ["YAML_ROOT"] = join(directories.getDataDir(), "pymclevel").encode(enc)
-os.environ['YAML_ROOT'] = directories.getDataFile('pymclevel').encode(enc)
+os.environ['YAML_ROOT'] = directories.getDataFile('pymclevel')
 
 from pygame import display
 
 from albow import request_new_filename, request_old_filename
 from albow.translate import _
-from pymclevel import minecraftSaveFileDir, getMinecraftProfileDirectory, getSelectedProfile
+from pymclevel import minecraftSaveFileDir
+from directories import getMinecraftProfileDirectory, getSelectedProfile
 from datetime import datetime
 
 import re
@@ -126,7 +127,7 @@ if sys.platform == "win32":
 
     try:
         import win32com.client
-        from win32com.shell import shell, shellcon  # @UnresolvedImport
+        from win32comext.shell import shell, shellcon  # @UnresolvedImport
     except:
         pass
 
@@ -1114,20 +1115,11 @@ class WWindowHandler(BaseWindowHandler):
         self.base_handler = display
         self.base_handler_id = display.get_wm_info()['window']
 
-    if platform.dist() == ('', '', ''):
-        # We're running on a native Windows.
+    if True:  # TODO consider re-adding wine fix
         def set_mode(self, size, mode):
             """Wrapper for pygame.display.set_mode()."""
             # Windows pygame implementation seem to work on the display mode and size on it's own...
             return
-    else:
-        # We're running on wine.
-        def set_mode(self, size, mode):
-            """Wrapper for pygame.display.set_mode()."""
-            self.wine_state_fix = False
-            if getattr(self, 'wine_state_fix', False):
-                self.set_size(size)
-                self.wine_state_fix = True
 
     def get_root_rect(self):
         """Return a four values tuple containing the position and size of the very first OS window object."""

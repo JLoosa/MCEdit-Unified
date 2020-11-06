@@ -3,7 +3,7 @@
 import logging
 import os
 
-import albow
+import albow.widget
 import mcplatform
 import panels
 import pymclevel

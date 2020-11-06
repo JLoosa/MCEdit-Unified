@@ -3,8 +3,8 @@ import platform
 from pygame import key
 
 import release
-from albow import AttrRef, Row, Column
-from albow.controls import Label
+from albow.layout import  Row, Column
+from albow.controls import Label, AttrRef
 from albow.extended_widgets import HotkeyColumn
 from albow.resource import get_font
 from config import config

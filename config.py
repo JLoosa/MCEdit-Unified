@@ -81,7 +81,8 @@ class Config(object):
 
     @staticmethod
     def convert(key):
-        vals = key.replace('-', ' ').translate(None, '()').lower().split(' ')
+        # TODO: Read how this worked so it can be converted corectly
+        vals = key.replace('-', ' ').translate('()').lower().split(' ')
         return vals[0] + "".join(x.title() for x in vals[1:])
 
     def reset(self):
@@ -121,7 +122,7 @@ class Config(object):
 
     def save(self):
         try:
-            cf = file(self.getPath(), 'w')
+            cf = open(self.getPath(), 'w')
             self.config.write(cf)
             cf.close()
         except Exception as e:

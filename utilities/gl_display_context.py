@@ -60,7 +60,7 @@ class GLDisplayContext(object):
         #        GL.glMatrixMode(GL.GL_TEXTURE)
         #        GL.glScale(1 / 256., 1 / 256., 1 / 256.)
 
-        display.set_caption(*caption)
+        display.set_caption(str(caption[0]), str(caption[1]))
 
         if mcplatform.WindowHandler:
             self.win = mcplatform.WindowHandler(mode=self.displayMode())

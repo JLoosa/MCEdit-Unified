@@ -806,7 +806,7 @@ class ZipResourcePack(IResourcePack):
             try:
                 self.open_pack()
             except Exception as e:
-                if 'seek' not in e:
+                if 'seek' not in str(e):
                     print("Error while trying to load one of the resource packs: {}".format(e))
 
     def open_pack(self):

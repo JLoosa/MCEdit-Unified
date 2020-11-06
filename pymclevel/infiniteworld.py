@@ -1089,6 +1089,17 @@ class AnvilWorldFolder(object):
         rf.copyChunkFrom(fromRF, cx, cz)
 
 
+def _dirhash(n: int):
+    n %= 64
+    s = ""
+    if n >= 36:
+        s += "1"
+        n -= 36
+    s += "0123456789abcdefghijklmnopqrstuvwxyz"[n]
+
+    return s
+
+
 class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
     '''
     A class that handles the data that is stored in a Minecraft Java level. 
@@ -1572,17 +1583,6 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
 
     def dirhash(self, n):
         return self.dirhashes[n % 64]
-
-    def _dirhash(self):
-        n = self
-        n %= 64
-        s = ""
-        if n >= 36:
-            s += "1"
-            n -= 36
-        s += "0123456789abcdefghijklmnopqrstuvwxyz"[n]
-
-        return s
 
     dirhashes = [_dirhash(n) for n in range(64)]
 

@@ -52,13 +52,15 @@ import logging
 log = logging.getLogger(__name__)
 
 import os
+import sys
 import re
 import codecs
 import json
 from . import resource
 import directories
 
-import platform, locale
+import platform
+import locale
 
 
 def getPlatInfo(**kwargs):
@@ -69,12 +71,12 @@ def getPlatInfo(**kwargs):
     log.debug("    Release: %s" % platform.release())
     log.debug("    Version: %s" % platform.version())
     log.debug("    Architecture: %s, %s" % platform.architecture())
-    log.debug("    Dist: %s, %s, %s" % platform.dist())
+    log.debug("    Platform: %s" % platform.platform())
     log.debug("    Machine: %s" % platform.machine())
     log.debug("    Processor: %s" % platform.processor())
     log.debug("    Locale: %s" % locale.getdefaultlocale()[0])
     log.debug("    Encoding: %s" % locale.getdefaultlocale()[1])
-    log.debug("    FS encoding: %s" % os.sys.getfilesystemencoding())
+    log.debug("    FS encoding: %s" % sys.getfilesystemencoding())
     reVer = re.compile(r"__version__|_version_|__version|_version|version|"
                        "__ver__|_ver_|__ver|_ver|ver", re.IGNORECASE)
     for name, mod in list(kwargs.items()):
@@ -88,7 +90,7 @@ def getPlatInfo(**kwargs):
                     if isinstance(verObj, (str, int, list, tuple)):
                         ver = "%s" % verObj
                         break
-                    elif "%s" % type(verObj) == "<type 'module'>":  # There is no define module type, so this should stay
+                    elif "%s" % type(verObj) == "<class 'module'>":  # There is no define module type, so this should stay
                         verObjNames += ["%s.%s" % (verObjName, a) for a in re.findall(reVer, "%s" % dir(verObj))]
                     else:
                         ver = verObj()
@@ -146,7 +148,7 @@ buildTemplateMarker = """
 
 def _(string, doNotTranslate=False, hotKey=False):
     """Returns the translated 'string', or 'string' itself if no translation found."""
-    if isinstance(string, str):
+    if isinstance(string, bytes):
         string = str(string, enc)
     if doNotTranslate:
         return string

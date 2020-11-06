@@ -61,7 +61,6 @@ TAG_SHORT_ARRAY = -1
 class TAG_Value(object):
     """Simple values. Subclasses override fmt to change the type and size.
     Subclasses may set data_type instead of overriding setValue for automatic data type coercion"""
-    __slots__ = ('_name', '_value')
 
     def __init__(self, value=0, name=""):
         self.value = value
@@ -698,7 +697,7 @@ try:
     #     if DEBUG_PE or '--debug-pe' in sys.argv:
     #         log.warning("PE support debug mode is activated. Using full Python NBT support!")
     #     else:
-    from _nbt import (load, TAG_Byte, TAG_Short, TAG_Int, TAG_Long, TAG_Float, TAG_Double, TAG_String,
+    from pymclevel._nbt import (load, TAG_Byte, TAG_Short, TAG_Int, TAG_Long, TAG_Float, TAG_Double, TAG_String,
                       TAG_Byte_Array, TAG_List, TAG_Compound, TAG_Int_Array, TAG_Long_Array, TAG_Short_Array, NBTFormatError,
                       littleEndianNBT, nested_string, gunzip, hexdump)
 except ImportError as err:

@@ -334,7 +334,7 @@ class MCEdit(GLViewport):
                 config.settings.langCode.set(lng)
             albow.translate.setLang(lng)
         # Set the window caption here again, since the initialization is done through several steps...
-        display.set_caption(('MCEdit ~ ' + release.get_version() % _("for")).encode('utf-8'), 'MCEdit')
+        display.set_caption('MCEdit ~ ' + release.get_version() % _("for"), 'MCEdit')
         self.optionsPanel.initComponents()
         self.graphicsPanel = panels.GraphicsPanel(self)
 
