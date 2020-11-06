@@ -1,17 +1,19 @@
-import json
-import urllib2
-from directories import userCachePath
-import os
-import time
-from PIL import Image
 import atexit
-import threading
-import logging
-from uuid import UUID
-import httplib
 import base64
 import datetime
+import http
+import json
+import logging
+import os
+import threading
+import time
 import traceback
+import urllib
+from uuid import UUID
+
+from PIL import Image
+
+from directories import userCachePath
 
 log = logging.getLogger(__name__)
 
@@ -24,6 +26,7 @@ class ThreadRS(threading.Thread):
     If 'callbacks' objects are send to the constructor, this '_result' object will be sent to all of them
     at the end of the 'run' and 'join' method. The latest one also returns '_return' object.
     """
+
     def __init__(self, group=None, target=None, name=None, callbacks=[],
                  args=(), kwargs={}, Verbose=None):
         """
@@ -46,7 +49,7 @@ class ThreadRS(threading.Thread):
         try:
             threading.Thread.join(self)
         except Exception as e:
-            print e
+            print(e)
         for callback in self.callbacks:
             callback(self._return)
         return self._return
@@ -67,10 +70,11 @@ def threadable(func):
             t.daemon = True
             t.start()
             return t
+
     return wrapper
 
 
-#@Singleton
+# @Singleton
 class PlayerCache:
     """
     Used to cache Player names and UUID's, provides an small API to interface with it
@@ -78,7 +82,7 @@ class PlayerCache:
 
     _PATH = userCachePath
     TIMEOUT = 2.5
-    targets = [] # Used to send data update when subprocesses has finished.
+    targets = []  # Used to send data update when subprocesses has finished.
 
     __shared_state = {}
 
@@ -144,7 +148,7 @@ class PlayerCache:
         self.TIMEOUT = self._cache.get("Connection Timeout", 2.5)
         self.cache_lock = threading.RLock()
         self.player_refeshing = threading.Thread(target=self._batchRefreshPlayers)
-        #self.player_refeshing.daemon(True) # No idea whether to use the property setter function or the attribute, so I'll use both
+        # self.player_refeshing.daemon(True) # No idea whether to use the property setter function or the attribute, so I'll use both
         self.player_refeshing.daemon = True
         self.player_refeshing.start()
 
@@ -211,7 +215,7 @@ class PlayerCache:
         :return: The player data that is in the cache for the specified UUID, same format as getPlayerInfo()
         :rtype: tuple
         """
-        clean_uuid = uuid.replace("-","")
+        clean_uuid = uuid.replace("-", "")
         player = self._cache["Cache"].get(clean_uuid, {})
         return self.insertSeperators(clean_uuid), player.get("Name", "<Unknown Name>"), clean_uuid
 
@@ -224,7 +228,7 @@ class PlayerCache:
         :rtype: tuple
         """
         for uuid in self._cache["Cache"].keys():
-            clean_uuid = uuid.replace("-","")
+            clean_uuid = uuid.replace("-", "")
             player = self._cache["Cache"][uuid]
             if player.get("Name", "") == name and player.get("Successful", False):
                 return (self.insertSeperators(clean_uuid), player["Name"], clean_uuid)
@@ -238,7 +242,7 @@ class PlayerCache:
         :return: True if the last time the player data retrieval from Mojang's API was successful, False otherwise
         :rtype: bool
         """
-        clean_uuid = uuid.replace("-","")
+        clean_uuid = uuid.replace("-", "")
         player = self._cache["Cache"].get(clean_uuid, {})
         return player.get("Successful", False)
 
@@ -334,7 +338,7 @@ class PlayerCache:
             try:
                 response = json.loads(response)
                 uuid = response["id"]
-                player = self._cache["Cache"].get(uuid,{})
+                player = self._cache["Cache"].get(uuid, {})
                 player["Name"] = response.get("name", player.get("Name", "<Unknown Name>"))
                 player["Timestamp"] = time.time()
                 player["Successful"] = True
@@ -356,8 +360,8 @@ class PlayerCache:
                 resp = self._getDataFromURL(resp["textures"]["SKIN"]["url"])
                 return resp
         except:
-            print "Couldn't parse skin response JSON"
-            print traceback.format_exc()
+            print("Couldn't parse skin response JSON")
+            print(traceback.format_exc())
         return None
 
     @threadable
@@ -384,12 +388,12 @@ class PlayerCache:
 
             player = self._cache["Cache"][uuid]
 
-            skin_path = os.path.join("player-skins", uuid_sep.replace("-","_") + ".png")
+            skin_path = os.path.join("player-skins", uuid_sep.replace("-", "_") + ".png")
             try:
                 if not force_download and os.path.exists(skin_path):
                     skin = Image.open(skin_path)
-                    if skin.size == (64,64):
-                        skin = skin.crop((0,0,64,32))
+                    if skin.size == (64, 64):
+                        skin = skin.crop((0, 0, 64, 32))
                         skin.save(skin_path)
                     toReturn = skin_path
                 elif force_download or not os.path.exists(skin_path):
@@ -398,7 +402,7 @@ class PlayerCache:
                         if parsed is not None:
                             self._saveSkin(uuid, parsed)
                             toReturn = skin_path
-                            player["Skin"] = { "Timestamp": time.time() }
+                            player["Skin"] = {"Timestamp": time.time()}
                             self._cache["Cache"][uuid] = player
                             del self.temp_skin_cache[uuid]
                             self.save()
@@ -415,20 +419,20 @@ class PlayerCache:
                             if parsed is not None:
                                 self._saveSkin(uuid, parsed)
                                 toReturn = skin_path
-                                player["Skin"] = { "Timestamp": time.time() }
+                                player["Skin"] = {"Timestamp": time.time()}
                                 self._cache["Cache"][uuid] = player
                                 self.save()
 
             except IOError:
-                print "Couldn't find Image file ("+skin_path+") or the file may be corrupted"
+                print("Couldn't find Image file (" + skin_path + ") or the file may be corrupted")
                 if instance is not None:
-                    instance.delete_skin(uuid_sep.replace("-","_"))
+                    instance.delete_skin(uuid_sep.replace("-", "_"))
                     os.remove(skin_path)
-                    print "Something happened, retrying"
+                    print("Something happened, retrying")
                     toReturn = self.getPlayerSkin(arg, True, instance)
             except Exception:
-                print "Unknown error occurred while reading/downloading skin for "+str(uuid.replace("-","_")+".png")
-                print traceback.format_exc()
+                print("Unknown error occurred while reading/downloading skin for " + str(uuid.replace("-", "_") + ".png"))
+                print(traceback.format_exc())
         else:
             toReturn = raw_data.join()
         return toReturn
@@ -442,36 +446,36 @@ class PlayerCache:
         except OSError:
             pass
 
-        skin_path = os.path.join("player-skins", uuid.replace("-","_") + ".png")
+        skin_path = os.path.join("player-skins", uuid.replace("-", "_") + ".png")
 
         with open(skin_path, 'wb') as fp:
             fp.write(data)
         skin = Image.open(skin_path)
-        if skin.size == (64,64):
-            skin = skin.crop((0,0,64,32))
+        if skin.size == (64, 64):
+            skin = skin.crop((0, 0, 64, 32))
             skin.save(skin_path)
 
     def _getDataFromURL(self, url):
         conn = None
         try:
-            conn = urllib2.urlopen(url, timeout=self.TIMEOUT)
+            conn = urllib.urlopen(url, timeout=self.TIMEOUT)
             response = conn.read()
             self.last_error = False
             return response
-        except urllib2.HTTPError, e:
-            log.warn("Encountered a HTTPError while trying to access \"" + url + "\"")
-            log.warn("Error: " + str(e.code))
+        except urllib.HTTPError as e:
+            log.warning("Encountered a HTTPError while trying to access \"" + url + "\"")
+            log.warning("Error: " + str(e.code))
             self.error_count += 1
-        except urllib2.URLError, e:
-            log.warn("Encountered an URLError while trying to access \"" + url + "\"")
-            log.warn("Error: " + str(e.reason))
+        except urllib.URLError as e:
+            log.warning("Encountered an URLError while trying to access \"" + url + "\"")
+            log.warning("Error: " + str(e.reason))
             self.error_count += 1
-        except httplib.HTTPException:
-            log.warn("Encountered a HTTPException while trying to access \"" + url + "\"")
+        except http.HTTPException:
+            log.warning("Encountered a HTTPException while trying to access \"" + url + "\"")
             self.error_count += 1
         except Exception:
-            log.warn("Unknown error occurred while trying to get data from URL: " + url)
-            log.warn(traceback.format_exc())
+            log.warning("Unknown error occurred while trying to get data from URL: " + url)
+            log.warning(traceback.format_exc())
             self.error_count += 1
         finally:
             if conn:
@@ -481,24 +485,25 @@ class PlayerCache:
     def _postDataToURL(self, url, payload, headers):
         conn = None
         try:
-            request = urllib2.Request(url, payload, headers)
-            conn = urllib2.urlopen(request, timeout=self.TIMEOUT)
+            request = urllib.Request(url, payload, headers)
+            conn = urllib.urlopen(request, timeout=self.TIMEOUT)
             response = conn.read()
             return response
-        except urllib2.HTTPError, e:
-            log.warn("Encountered a HTTPError while trying to POST to \"" + url + "\"")
-            log.warn("Error: " + str(e.code))
-        except urllib2.URLError, e:
-            log.warn("Encountered an URLError while trying to POST to \"" + url + "\"")
-            log.warn("Error: " + str(e.reason))
-        except httplib.HTTPException:
-            log.warn("Encountered a HTTPException while trying to POST to \"" + url + "\"")
+        except urllib.HTTPError as e:
+            log.warning("Encountered a HTTPError while trying to POST to \"" + url + "\"")
+            log.warning("Error: " + str(e.code))
+        except urllib.URLError as e:
+            log.warning("Encountered an URLError while trying to POST to \"" + url + "\"")
+            log.warning("Error: " + str(e.reason))
+        except http.HTTPException:
+            log.warning("Encountered a HTTPException while trying to POST to \"" + url + "\"")
         except Exception:
-            log.warn("Unknown error occurred while trying to POST data to URL: " + url)
-            log.warn(traceback.format_exc())
+            log.warning("Unknown error occurred while trying to POST data to URL: " + url)
+            log.warning(traceback.format_exc())
         finally:
             if conn: conn.close()
         return None
+
 
 def _cleanup():
     if os.path.exists("player-skins"):
@@ -512,7 +517,7 @@ def _cleanup():
             except IOError:
                 os.remove(os.path.join("player-skins", image_file))
             except AttributeError:
-                pass # I have no idea why an Attribute Error is thrown on .close(), but this fixes it
+                pass  # I have no idea why an Attribute Error is thrown on .close(), but this fixes it
             finally:
                 if fp and not fp.closed:
                     fp.close()

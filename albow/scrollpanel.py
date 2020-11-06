@@ -4,21 +4,24 @@
 #
 # Scrollable widget which contains other widgets, for albow
 #
-from palette_view import PaletteView
-from layout import Column
-from utils import blit_in_rect
 from pygame import event, Surface, SRCALPHA, Rect, draw, mouse
 
-#-----------------------------------------------------------------------------
+from albow.layout import Column
+from albow.palette_view import PaletteView
+from albow.utils import blit_in_rect
+
+
+# -----------------------------------------------------------------------------
 class ScrollRow(PaletteView):
     __tooltipText = None
+
     @property
     def tooltipText(self):
         pos = mouse.get_pos()
 
         x, y = self.global_to_local(pos)
-#         print "pos", pos
-#         print "x", x, "y", y
+        #         print "pos", pos
+        #         print "x", x, "y", y
         w, h = self.cell_size
         W, H = self.size
         d = self.margin
@@ -176,8 +179,8 @@ class ScrollRow(PaletteView):
         draw.rect(surface, c, r)
 
     def draw(self, surface):
-        for row in xrange(self.num_rows()):
-            for col in xrange(self.num_cols()):
+        for row in range(self.num_rows()):
+            for col in range(self.num_cols()):
                 r = self.cell_rect(row, col)
                 self.draw_cell(surface, row, col, r)
 
@@ -262,9 +265,10 @@ class ScrollRow(PaletteView):
         return Rect(x, y, w, h)
 
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class ScrollPanel(Column):
     column_margin = 2
+
     def __init__(self, *args, **kwargs):
         kwargs['margin'] = kwargs.get('margin', 0)
         self.selected_item_index = None
@@ -272,15 +276,15 @@ class ScrollPanel(Column):
         self.align = kwargs.get('align', 'l')
         self.spacing = kwargs.get('spacing', 4)
         self.draw_zebra = kwargs.pop('draw_zebra', True)
-#        self.row_height = kwargs.pop('row_height', max([a.height for a in self.rows] + [self.font.size(' ')[1],]))
-        self.row_height = kwargs.pop('row_height', max([a.height for a in self.rows] + [self.font.get_linesize(),]))
+        #        self.row_height = kwargs.pop('row_height', max([a.height for a in self.rows] + [self.font.size(' ')[1],]))
+        self.row_height = kwargs.pop('row_height', max([a.height for a in self.rows] + [self.font.get_linesize(), ]))
         self.inner_width = kwargs.pop('inner_width', 500)
         self.scrolling = kwargs.get('scrolling', True)
         self.hscrolling = kwargs.get('hscrolling', True)
         self.scrollRow = scrollRow = ScrollRow((self.inner_width, self.row_height), 10, draw_zebra=self.draw_zebra, spacing=0,
                                                scrolling=self.scrolling, hscrolling=self.hscrolling)
         self.selected = None
-        Column.__init__(self, [scrollRow,], **kwargs)
+        Column.__init__(self, [scrollRow, ], **kwargs)
         self.shrink_wrap()
 
     def draw_tree_cell(self, surf, i, data, cell_rect, column):
@@ -291,7 +295,7 @@ class ScrollPanel(Column):
                 cell_rect.right -= self.scrollRow.scroll_button_size
         elif self.align.lower() == 'c':
             cell_rect.left = self.centerx - (cell_rect.width / 2)
-        if isinstance(data, (str, unicode)):
+        if isinstance(data, (str, bytes)):
             self.draw_text_cell(surf, i, data, cell_rect, self.align, self.font)
         else:
             self.draw_image_cell(surf, i, data, cell_rect, column)
@@ -301,7 +305,7 @@ class ScrollPanel(Column):
         blit_in_rect(surf, data, cell_rect, self.align, self.margin)
 
     def draw_text_cell(self, surf, i, data, cell_rect, align, font):
-        buf = font.render(unicode(data), True, self.fg_color)
+        buf = font.render(bytes(data), True, self.fg_color)
         blit_in_rect(surf, buf, cell_rect, align)
 
     def num_rows(self):
@@ -316,7 +320,7 @@ class ScrollPanel(Column):
         x = 0
         width = 0
         subs = row_data.subwidgets
-        for i in xrange(len(subs)):
+        for i in range(len(subs)):
             sub = subs[i]
             width += sub.width
             surf = Surface((sub.width, sub.height), SRCALPHA)
@@ -340,4 +344,3 @@ class ScrollPanel(Column):
                         sub.mouse_down(_e)
                         self.selected = sub
                         break
-

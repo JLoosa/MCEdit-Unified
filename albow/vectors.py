@@ -1,16 +1,19 @@
 try:
 
-    from Numeric import add, subtract, maximum
+    from numpy import add, subtract, maximum
 
 except ImportError:
 
     import operator
 
+
     def add(x, y):
         return map(operator.add, x, y)
 
+
     def subtract(x, y):
         return map(operator.sub, x, y)
+
 
     def maximum(*args):
         result = args[0]

@@ -1,7 +1,9 @@
 import unittest
+
 import numpy
-from templevel import TempLevel
+
 from pymclevel.box import BoundingBox
+from pymclevel.test.templevel import TempLevel
 
 __author__ = 'Rio'
 

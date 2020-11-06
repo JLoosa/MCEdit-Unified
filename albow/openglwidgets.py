@@ -2,11 +2,13 @@
 #
 #   Albow - OpenGL widgets
 #
-#-------------------------------------------------------------------------
+# -------------------------------------------------------------------------
 
 from __future__ import division
+
 from OpenGL import GL, GLU
-from widget import Widget
+
+from albow.widget import Widget
 
 
 class GLViewport(Widget):
@@ -16,12 +18,12 @@ class GLViewport(Widget):
         rect = self.rect.move(offset)
         # GL_CLIENT_ALL_ATTRIB_BITS is borked: defined as -1 but
         # glPushClientAttrib insists on an unsigned long.
-        #GL.glPushClientAttrib(0xffffffff)
-        #GL.glPushAttrib(GL.GL_ALL_ATTRIB_BITS)
+        # GL.glPushClientAttrib(0xffffffff)
+        # GL.glPushAttrib(GL.GL_ALL_ATTRIB_BITS)
         GL.glViewport(rect.left, root.height - rect.bottom, rect.width, rect.height)
         self.gl_draw_viewport()
-        #GL.glPopAttrib()
-        #GL.glPopClientAttrib()
+        # GL.glPopAttrib()
+        # GL.glPopClientAttrib()
 
     def gl_draw_viewport(self):
         self.setup_matrices()
@@ -65,7 +67,8 @@ class GLViewport(Widget):
 
 import numpy
 
-#-------------------------------------------------------------------------
+
+# -------------------------------------------------------------------------
 
 
 class GLOrtho(GLViewport):
@@ -94,7 +97,7 @@ class GLPixelOrtho(GLOrtho):
         self.ymax = self.height
 
 
-#-------------------------------------------------------------------------
+# -------------------------------------------------------------------------
 
 
 class GLPerspective(GLViewport):

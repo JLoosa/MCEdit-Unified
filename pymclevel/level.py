@@ -4,18 +4,20 @@ Created on Jul 22, 2011
 @author: Rio
 '''
 
-from box import BoundingBox
-from collections import defaultdict
-from entity import Entity, TileEntity, TileTick
 import itertools
-from logging import getLogger
-import materials
-from math import floor
-from mclevelbase import ChunkMalformed, ChunkNotPresent
-import nbt
-from numpy import argmax, swapaxes, zeros, zeros_like
 import os.path
-import id_definitions
+from collections import defaultdict
+from logging import getLogger
+from math import floor
+
+from numpy import argmax, swapaxes, zeros, zeros_like
+
+import pymclevel.id_definitions as id_definitions
+import pymclevel.materials as materials
+import pymclevel.nbt as nbt
+from pymclevel.box import BoundingBox
+from pymclevel.entity import Entity, TileEntity, TileTick
+from pymclevel.mclevelbase import ChunkMalformed, ChunkNotPresent
 
 log = getLogger(__name__)
 
@@ -89,7 +91,7 @@ def getSlices(box, height):
     miny = max(0, box.miny)
     maxy = min(height, box.maxy)
 
-    for cx in xrange(box.mincx, box.maxcx):
+    for cx in range(box.mincx, box.maxcx):
         localMinX = 0
         localMaxX = 16
         if cx == box.mincx:
@@ -99,7 +101,7 @@ def getSlices(box, height):
             localMaxX = maxxoff
         newMinX = localMinX + (cx << 4) - box.minx
 
-        for cz in xrange(box.mincz, box.maxcz):
+        for cz in range(box.mincz, box.maxcz):
             localMinZ = 0
             localMaxZ = 16
             if cz == box.mincz:
@@ -148,7 +150,7 @@ class MCLevel(object):
     # Game version check. Stores the info found in the 'Version::Name' tag
 
     @property
-    def gamePlatform(self): # Should return the platform the world is from ("Java", "PE" or "Schematic")
+    def gamePlatform(self):  # Should return the platform the world is from ("Java", "PE" or "Schematic")
         """Returns the platform the world is from ("Java", "PE", "Schematic"...)"""
         # I would use isinstance() here, but importing the separate level classes would cause a circular import, so this will have to do
         if not hasattr(self, '_gamePlatform'):
@@ -183,7 +185,7 @@ class MCLevel(object):
         return self._gameVersionNumber
 
     @property
-    def gameVersion(self): #depreciated. The output of this function is inconsistent. Use either gamePlatform or gameVersionNumber
+    def gameVersion(self):  # depreciated. The output of this function is inconsistent. Use either gamePlatform or gameVersionNumber
         """Depreciated property. Use gamePlatform or gameVersionNumber. This returns gameVersionNumber for Java worlds and gamePlatform for all others"""
         log.warning('gameVersion is depreciated. Use gamePlatform or gameVersionNumber instead')
         if self.root_tag and not hasattr(self, '_gameVersion'):
@@ -214,7 +216,7 @@ class MCLevel(object):
         if hasattr(cls, "_isLevel"):
             return cls._isLevel(filename)
 
-        with file(filename) as f:
+        with open(filename) as f:
             data = f.read()
 
         if hasattr(cls, "_isDataLevel"):
@@ -294,7 +296,7 @@ class MCLevel(object):
     def allChunks(self):
         """Returns a synthetic list of chunk positions (xPos, zPos), to fake
         being a chunked level format."""
-        return itertools.product(xrange(0, self.Width + 15 >> 4), xrange(0, self.Length + 15 >> 4))
+        return itertools.product(range(0, self.Width + 15 >> 4), range(0, self.Length + 15 >> 4))
 
     def getChunks(self, chunks=None):
         """ pass a list of chunk coordinate tuples to get an iterator yielding
@@ -431,8 +433,6 @@ class MCLevel(object):
 
     # --- Fill and Replace ---
 
-    from block_fill import fillBlocks, fillBlocksIter
-
     # --- Transformations ---
     def rotateLeft(self):
         self.Blocks = swapaxes(self.Blocks, 1, 0)[:, ::-1, :]  # x=z; z=-x
@@ -455,8 +455,6 @@ class MCLevel(object):
         pass
 
     # --- Copying ---
-
-    from block_copy import copyBlocksFrom, copyBlocksFromIter
 
     def saveInPlaceGen(self):
         self.saveToFile(self.filename)
@@ -586,10 +584,10 @@ class EntityLevel(MCLevel):
     def tileEntityAt(self, x, y, z, print_stuff=False):
         entities = []
         if print_stuff:
-            print "len(self.TileEntities)", len(self.TileEntities)
+            print("len(self.TileEntities)", len(self.TileEntities))
         for entityTag in self.TileEntities:
             if print_stuff:
-                print entityTag["id"].value, TileEntity.pos(entityTag), x, y, z
+                print(entityTag["id"].value, TileEntity.pos(entityTag), x, y, z)
             if TileEntity.pos(entityTag) == [x, y, z]:
                 entities.append(entityTag)
 
@@ -720,7 +718,7 @@ class LightedChunk(ChunkBase):
         skylight = self.SkyLight
         heightmap = self.HeightMap
 
-        for x, z in itertools.product(xrange(16), xrange(16)):
+        for x, z in itertools.product(range(16), range(16)):
             skylight[x, z, heightmap[z, x]:] = 15
             lv = 15
             for y in reversed(range(heightmap[z, x])):

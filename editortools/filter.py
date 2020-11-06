@@ -13,13 +13,15 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE."""
 # Modified by D.C.-G. for translation purpose
 import collections
+import copy
 import os
 import traceback
-import copy
+
 from albow import FloatField, IntField, AttrRef, Row, Label, Widget, TabPanel, \
     CheckBox, Column, Button, TextFieldWrapped, translate
-from editortools.tooloptions import ToolOptions
 from albow.extended_widgets import CheckBoxLabel
+from editortools.tooloptions import ToolOptions
+
 _ = translate._
 import albow
 from config import config
@@ -27,41 +29,43 @@ from editortools.blockview import BlockButton
 from editortools.editortool import EditorTool
 from glbackground import Panel
 from mceutils import setWindowCaption, alertException
-from albow import ChoiceButton, showProgress, TextInputRow
+from albow.extended_widgets import ChoiceButton, showProgress, TextInputRow
 import mcplatform
-from operation import Operation
+from editortools.operation import Operation
 from albow.dialogs import wrapped_label, alert, Dialog
 import pymclevel
 # from pymclevel import BoundingBox, MCEDIT_DEFS, MCEDIT_IDS
 from pymclevel import BoundingBox
-from pymclevel.id_definitions import version_defs_ids
 import json
 import directories
 import sys
 import keys
 import imp
-from nbtexplorer import NBTExplorerToolPanel
+from editortools.nbtexplorer import NBTExplorerToolPanel
 
 import logging
+
 log = logging.getLogger(__name__)
 
+
 class FilterUtils(object):
-    
+
     def __init__(self, **kwargs):
         self._given_data = []
         for arg in kwargs:
             self._given_data.append(arg)
             self.__dict__[arg] = kwargs[arg]
-            
+
     def Available_Attributes(self):
         return self._given_data
+
 
 def alertFilterException(func):
     def _func(*args, **kw):
         try:
             func(*args, **kw)
         except Exception as e:
-            print traceback.format_exc()
+            print(traceback.format_exc())
             alert(_(u"Exception during filter operation. See console for details.\n\n{0}").format(e))
 
     return _func
@@ -126,11 +130,12 @@ class JsonDictProperty(dict):
         finally:
             if fp:
                 fp.close()
-        
+
+
 class SingleFileChooser(Widget):
     OPEN_FILE = 0
     SAVE_FILE = 1
-    
+
     def _open_file(self):
         file_types = []
         for f_type in self.file_types:
@@ -144,7 +149,7 @@ class SingleFileChooser(Widget):
             self.file_path = None
         self._button.shrink_wrap()
         self.shrink_wrap()
-    
+
     def _save_file(self):
         file_types = 'Custom File\0{}\0'.format(';'.join(self.file_types))
         if not self.file_types[0].startswith("*"):
@@ -160,23 +165,23 @@ class SingleFileChooser(Widget):
             self.file_path = None
         self._button.shrink_wrap()
         self.shrink_wrap()
-    
+
     def __init__(self, file_types=None, operation=0, **kwds):
         Widget.__init__(self, **kwds)
         if file_types is None:
-            self.file_types = ["*.*",]
+            self.file_types = ["*.*", ]
         else:
             self.file_types = file_types
         self.file_path = None
         self._button = None
-            
+
         if operation == self.OPEN_FILE:
             self._button = Button("Choose a file", action=self._open_file)
         elif operation == self.SAVE_FILE:
             self._button = Button("Save a file", action=self._save_file)
-            
+
         self.add(self._button)
-        
+
         self.shrink_wrap()
 
 
@@ -220,7 +225,7 @@ class MacroModuleOptions(Widget):
                 if step != "Number of steps":
                     filters.append(tool.filterModules[self._macro_data[step]["Name"]])
                     for module_input in self._macro_data[step]["Inputs"].keys():
-                        if not isinstance(self._macro_data[step]["Inputs"][module_input], (str, unicode)):
+                        if not isinstance(self._macro_data[step]["Inputs"][module_input], (str, bytes)):
                             continue
                         if not self._macro_data[step]["Inputs"][module_input].startswith("block-"):
                             continue
@@ -285,7 +290,6 @@ class FilterModuleOptions(Widget):
 
         for eachPage in pages.pages:
             self.optionDict = dict(self.optionDict.items() + eachPage.optionDict.items())
-            
 
     def rebuildTabPage(self, inputs, **kwargs):
         title, page, rect = self.makeTabPage(self.tool, inputs, self.trn, **kwargs)
@@ -301,8 +305,8 @@ class FilterModuleOptions(Widget):
         page.is_gl_container = True
         rows = []
         cols = []
-        max_height = tool.editor.mainViewport.height - tool.editor.toolbar.height - tool.editor.subwidgets[0].height -\
-            self._parent.filterSelectRow.height - self._parent.confirmButton.height - self.pages.tab_height
+        max_height = tool.editor.mainViewport.height - tool.editor.toolbar.height - tool.editor.subwidgets[0].height - \
+                     self._parent.filterSelectRow.height - self._parent.confirmButton.height - self.pages.tab_height
 
         page.optionDict = {}
         page.tool = tool
@@ -320,7 +324,7 @@ class FilterModuleOptions(Widget):
             else:
                 oName = n
             if isinstance(optionType, tuple):
-                if isinstance(optionType[0], (int, long, float)):
+                if isinstance(optionType[0], (int, float)):
                     if len(optionType) == 3:
                         val, min, max = optionType
                         increment = 0.1
@@ -333,7 +337,7 @@ class FilterModuleOptions(Widget):
 
                     rows.append(addNumField(page, optionName, oName, val, min, max, increment))
 
-                if isinstance(optionType[0], (str, unicode)):
+                if isinstance(optionType[0], (str, bytes)):
                     isChoiceButton = False
 
                     if optionType[0] == "string":
@@ -341,7 +345,7 @@ class FilterModuleOptions(Widget):
                         wid = None
                         val = None
                         for keyword in optionType:
-                            if isinstance(keyword, (str, unicode)) and keyword != "string":
+                            if isinstance(keyword, (str, bytes)) and keyword != "string":
                                 kwds.append(keyword)
                         for keyword in kwds:
                             splitWord = keyword.split('=')
@@ -382,30 +386,30 @@ class FilterModuleOptions(Widget):
                                 blockButton.blockInfo = pymclevel.alphaMaterials[optionType[1]]
                             else:
                                 raise
-                
+
                         row = Column((Label(oName, doNotTranslate=True), blockButton))
                         page.optionDict[optionName] = AttrRef(blockButton, 'blockInfo')
-                
+
                         rows.append(row)
                     elif optionType[0] == "file-save":
                         if len(optionType) == 2:
                             file_chooser = SingleFileChooser(file_types=optionType[1], operation=SingleFileChooser.SAVE_FILE)
                         else:
                             file_chooser = SingleFileChooser(operation=SingleFileChooser.SAVE_FILE)
-                        
+
                         row = Row((Label(oName, doNotTranslate=True), file_chooser))
                         page.optionDict[optionName] = AttrRef(file_chooser, 'file_path')
-                        
+
                         rows.append(row)
                     elif optionType[0] == "file-open":
                         if len(optionType) == 2:
                             file_chooser = SingleFileChooser(file_types=optionType[1], operation=SingleFileChooser.OPEN_FILE)
                         else:
                             file_chooser = SingleFileChooser(operation=SingleFileChooser.OPEN_FILE)
-                        
+
                         row = Row((Label(oName, doNotTranslate=True), file_chooser))
                         page.optionDict[optionName] = AttrRef(file_chooser, 'file_path')
-                        
+
                         rows.append(row)
                     else:
                         isChoiceButton = True
@@ -420,7 +424,7 @@ class FilterModuleOptions(Widget):
                         page.optionDict[optionName] = AttrRef(choiceButton, 'selectedChoice')
 
                         rows.append(Row((Label(oName, doNotTranslate=True), choiceButton)))
-                        
+
 
             elif isinstance(optionType, bool):
                 cbox = CheckBox(value=optionType)
@@ -431,7 +435,7 @@ class FilterModuleOptions(Widget):
 
             elif isinstance(optionType, (int, float)):
                 rows.append(addNumField(self, optionName, oName, optionType))
-                
+
             elif optionType == "blocktype" or isinstance(optionType, pymclevel.materials.Block):
                 blockButton = BlockButton(tool.editor.level.materials)
                 if isinstance(optionType, pymclevel.materials.Block):
@@ -457,24 +461,25 @@ class FilterModuleOptions(Widget):
                 rows.append(row)
             elif optionType == "title":
                 title = oName
-                
+
             elif optionType == "file-save":
                 file_chooser = SingleFileChooser(operation=SingleFileChooser.SAVE_FILE)
                 row = Row((Label(oName, doNotTranslate=True), file_chooser))
                 page.optionDict[optionName] = AttrRef(file_chooser, 'file_path')
-                        
+
                 rows.append(row)
             elif optionType == "file-open":
                 file_chooser = SingleFileChooser(operation=SingleFileChooser.OPEN_FILE)
                 row = Row((Label(oName, doNotTranslate=True), file_chooser))
                 page.optionDict[optionName] = AttrRef(file_chooser, 'file_path')
-                        
+
                 rows.append(row)
             elif isinstance(optionType, list) and optionType[0].lower() == "nbttree":
                 kw = {'close_text': None, 'load_text': None}
                 if len(optionType) >= 3:
                     def close():
                         self.pages.show_page(self.pages.pages[optionType[2]])
+
                     kw['close_action'] = close
                     kw['close_text'] = "Go Back"
                 if len(optionType) >= 4:
@@ -557,7 +562,6 @@ class FilterModuleOptions(Widget):
 
 
 class FilterToolPanel(Panel):
-
     BACKUP_FILTER_JSON = False
     """If set to true, the filter.json is backed up to the hard disk
     every time it's edited. The default is false, which makes the file save
@@ -589,21 +593,20 @@ class FilterToolPanel(Panel):
         self._save_macro = False
         self.tool = tool
         self.selectedName = self.filter_json.get("Last Filter Opened", "")
-        
-        
+
         utils = FilterUtils(
-                            editor=tool.editor, 
-                            materials=self.tool.editor.level.materials,
-                            custom_widget=tool.editor.addExternalWidget,
-                            resize_selection_box=tool.editor._resize_selection_box
-                            )
+            editor=tool.editor,
+            materials=self.tool.editor.level.materials,
+            custom_widget=tool.editor.addExternalWidget,
+            resize_selection_box=tool.editor._resize_selection_box
+        )
         utils_module = imp.new_module("filter_utils")
         utils_module = utils
         sys.modules["filter_utils"] = utils_module
 
     @staticmethod
     def load_filter_json():
-        #filter_json_file = os.path.join(directories.getDataDir(), "filters.json")
+        # filter_json_file = os.path.join(directories.getDataDir(), "filters.json")
         filter_json_file = directories.getDataFile('filters.json')
         filter_json = {}
         if FilterToolPanel.BACKUP_FILTER_JSON:
@@ -633,7 +636,7 @@ class FilterToolPanel(Panel):
         self._saveOptions()
         self.filter_json["Last Filter Opened"] = self.selectedName
         if not FilterToolPanel.BACKUP_FILTER_JSON:
-            #with open(os.path.join(directories.getDataDir(), "filters.json"), 'w') as f:
+            # with open(os.path.join(directories.getDataDir(), "filters.json"), 'w') as f:
             with open(directories.getDataFile('filters.json'), 'w') as f:
                 json.dump(self.filter_json, f)
 
@@ -913,7 +916,7 @@ class FilterOperation(Operation):
 
         # Inject the defs for blocks/entities in the module
         # Need to reimport the defs and ids to get the 'fresh' ones
-#         from pymclevel import MCEDIT_DEFS, MCEDIT_IDS 
+        #         from pymclevel import MCEDIT_DEFS, MCEDIT_IDS
         self.filter.MCEDIT_DEFS = self.level.defsIds.mcedit_defs
         self.filter.MCEDIT_IDS = self.level.defsIds.mcedit_ids
         self.filter.perform(self.level, BoundingBox(self.box), self.options)
@@ -922,6 +925,7 @@ class FilterOperation(Operation):
 
     def dirtyBox(self):
         return self.box
+
 
 class MacroOperation(Operation):
     def __init__(self, editor, level, box, filters, options):
@@ -947,20 +951,21 @@ class MacroOperation(Operation):
 
 
 class FilterToolOptions(ToolOptions):
-    
+
     def __init__(self, tool):
         ToolOptions.__init__(self, name='Panel.FilterToolOptions')
         self.tool = tool
-        
+
         self.notifications_disabled = False
-        
+
         disable_error_popup = CheckBoxLabel("Disable Error Notification",
                                             ref=AttrRef(self, 'notifications_disabled'))
         ok_button = Button("Ok", action=self.dismiss)
-        
+
         col = Column((disable_error_popup, ok_button,), spacing=2)
         self.add(col)
         self.shrink_wrap()
+
 
 class FilterTool(EditorTool):
     tooltipText = "Filter"
@@ -971,9 +976,9 @@ class FilterTool(EditorTool):
 
         self.filterModules = {}
         self.savedOptions = {}
-        
+
         self.filters_not_imported = []
-        
+
         self.optionsPanel = FilterToolOptions(self)
 
     @property
@@ -989,7 +994,7 @@ class FilterTool(EditorTool):
     @alertException
     def showPanel(self):
         self.panel = FilterToolPanel(self)
-        
+
         self.not_imported_filters = []
         self.reloadFilters()
 
@@ -1010,7 +1015,7 @@ class FilterTool(EditorTool):
 
     def reloadFilters(self):
         filterFiles = []
-        unicode_module_names = []
+        bytes_module_names = []
 
         # Tracking stock and custom filters names in order to load correctly the translations.
         stock_filters = []
@@ -1036,7 +1041,7 @@ class FilterTool(EditorTool):
                     if root not in sys.path:
                         sys.path.append(root)
                 except UnicodeEncodeError:
-                    unicode_module_names.extend([filter_name for filter_name in files])
+                    bytes_module_names.extend([filter_name for filter_name in files])
 
                 for possible_filter in files:
                     if possible_filter.endswith(".py"):
@@ -1052,7 +1057,7 @@ class FilterTool(EditorTool):
                         filterFiles.append((root, possible_filter, _stock, subFolderString))
 
         # Search first for the stock filters.
-        #searchForFiltersInDir(os.path.join(directories.getDataDir(), "stock-filters"), True)
+        # searchForFiltersInDir(os.path.join(directories.getDataDir(), "stock-filters"), True)
         searchForFiltersInDir(directories.getDataFile('stock-filters'), True)
         searchForFiltersInDir(directories.getFiltersDir(), False)
 
@@ -1060,8 +1065,7 @@ class FilterTool(EditorTool):
 
         org_lang = albow.translate.lang
 
-
-        # If the path has unicode chars, there's no way of knowing what order to add the
+        # If the path has bytes chars, there's no way of knowing what order to add the
         # files to the sys.modules. To fix this, we keep trying to import until we import
         # fail to import all leftover files.
         shouldContinue = True
@@ -1070,7 +1074,7 @@ class FilterTool(EditorTool):
             for f in filterFiles:
                 if f[1] in self.not_imported_filters:
                     continue
-                module = tryImport(f[0], f[1], org_lang, f[2], f[3], f[1] in unicode_module_names, notify=(not self.optionsPanel.notifications_disabled))
+                module = tryImport(f[0], f[1], org_lang, f[2], f[3], f[1] in bytes_module_names, notify=(not self.optionsPanel.notifications_disabled))
                 if module is None:
                     self.not_imported_filters.append(f[1])
                     continue
@@ -1102,20 +1106,21 @@ class FilterTool(EditorTool):
         return [FilterTool.moduleDisplayName(module) for module in self.filterModules.itervalues()]
 
 
-#-# WIP. Reworking on the filters translations.
-#-# The 'new_method' variable is used to select the latest working code or the actual under development one.
-#-# This variable must be on False when releasing unless the actual code is fully working.
+# -# WIP. Reworking on the filters translations.
+# -# The 'new_method' variable is used to select the latest working code or the actual under development one.
+# -# This variable must be on False when releasing unless the actual code is fully working.
 
 new_method = True
 
-def tryImport_old(_root, name, org_lang, stock=False, subFolderString="", unicode_name=False, notify=True):
+
+def tryImport_old(_root, name, org_lang, stock=False, subFolderString="", bytes_name=False, notify=True):
     with open(os.path.join(_root, name)) as module_file:
         module_name = name.split(os.path.sep)[-1].replace(".py", "")
         try:
-            if unicode_name:
+            if bytes_name:
                 source_code = module_file.read()
                 module = imp.new_module(module_name)
-                exec (source_code, module.__dict__)
+                exec(source_code, module.__dict__)
                 if module_name not in sys.modules.keys():
                     sys.modules[module_name] = module
             else:
@@ -1155,14 +1160,15 @@ def tryImport_old(_root, name, org_lang, stock=False, subFolderString="", unicod
                         u"See console for details.\n\n{}").format(name, e))
             return None
 
-def tryImport_new(_root, name, org_lang, stock=False, subFolderString="", unicode_name=False, notify=True):
+
+def tryImport_new(_root, name, org_lang, stock=False, subFolderString="", bytes_name=False, notify=True):
     with open(os.path.join(_root, name)) as module_file:
         module_name = name.split(os.path.sep)[-1].replace(".py", "")
         try:
-            if unicode_name:
+            if bytes_name:
                 source_code = module_file.read()
                 module = imp.new_module(module_name)
-                exec (source_code, module.__dict__)
+                exec(source_code, module.__dict__)
                 if module_name not in sys.modules.keys():
                     sys.modules[module_name] = module
             else:
@@ -1179,7 +1185,7 @@ def tryImport_new(_root, name, org_lang, stock=False, subFolderString="", unicod
                 trn_path = os.path.join(trn_path, subFolderString[1:-1], module_name)
                 if os.path.exists(trn_path):
                     albow.translate.buildTranslation(config.settings.langCode.get(), extend=True, langPath=trn_path)
-#                     module.trn = albow.translate
+                    #                     module.trn = albow.translate
                     module.displayName = _(module.displayName)
             module.trn = albow.translate
             return module
@@ -1190,6 +1196,7 @@ def tryImport_new(_root, name, org_lang, stock=False, subFolderString="", unicod
                 alert(_(u"Exception while importing filter module {}. " +
                         u"See console for details.\n\n{}").format(name, e))
             return None
+
 
 if new_method:
     tryImport = tryImport_new

@@ -1,15 +1,16 @@
 #
 # Albow - Controls
 #
-#-# Modified by D.C.-G. for translation purpose
+# -# Modified by D.C.-G. for translation purpose
+
+import albow.resource as resource
 
 from pygame import Rect, draw, transform
 from pygame.locals import K_RETURN, K_KP_ENTER, K_SPACE
 
-from widget import Widget, overridable_property
-from theme import ThemeProperty
-import resource
-from translate import _
+from albow.theme import ThemeProperty
+from albow.translate import _
+from albow.widget import Widget, overridable_property
 
 
 class Control(object):
@@ -102,25 +103,25 @@ class Label(Widget):
     _align = 'l'
 
     def __init__(self, text, width=None, base_text=None, **kwds):
-        #-# Translation live update preparation
+        # -# Translation live update preparation
         # base_text: to be used each time a widget takes a formated string
         #            defaults to 'text'.
         Widget.__init__(self, **kwds)
-        #-# Translation live update preparation
+        # -# Translation live update preparation
         self.fixed_width = width
         self.base_text = base_text or text
         self.previous_translation = _(text, doNotTranslate=kwds.get('doNotTranslate', False))
-        #-#
+        # -#
         self._text = _(text, doNotTranslate=kwds.get('doNotTranslate', False))
-        #-#
+        # -#
         self.calc_size()
-        #-#
+        # -#
 
-    #-# Translation live update preparation
+    # -# Translation live update preparation
     def calc_size(self):
         lines = self._text.split("\n")
         tw, th = 0, 0
-        for i in xrange(len(lines)):
+        for i in range(len(lines)):
             line = lines[i]
             if i == len(lines) - 1:
                 w, h = self.font.size(line)
@@ -143,7 +144,8 @@ class Label(Widget):
         self.set_text(self.base_text)
         self.calc_size()
         Widget.set_update_ui(self, v)
-    #-#
+
+    # -#
 
     def get_text(self):
         return self._text
@@ -228,7 +230,7 @@ class ButtonBase(Control):
     default_choice_color = ThemeProperty('default_choice_color')
     default_choice_bg_color = ThemeProperty('default_choice_bg_color')
 
-    tab_stop= True
+    tab_stop = True
 
     def mouse_down(self, event):
         button = event.button
@@ -277,7 +279,7 @@ class Image(Widget):
     def __init__(self, image=None, rect=None, prefix="", **kwds):
         Widget.__init__(self, rect, **kwds)
         if image:
-            if isinstance(image, basestring):
+            if isinstance(image, (str, bytes)):
                 image = resource.get_image(image, prefix=prefix)
             w, h = image.get_size()
             d = 2 * self.margin
@@ -298,15 +300,16 @@ class Image(Widget):
         r = image.get_rect()
         r.center = frame.center
         surf.blit(image, r)
-        
+
+
 class RotatableImage(Image):
-    
+
     def __init__(self, angle=0.0, min_angle=0, max_angle=360, **kwds):
         super(RotatableImage, self).__init__(**kwds)
         self._angle = -angle
         self._min_angle = min_angle
         self._max_angle = max_angle
-    
+
     def draw(self, surf):
         frame = surf.get_rect()
         if self.highlighted:
@@ -316,16 +319,17 @@ class RotatableImage(Image):
         r = image.get_rect()
         r.center = frame.center
         surf.blit(image, r)
-        
+
     def get_angle(self):
         return self._angle
 
     def set_angle(self, angle):
         angle = max(min(angle, self._max_angle), self._min_angle)
         self._angle = angle
-        
+
     def add_angle(self, angle):
         self.set_angle(self.get_angle() + (angle * -1))
+
 
 class ImageButton(ButtonBase, Image):
     pass

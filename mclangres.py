@@ -9,12 +9,14 @@ Uses `.minecraft/assets/indexes/[version].json`. The version is the highest
 found by default.
 """
 
-import re
-import os
 import codecs
-from distutils.version import LooseVersion
-from directories import getMinecraftLauncherDirectory, getDataDir, getDataFile
 import logging
+import os
+import re
+from distutils.version import LooseVersion
+
+from directories import getMinecraftLauncherDirectory, getDataFile
+
 log = logging.getLogger(__name__)
 
 indexesDirectory = os.path.join(getMinecraftLauncherDirectory(), 'assets', 'indexes')
@@ -30,7 +32,7 @@ langMisc = {}
 csimGnal = {}
 
 # Shall this be maintained in an external resource?
-excludedEntries = ['tile.flower1.name',]
+excludedEntries = ['tile.flower1.name', ]
 
 # Used to track untranslated and out dated MCEdit resources.
 # Set it to true to generate/add entries to 'missingmclangres.txt' in MCEdit folder.
@@ -38,19 +40,22 @@ excludedEntries = ['tile.flower1.name',]
 # ! ! ! Please, pay attention to disable this befor releasing ! ! !
 report_missing = False
 
+
 def getResourceName(name, data):
-    match = re.findall('"minecraft/lang/%s.lang":[ ]\{\b*.*?"hash":[ ]"(.*?)",' % name, data, re.I|re.DOTALL)
+    match = re.findall('"minecraft/lang/%s.lang":[ ]\{\b*.*?"hash":[ ]"(.*?)",' % name, data, re.I | re.DOTALL)
     if match:
         return match[0]
     else:
         log.debug('Could not find %s resource name.' % name)
+
 
 def findResourceFile(name, basedir):
     for root, dirs, files in os.walk(basedir):
         if name in files:
             return os.path.join(basedir, root, name)
 
-def buildResources(version=None, lang=None): 
+
+def buildResources(version=None, lang=None):
     """Loads the resource files and builds the resource dictionnaries.
     Four dictionnaries are built. Two for the refering language (English), and two for the language to be used.
     They are 'reversed' dictionnaries; the {foo: bar} pairs of one are the {bar: foo} of the other one."""
@@ -88,7 +93,7 @@ def buildResources(version=None, lang=None):
         idx = -1
         for i, cur_ver in enumerate(versions):
             v2 = LooseVersion(cur_ver)
-            if v1>= v2:
+            if v1 >= v2:
                 break
         versions.insert(i, ver_str)
     versions = versions[:-1]
@@ -126,7 +131,7 @@ def buildResources(version=None, lang=None):
             if line.split('.')[0] in ['book', 'enchantment', 'entity', 'gameMode', 'generator', 'item', 'tile'] and line.split('=')[0].strip() not in excludedEntries:
                 enRes[line.split('=', 1)[-1].strip()] = line.split('=', 1)[0].strip()
                 serNe[line.split('=', 1)[0].strip()] = line.split('=', 1)[-1].strip()
-        #lines = codecs.open(os.path.join(getDataDir(), 'Items', 'en_GB'), encoding='utf_8')
+        # lines = codecs.open(os.path.join(getDataDir(), 'Items', 'en_GB'), encoding='utf_8')
         lines = codecs.open(getDataFile('Items', 'en_GB'), encoding='utf_8')
         for line in lines:
             if line.split('.')[0] in ['book', 'enchantment', 'entity', 'gameMode', 'generator', 'item', 'tile'] and line.split('=')[0].strip() not in excludedEntries:
@@ -158,10 +163,10 @@ def buildResources(version=None, lang=None):
             if line.split('.')[0] in ['book', 'enchantment', 'entity', 'gameMode', 'generator', 'item', 'tile'] and line.split('=')[0].strip() not in excludedEntries:
                 langRes[line.split('=', 1)[0].strip()] = line.split('=', 1)[-1].strip()
                 serGnal[line.split('=', 1)[-1].strip()] = line.split('=', 1)[0].strip()
-        #if os.path.exists(os.path.join(getDataDir(), 'Items', lang)):
+        # if os.path.exists(os.path.join(getDataDir(), 'Items', lang)):
         if os.path.exists(getDataFile('Items', lang)):
             log.debug("Found Items/%s" % lang)
-            #lines = codecs.open(os.path.join(getDataDir(), 'Items', lang), encoding='utf_8')
+            # lines = codecs.open(os.path.join(getDataDir(), 'Items', lang), encoding='utf_8')
             lines = codecs.open(getDataFile('Items', lang), encoding='utf_8')
             for line in lines:
                 if line.split('.')[0] in ['book', 'enchantment', 'entity', 'gameMode', 'generator', 'item', 'tile'] and line.split('=')[0].strip() not in excludedEntries:
@@ -173,6 +178,7 @@ def buildResources(version=None, lang=None):
         log.debug('... Loaded!')
     else:
         return
+
 
 def compound(char, string, pair=None):
     if pair is None:
@@ -186,7 +192,7 @@ def compound(char, string, pair=None):
     if (name not in enRes.keys() and name not in langRes.values()) and (name not in enMisc.keys() and name not in langMisc.values()):
         addMissing(name)
     head = langRes.get(enRes.get(name, name), name)
-    for i in xrange(len(misc)):
+    for i in range(len(misc)):
         if ' ' in misc[i]:
             if langMisc.get(enMisc.get(misc[i], False), False):
                 misc[i] = langMisc.get(enMisc.get(misc[i], misc[i]), misc[i])
@@ -194,7 +200,7 @@ def compound(char, string, pair=None):
                 misc[i] = langRes.get(enRes.get(misc[i], misc[i]), misc[i])
             else:
                 stop = [False, False]
-                for j in xrange(1, misc[i].count(' ') + 1):
+                for j in range(1, misc[i].count(' ') + 1):
                     elems = misc[i].rsplit(' ', j)
                     if not stop[0]:
                         h = elems[0]
@@ -230,6 +236,7 @@ def compound(char, string, pair=None):
     tail = u'{0}{1}{2}'.format(char, u', '.join([langMisc.get(enMisc.get(a, a), a) for a in misc]), pair)
     return u' '.join((head, tail))
 
+
 if report_missing:
     def addMissing(name, cat='base'):
         n = u''
@@ -243,13 +250,15 @@ if report_missing:
             tail = ''.join([a.capitalize() for a in elems[1].split(' ') if not a.isdigit()])
         if not n.isdigit():
             line = 'missing.{0}.{1}{2}={3}\n'.format(cat, head, tail, name)
-            #f = codecs.open(os.path.join(getDataDir(), 'missingmclangres.txt'), 'a+', encoding='utf_8')
+            # f = codecs.open(os.path.join(getDataDir(), 'missingmclangres.txt'), 'a+', encoding='utf_8')
             f = codecs.open(getDataFile('missingmclangres.txt'), 'a+', encoding='utf_8')
             if line not in f.read():
                 f.write(line)
             f.close()
 else:
-    def addMissing(*args, **kwargs): return
+    def addMissing(*args, **kwargs):
+        return
+
 
 def translate(name):
     """Returns returns the translation of `name`, or `name` if no translation found.
@@ -259,16 +268,18 @@ def translate(name):
         if c in name:
             return compound(c, name)
     if report_missing:
-        print '*', (name not in enRes.keys() and name not in langRes.values()) and (name not in enMisc.keys() and name not in langMisc.values()), name
+        print('*', (name not in enRes.keys() and name not in langRes.values()) and (name not in enMisc.keys() and name not in langMisc.values()), name)
     if (name not in enRes.keys() and name not in langRes.values()) and (name not in enMisc.keys() and name not in langMisc.values()):
         addMissing(name)
     return langRes.get(enRes.get(name, name), name)
+
 
 def untranslate(name, case_sensitive=True):
     """Basic reverse function of `translate`."""
     key = serGnal.get(name, None)
     value = serNe.get(key, None)
     return value or name
+
 
 def search(text, untranslate=False, capitalize=True, filters=[]):
     """Search for a `text` string in the resources entries.
@@ -278,20 +289,22 @@ def search(text, untranslate=False, capitalize=True, filters=[]):
     # filters may contain regexes
     text = text.lower()
     results = []
+
     def get_result(l, w):
-            if untranslate:
-                if capitalize:
-                    results.append('-'.join([b.capitalize() for b in ' '.join([a.capitalize() for a in serNe[w].split(' ')]).split('-')]))
-                else:
-                    results.append(serNe[w].lower())
+        if untranslate:
+            if capitalize:
+                results.append('-'.join([b.capitalize() for b in ' '.join([a.capitalize() for a in serNe[w].split(' ')]).split('-')]))
             else:
-                if capitalize:
-                    results.append('-'.join([b.capitalize() for b in ' '.join([a.capitalize() for a in l.split(' ')]).split('-')]))
-                else:
-                    results.append(l.lower())
+                results.append(serNe[w].lower())
+        else:
+            if capitalize:
+                results.append('-'.join([b.capitalize() for b in ' '.join([a.capitalize() for a in l.split(' ')]).split('-')]))
+            else:
+                results.append(l.lower())
+
     for k, v in serGnal.items():
         if text in k.lower():
-            if not filters or map(lambda (x,y):re.match(x,y), zip(filters, [v] * len(filters))) != [None, None]:
+            if not filters or map(lambda _in: re.match(_in[0], _in[1]), zip(filters, [v] * len(filters))) != [None, None]:
                 if untranslate:
                     if capitalize:
                         results.append('-'.join([b.capitalize() for b in ' '.join([a.capitalize() for a in serNe[v].split(' ')]).split('-')]))
@@ -304,4 +317,3 @@ def search(text, untranslate=False, capitalize=True, filters=[]):
                         results.append(k.lower())
     results.sort()
     return results
-

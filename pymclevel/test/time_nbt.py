@@ -1,13 +1,11 @@
-from StringIO import StringIO
-
 __author__ = 'Rio'
-
-import pymclevel.nbt as nbt
 
 from timeit import timeit
 
+import pymclevel.nbt as nbt
+
 path = "testfiles/TileTicks.nbt"
-test_data = file(path, "rb").read()
+test_data = open(path, "rb").read()
 
 test_file = None
 resaved_test_file = None
@@ -25,10 +23,9 @@ def save_file():
     # resaved_test_file = s.getvalue()
 
 
-print "File: ", path
-print "Load: %0.1f ms" % (timeit(load_file, number=1) * 1000)
-print "Save: %0.1f ms" % (timeit(save_file, number=1) * 1000)
-print "Length: ", len(resaved_test_file)
+print("File: ", path)
+print("Load: %0.1f ms" % (timeit(load_file, number=1) * 1000))
+print("Save: %0.1f ms" % (timeit(save_file, number=1) * 1000))
+print("Length: ", len(resaved_test_file))
 
 assert test_data == resaved_test_file
-__author__ = 'Rio'

@@ -3,19 +3,19 @@
 #   Albow - Tab Panel
 #
 ################################################################
-#-# Modified by D.C.-G. for translation purpose
+# -# Modified by D.C.-G. for translation purpose
 
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
-from albow import *
+from numpy import fromstring
 from pygame import Rect, Surface, image
 from pygame.locals import SRCALPHA
-from widget import Widget
-from theme import ThemeProperty, FontProperty
-from utils import brighten
-from numpy import fromstring
-from translate import _ # useless?
+
+from albow.theme import ThemeProperty, FontProperty
+from albow.translate import _  # useless?
+from albow.utils import brighten
+from albow.widget import Widget
 
 
 class TabPanel(Widget):
@@ -32,7 +32,8 @@ class TabPanel(Widget):
     tab_area_bg_color = ThemeProperty('tab_area_bg_color')
     tab_dimming = ThemeProperty('tab_dimming')
     tab_titles = None
-    #use_page_bg_color_for_tabs = ThemeProperty('use_page_bg_color_for_tabs')
+
+    # use_page_bg_color_for_tabs = ThemeProperty('use_page_bg_color_for_tabs')
 
     def __init__(self, pages=None, **kwds):
         Widget.__init__(self, **kwds)
@@ -145,8 +146,8 @@ class TabPanel(Widget):
 
     def tab_bg_color_for_page(self, page):
         return getattr(page, 'tab_bg_color', None) \
-            or page.bg_color \
-            or self.default_tab_bg_color
+               or page.bg_color \
+               or self.default_tab_bg_color
 
     def mouse_down(self, e):
         x, y = e.local

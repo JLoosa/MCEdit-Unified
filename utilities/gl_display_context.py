@@ -1,18 +1,20 @@
-from OpenGL import GL, GLU
-from config import config
-import pygame
-from pygame import display, image
+import functools
 import logging
-import sys
-import directories
 import os
-import mcplatform
+import sys
+
 import numpy
-import pymclevel
-from resource_packs import ResourcePackHandler
+import pygame
+from OpenGL import GL, GLU
+from pygame import display, image
+
+import directories
 import glutils
 import mceutils
-import functools
+import mcplatform
+import pymclevel
+from config import config
+from resource_packs import ResourcePackHandler
 
 DEBUG_WM = mcplatform.DEBUG_WM
 USE_WM = mcplatform.USE_WM
@@ -43,20 +45,20 @@ class GLDisplayContext(object):
         display.gl_set_attribute(pygame.GL_ALPHA_SIZE, 8)
 
         if DEBUG_WM:
-            print "config.settings.windowMaximized.get()", config.settings.windowMaximized.get()
+            print("config.settings.windowMaximized.get()", config.settings.windowMaximized.get())
         wwh = self.getWindowSize()
         if DEBUG_WM:
-            print "wwh 1", wwh
+            print("wwh 1", wwh)
         d = display.set_mode(wwh, self.displayMode())
 
         # Let initialize OpenGL stuff after the splash.
         GL.glEnableClientState(GL.GL_VERTEX_ARRAY)
         GL.glAlphaFunc(GL.GL_NOTEQUAL, 0)
         GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
- 
+
         # textures are 256x256, so with this we can specify pixel coordinates
-#        GL.glMatrixMode(GL.GL_TEXTURE)
-#        GL.glScale(1 / 256., 1 / 256., 1 / 256.)
+        #        GL.glMatrixMode(GL.GL_TEXTURE)
+        #        GL.glScale(1 / 256., 1 / 256., 1 / 256.)
 
         display.set_caption(*caption)
 
@@ -86,7 +88,7 @@ class GLDisplayContext(object):
         elif self.win:
             maximized = config.settings.windowMaximized.get()
             if DEBUG_WM:
-                print "maximized", maximized
+                print("maximized", maximized)
             if maximized:
                 geom = self.win.get_root_rect()
                 in_w, in_h = self.win.get_size()
@@ -97,8 +99,8 @@ class GLDisplayContext(object):
                 x, y = config.settings.windowX.get(), config.settings.windowY.get()
                 wwh = self.win.get_size()
             if DEBUG_WM:
-                print "x", x, "y", y
-                print "wwh 2", wwh
+                print("x", x, "y", y)
+                print("wwh 2", wwh)
 
         if splash:
             # Setup the OGL display
@@ -130,25 +132,25 @@ class GLDisplayContext(object):
             if not maximized:
                 wwh = self.getWindowSize()
             if DEBUG_WM:
-                print "wwh 3", wwh
+                print("wwh 3", wwh)
             self.win.set_position((x, y), update=True)
             if DEBUG_WM:
-                print "* self.win.get_position()", self.win.get_position()
+                print("* self.win.get_position()", self.win.get_position())
 
         try:
-            #iconpath = os.path.join(directories.getDataDir(), 'favicon.png')
+            # iconpath = os.path.join(directories.getDataDir(), 'favicon.png')
             iconpath = directories.getDataFile('favicon.png')
-            iconfile = file(iconpath, 'rb')
+            iconfile = open(iconpath, 'rb')
             icon = pygame.image.load(iconfile, 'favicon.png')
             display.set_icon(icon)
         except Exception as e:
             logging.warning('Unable to set icon: {0!r}'.format(e))
 
         # Let initialize OpenGL stuff after the splash.
-#         GL.glEnableClientState(GL.GL_VERTEX_ARRAY)
-#         GL.glAlphaFunc(GL.GL_NOTEQUAL, 0)
-#         GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
- 
+        #         GL.glEnableClientState(GL.GL_VERTEX_ARRAY)
+        #         GL.glAlphaFunc(GL.GL_NOTEQUAL, 0)
+        #         GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
+
         # textures are 256x256, so with this we can specify pixel coordinates
         GL.glMatrixMode(GL.GL_TEXTURE)
         GL.glScale(1 / 256., 1 / 256., 1 / 256.)
@@ -203,4 +205,3 @@ class GLDisplayContext(object):
                     functools.partial(makeTerrainTexture, mats)
                 )
             mats.terrainTexture = self.terrainTextures[mats.name]
-

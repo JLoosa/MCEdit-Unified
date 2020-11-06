@@ -1,13 +1,13 @@
-from datetime import datetime
 import logging
+from datetime import datetime
 
 log = logging.getLogger(__name__)
 
 import numpy
-from box import BoundingBox
-from mclevelbase import exhaust
-import materials
-from entity import Entity, TileEntity
+from pymclevel.box import BoundingBox
+from pymclevel.mclevelbase import exhaust
+import pymclevel.materials as materials
+from pymclevel.entity import Entity, TileEntity
 from copy import deepcopy
 
 
@@ -169,9 +169,4 @@ def copyBlocksFromIter(destLevel, sourceLevel, sourceBox, destinationPoint, bloc
 def copyBlocksFrom(destLevel, sourceLevel, sourceBox, destinationPoint, blocksToCopy=None, entities=True, create=False,
                    biomes=False, tileTicks=True, staticCommands=False, moveSpawnerPos=False, first=False, cancelCommandBlockOffset=False):
     return exhaust(
-        copyBlocksFromIter(destLevel, sourceLevel, sourceBox, destinationPoint, blocksToCopy, entities, create, biomes, tileTicks,staticCommands, moveSpawnerPos,first, cancelCommandBlockOffset))
-
-
-
-
-
+        copyBlocksFromIter(destLevel, sourceLevel, sourceBox, destinationPoint, blocksToCopy, entities, create, biomes, tileTicks, staticCommands, moveSpawnerPos, first, cancelCommandBlockOffset))

@@ -18,22 +18,21 @@ http://www.minecraft.net/docs/NBT.txt
 Copyright 2010 David Rio Vierra
 """
 import collections
-from contextlib import contextmanager
 import gzip
 import itertools
 import logging
 import struct
 import zlib
-from cStringIO import StringIO
+from contextlib import contextmanager
+from io import StringIO
 
 import numpy
 from numpy import array, zeros, fromstring
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # TRACKING PE ERRORS
 #
 # DEBUG_PE and dump_fName are overridden by leveldbpocket module
-import sys
 DEBUG_PE = False
 dump_fName = 'dump_pe.txt'
 
@@ -94,7 +93,7 @@ class TAG_Value(object):
     @name.setter
     def name(self, newVal):
         """Change the TAG's name. Coerced to a unicode."""
-        self._name = unicode(newVal)
+        self._name = bytes(newVal)
 
     @classmethod
     def load_from(cls, ctx):
@@ -109,14 +108,14 @@ class TAG_Value(object):
                 n_lines = len(fp.readlines()) + 1
                 fp.close()
                 msg = ("*** NBT support could not load data\n"
-                    "{e}\n"
-                    "----------\nctx.data (length: {lcd}):\n{cd}\n"
-                    "..........\ndata (length: {lrd}):\n{rd}\n"
-                    "''''''''''\nctx.offset:\n{co}\n"
-                    "^^^^^^^^^^\ncls.fmt.format: {cf}\n***\n".format(e=e, cd=repr(ctx.data), rd=repr(data), co=ctx.offset, cf=cls.fmt.format,
-                                                               lcd=len(ctx.data), lrd=len(data)
-                                                              )
-                )
+                       "{e}\n"
+                       "----------\nctx.data (length: {lcd}):\n{cd}\n"
+                       "..........\ndata (length: {lrd}):\n{rd}\n"
+                       "''''''''''\nctx.offset:\n{co}\n"
+                       "^^^^^^^^^^\ncls.fmt.format: {cf}\n***\n".format(e=e, cd=repr(ctx.data), rd=repr(data), co=ctx.offset, cf=cls.fmt.format,
+                                                                        lcd=len(ctx.data), lrd=len(data)
+                                                                        )
+                       )
                 fp1 = open(dump_fName, 'a')
                 fp1.write(msg)
                 fp1.close()
@@ -174,7 +173,7 @@ class TAG_Long(TAG_Value):
     __slots__ = ('_name', '_value')
     tagID = TAG_LONG
     fmt = struct.Struct(">q")
-    data_type = long
+    data_type = int
 
 
 class TAG_Float(TAG_Value):
@@ -240,6 +239,7 @@ class TAG_Short_Array(TAG_Int_Array):
     __slots__ = ('_name', '_value')
     dtype = numpy.dtype('>u2')
 
+
 class TAG_Long_Array(TAG_Int_Array):
     tagID = TAG_LONG_ARRAY
     __slots__ = ('_name', '_value')
@@ -263,7 +263,7 @@ class TAG_String(TAG_Value):
     __slots__ = ('_name', '_value')
 
     def data_type(self, value):
-        if isinstance(value, unicode):
+        if isinstance(value, bytes):
             return value
         else:
             decoded = self._decodeCache.get(value)
@@ -280,6 +280,7 @@ class TAG_String(TAG_Value):
 
     def write_value(self, buf):
         write_string(self._value, buf)
+
 
 string_len_fmt = struct.Struct(">H")
 
@@ -375,7 +376,7 @@ class TAG_Compound(TAG_Value, collections.MutableMapping):
         if filename_or_buf is None:
             return data
 
-        if isinstance(filename_or_buf, basestring):
+        if isinstance(filename_or_buf, (str, bytes)):
             f = open(filename_or_buf, "wb")
             f.write(data)
             f.close()
@@ -414,7 +415,7 @@ class TAG_Compound(TAG_Value, collections.MutableMapping):
         and unicodes in a TAG_String."""
         if isinstance(item, (list, tuple)):
             item = TAG_List(item)
-        elif isinstance(item, basestring):
+        elif isinstance(item, (str, bytes)):
             item = TAG_String(item)
 
         item.name = key
@@ -482,7 +483,7 @@ class TAG_List(TAG_Value, collections.MutableSequence):
         (list_length,) = TAG_Int.fmt.unpack_from(ctx.data, ctx.offset)
         ctx.offset += TAG_Int.fmt.size
 
-        for i in xrange(list_length):
+        for i in range(list_length):
             tag = tag_classes[self.list_type].load_from(ctx)
             self.append(tag)
 
@@ -537,8 +538,8 @@ class TAG_List(TAG_Value, collections.MutableSequence):
 tag_classes = {}
 
 for c in (
-TAG_Byte, TAG_Short, TAG_Int, TAG_Long, TAG_Float, TAG_Double, TAG_String, TAG_Byte_Array, TAG_List, TAG_Compound,
-TAG_Int_Array, TAG_Long_Array, TAG_Short_Array):
+        TAG_Byte, TAG_Short, TAG_Int, TAG_Long, TAG_Float, TAG_Double, TAG_String, TAG_Byte_Array, TAG_List, TAG_Compound,
+        TAG_Int_Array, TAG_Long_Array, TAG_Short_Array):
     tag_classes[c.tagID] = c
 
 
@@ -693,14 +694,13 @@ def nested_string(tag, indent_string="  ", indent=0):
 try:
     # noinspection PyUnresolvedReferences
     # Inhibit the _nbt import if we're debugging the PE support errors, because we need to get information concerning NBT malformed data...
-#     if DEBUG_PE or '--debug-pe' in sys.argv:
-#         log.warning("PE support debug mode is activated. Using full Python NBT support!")
-#     else:
-        from _nbt import (load, TAG_Byte, TAG_Short, TAG_Int, TAG_Long, TAG_Float, TAG_Double, TAG_String,
-                          TAG_Byte_Array, TAG_List, TAG_Compound, TAG_Int_Array, TAG_Long_Array, TAG_Short_Array, NBTFormatError,
-                          littleEndianNBT, nested_string, gunzip, hexdump)
+    #     if DEBUG_PE or '--debug-pe' in sys.argv:
+    #         log.warning("PE support debug mode is activated. Using full Python NBT support!")
+    #     else:
+    from _nbt import (load, TAG_Byte, TAG_Short, TAG_Int, TAG_Long, TAG_Float, TAG_Double, TAG_String,
+                      TAG_Byte_Array, TAG_List, TAG_Compound, TAG_Int_Array, TAG_Long_Array, TAG_Short_Array, NBTFormatError,
+                      littleEndianNBT, nested_string, gunzip, hexdump)
 except ImportError as err:
     log.error("Failed to import Cythonized nbt file. Running on (very slow) pure-python nbt fallback.")
     log.error("(Did you forget to run 'setup.py build_ext --inplace'?)")
-    log.error("%s"%err)
-
+    log.error("%s" % err)

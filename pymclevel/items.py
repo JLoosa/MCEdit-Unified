@@ -1,9 +1,9 @@
-from logging import getLogger
 import json
-import directories
 import os
-import shutil
 import types
+from logging import getLogger
+
+import directories
 
 logger = getLogger(__name__)
 
@@ -24,11 +24,10 @@ class ItemType(object):
 
 
 class Items(object):
-
     items = {}
 
     def __init__(self, filename=None):
-        #itemsdir = os.path.join(directories.getDataDir(), "Items")
+        # itemsdir = os.path.join(directories.getDataDir(), "Items")
         itemsdir = directories.getDataFile('Items')
 
         if not os.path.exists(itemsdir):
@@ -46,7 +45,7 @@ class Items(object):
                         itempacknew[file_ + ":" + item] = itempack.get(item)
                     self.items.update(itempacknew)
                 except Exception as e:
-                    logger.debug('Error while loading items.json: %s'%e)
+                    logger.debug('Error while loading items.json: %s' % e)
                     pass
                 try:
                     f = open(os.path.join(itemsdir, file_, "blocks.json"), 'r')
@@ -58,7 +57,7 @@ class Items(object):
                         itempacknew[file_ + ":" + item] = itempack.get(item)
                     self.items.update(itempacknew)
                 except Exception as e:
-                    logger.debug('Error while loading blocks.json: %s'%e)
+                    logger.debug('Error while loading blocks.json: %s' % e)
                     pass
 
     def findItem(self, id=0, damage=None):
@@ -67,10 +66,10 @@ class Items(object):
         except:
             item = self.findItemID(id)
         if damage <= item["maxdamage"]:
-            if isinstance(item["name"], (str, unicode)):
+            if isinstance(item["name"], (str, bytes)):
                 return ItemType(id, item["name"], item["maxdamage"], damage, item["stacksize"])
             else:
-                if isinstance(item["name"][damage], (str, unicode)):
+                if isinstance(item["name"][damage], (str, bytes)):
                     return ItemType(id, item["name"][damage], item["maxdamage"], damage, item["stacksize"])
                 else:
                     raise ItemNotFound()

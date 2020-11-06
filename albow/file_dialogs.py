@@ -2,7 +2,7 @@
 #
 # Albow - File Dialogs
 #
-#-# Modified by D.C.-G. for translation purpose
+# -# Modified by D.C.-G. for translation purpose
 
 """
 TODO:
@@ -10,84 +10,90 @@ TODO:
 * Implement Windows support.
 """
 
-import os, sys
-from pygame import event, image
-from pygame.transform import scale
+import logging
+import os
+import sys
+
+from pygame import image
 from pygame.locals import *
-from albow.widget import Widget
-from albow.dialogs import Dialog, ask, alert
+from pygame.transform import scale
+
 from albow.controls import Label, Button, Image
+from albow.dialogs import Dialog, ask, alert
 from albow.extended_widgets import ChoiceButton
 from albow.fields import TextFieldWrapped
 from albow.layout import Row, Column
 from albow.scrollpanel import ScrollPanel
 from albow.theme import ThemeProperty
-from translate import _
-from tree import Tree
-import logging
-log = logging.getLogger(__name__)
+from albow.translate import _
+from albow.tree import Tree
+from albow.widget import Widget
 
+log = logging.getLogger(__name__)
 
 DEBUG = True
 
 if DEBUG:
     from albow.resource import get_image
 
+
     def get_imgs():
         """Load an return the images used as file and folder icons."""
-        print "*** MCEDIT DEBUG: file_dialog:", __file__
-        print "*** MCEDIT DEBUG: directory:", os.path.dirname(__file__)
-        print "*** MCEDIT DEBUG: current directory:", os.getcwd()
+        print("*** MCEDIT DEBUG: file_dialog:", __file__)
+        print("*** MCEDIT DEBUG: directory:", os.path.dirname(__file__))
+        print("*** MCEDIT DEBUG: current directory:", os.getcwd())
         try:
             file_image = get_image('file.png', prefix='')
             folder_image = get_image('folder.png', prefix='')
         except Exception as e:
-            print "MCEDIT DEBUG: Could not load file dialog images."
-            print e
+            print("MCEDIT DEBUG: Could not load file dialog images.")
+            print(e)
             from pygame import draw, Surface
             from pygame.locals import SRCALPHA
             from math import pi
             file_image = Surface((16, 16), SRCALPHA)
-            file_image.fill((0,0,0,0))
+            file_image.fill((0, 0, 0, 0))
             draw.lines(file_image, (255, 255, 255, 255), False, [[3, 15], [3, 1], [13, 1]], 2)
             draw.line(file_image, (255, 255, 255, 255), [3, 7], [10, 7], 2)
             folder_image = Surface((16, 16), SRCALPHA)
-            folder_image.fill((0,0,0,0))
+            folder_image.fill((0, 0, 0, 0))
             draw.line(folder_image, (255, 255, 255, 255), [3, 15], [3, 1], 2)
-            draw.arc(folder_image, (255, 255, 255, 255), [0, 1, 13, 15], 0, pi/1.9, 2)
-            draw.arc(folder_image, (255, 255, 255, 255), [0, 1, 13, 15], 3*pi/2, 2*pi, 2)
+            draw.arc(folder_image, (255, 255, 255, 255), [0, 1, 13, 15], 0, pi / 1.9, 2)
+            draw.arc(folder_image, (255, 255, 255, 255), [0, 1, 13, 15], 3 * pi / 2, 2 * pi, 2)
         return file_image, folder_image
 
 else:
-    from directories import getDataDir, getDataFile
+    from directories import getDataFile
 
     if sys.platform in ('darwin', 'linux2'):
-        print "*** MCEDIT DEBUG: file_dialog:", __file__
-        print "*** MCEDIT DEBUG: directory:", os.path.dirname(__file__)
-        print "*** MCEDIT DEBUG: current directory:", os.getcwd()
+        print("*** MCEDIT DEBUG: file_dialog:", __file__)
+        print("*** MCEDIT DEBUG: directory:", os.path.dirname(__file__))
+        print("*** MCEDIT DEBUG: current directory:", os.getcwd())
         try:
             file_image = image.load('file.png')
             folder_image = image.load('folder.png')
         except Exception as e:
-            print "MCEDIT DEBUG: Could not load file dialog images."
-            print e
+            print("MCEDIT DEBUG: Could not load file dialog images.")
+            print(e)
             from pygame import draw, Surface
             from pygame.locals import SRCALPHA
             from math import pi
+
             file_image = Surface((16, 16), SRCALPHA)
-            file_image.fill((0,0,0,0))
+            file_image.fill((0, 0, 0, 0))
             draw.lines(file_image, (255, 255, 255, 255), False, [[3, 15], [3, 1], [13, 1]], 2)
             draw.line(file_image, (255, 255, 255, 255), [3, 7], [10, 7], 2)
             folder_image = Surface((16, 16), SRCALPHA)
-            folder_image.fill((0,0,0,0))
+            folder_image.fill((0, 0, 0, 0))
             draw.line(folder_image, (255, 255, 255, 255), [3, 15], [3, 1], 2)
-            draw.arc(folder_image, (255, 255, 255, 255), [0, 1, 13, 15], 0, pi/1.9, 2)
-            draw.arc(folder_image, (255, 255, 255, 255), [0, 1, 13, 15], 3*pi/2, 2*pi, 2)
-    else: # windows
-        #file_image = image.load(os.path.join(getDataDir(), 'file.png'))
-        #folder_image = image.load(os.path.join(getDataDir(), 'folder.png'))
+            draw.arc(folder_image, (255, 255, 255, 255), [0, 1, 13, 15], 0, pi / 1.9, 2)
+            draw.arc(folder_image, (255, 255, 255, 255), [0, 1, 13, 15], 3 * pi / 2, 2 * pi, 2)
+    else:  # windows
+        # file_image = image.load(os.path.join(getDataDir(), 'file.png'))
+        # folder_image = image.load(os.path.join(getDataDir(), 'folder.png'))
         file_image = image.load(getDataFile('file.png'))
         folder_image = image.load(getDataFile('folder.png'))
+
 
 class DirPathView(Widget):
     def __init__(self, width, client, **kwds):
@@ -130,12 +136,13 @@ class FileListView(ScrollPanel):
 
         try:
             content = os.walk(dir)
+            content = os.walk(dir)
             for a, dirnames, filenames in content:
                 dirnames.sort()
                 filenames.sort()
                 break
             try:
-                self.names = [unicode(name, 'utf-8') for name in dirnames + filenames if filter(name)]
+                self.names = [bytes(name, 'utf-8') for name in dirnames + filenames if filter(name)]
             except:
                 self.names = [name for name in dirnames + filenames if filter(name)]
         except EnvironmentError as e:
@@ -170,8 +177,8 @@ class FileListView(ScrollPanel):
 
 
 def get_platform_root_dir():
-    #-# Rework this in order to mimic the OSs file chooser behaviour.
-    #-# Need platform/version specific code...
+    # -# Rework this in order to mimic the OSs file chooser behaviour.
+    # -# Need platform/version specific code...
     return '/'
 
 
@@ -228,45 +235,45 @@ class FSTree(Tree):
             d = d[name]
 
     def parse_path(self, name, path):
-        #!# The log.debug() and print stuff in there are intended to fix some OSX issues.
-        #!# Please do not strip them out. -- D.C.-G.
-#        log.debug('FSTree.parse_path')
-#        log.debug('    path: %s\n      length: %d'%(repr(path), len(path)))
-#        print '    path: %s\n      length: %d'%(repr(path), len(path))
-#        log.debug('    path: %s\n      length: %d'%(repr(path), len(path)))
-#        if len(path) < 1: print '    ! ! ! ^ ^ ^ ! ! !'
-#        if len(path) < 1: log.debug('    ! ! ! ^ ^ ^ ! ! !')
+        # !# The log.debug() and print stuff in there are intended to fix some OSX issues.
+        # !# Please do not strip them out. -- D.C.-G.
+        #        log.debug('FSTree.parse_path')
+        #        log.debug('    path: %s\n      length: %d'%(repr(path), len(path)))
+        #        print '    path: %s\n      length: %d'%(repr(path), len(path))
+        #        log.debug('    path: %s\n      length: %d'%(repr(path), len(path)))
+        #        if len(path) < 1: print '    ! ! ! ^ ^ ^ ! ! !'
+        #        if len(path) < 1: log.debug('    ! ! ! ^ ^ ^ ! ! !')
         content = os.walk(path)
         data = {}
         d = data
         for a, folders, b in content:
-#            log.debug('    a: %s\n      length: %d'%(repr(a), len(a)))
-#            print '    a: %s\n      length: %d'%(repr(a), len(a))
-#            log.debug('    a: %s\n      length: %d'%(repr(a), len(a)))
-#            if len(a) < 1: print '    ! ! ! ^ ^ ^ ! ! !'
-#            if len(a) < 1: log.debug('    ! ! ! ^ ^ ^ ! ! !')
+            #            log.debug('    a: %s\n      length: %d'%(repr(a), len(a)))
+            #            print '    a: %s\n      length: %d'%(repr(a), len(a))
+            #            log.debug('    a: %s\n      length: %d'%(repr(a), len(a)))
+            #            if len(a) < 1: print '    ! ! ! ^ ^ ^ ! ! !'
+            #            if len(a) < 1: log.debug('    ! ! ! ^ ^ ^ ! ! !')
             d = {}
             for folder in folders:
-#                log.debug('    folder: %s\n      length: %d'%(repr(folder), len(folder)))
-#                print '    folder: %s\n      length: %d'%(repr(folder), len(folder))
-#                log.debug('    folder: %s\n      length: %d'%(repr(folder), len(folder)))
-#                if len(folder) < 1: print '    ! ! ! ^ ^ ^ ! ! !'
-#                if len(folder) < 1: log.debug('    ! ! ! ^ ^ ^ ! ! !')
+                #                log.debug('    folder: %s\n      length: %d'%(repr(folder), len(folder)))
+                #                print '    folder: %s\n      length: %d'%(repr(folder), len(folder))
+                #                log.debug('    folder: %s\n      length: %d'%(repr(folder), len(folder)))
+                #                if len(folder) < 1: print '    ! ! ! ^ ^ ^ ! ! !'
+                #                if len(folder) < 1: log.debug('    ! ! ! ^ ^ ^ ! ! !')
                 if isinstance(folder, str):
-                    folder = unicode(folder, 'utf-8')
+                    folder = bytes(folder, 'utf-8')
                 d[folder] = {}
                 if isinstance(a, str):
-                    a = unicode(a,'utf-8')
+                    a = bytes(a, 'utf-8')
                 cont = os.walk(os.path.join(a, folder))
                 for _a, fs, _b in cont:
                     for f in fs:
-#                        log.debug('    f: %s\n      length: %d'%(repr(f), len(f)))
-#                        print '    f: %s\n      length: %d'%(repr(f), len(f))
-#                        log.debug('    f: %s\n      length: %d'%(repr(f), len(f)))
-#                        if len(f) < 1: print '    ! ! ! ^ ^ ^ ! ! !'
-#                        if len(f) < 1: log.debug('    ! ! ! ^ ^ ^ ! ! !')
+                        #                        log.debug('    f: %s\n      length: %d'%(repr(f), len(f)))
+                        #                        print '    f: %s\n      length: %d'%(repr(f), len(f))
+                        #                        log.debug('    f: %s\n      length: %d'%(repr(f), len(f)))
+                        #                        if len(f) < 1: print '    ! ! ! ^ ^ ^ ! ! !'
+                        #                        if len(f) < 1: log.debug('    ! ! ! ^ ^ ^ ! ! !')
                         if isinstance(f, str):
-                            d[folder][unicode(f, 'utf-8')] = {}
+                            d[folder][bytes(f, 'utf-8')] = {}
                         else:
                             d[folder][f] = {}
                     break
@@ -300,6 +307,7 @@ class FSTree(Tree):
         Tree.select_item(self, n)
         self.client.directory = self.get_item_path(self.selected_item)
 
+
 class FileDialog(Dialog):
     box_width = 450
     default_prompt = None
@@ -310,7 +318,7 @@ class FileDialog(Dialog):
         label = None
         d = self.margin
         self.suffixes = suffixes or ("",)
-        self.file_type = self.suffixes[0] # To be removed
+        self.file_type = self.suffixes[0]  # To be removed
         self.compute_file_types()
         self.default_suffix = default_suffix  # The default file extension. Will be searched in 'suffixes'.
         up_button = Button(self.up_button_text, action=self.go_up)
@@ -330,13 +338,13 @@ class FileDialog(Dialog):
             filetype_label = Label("File type", width=250)
 
             def set_file_type():
-                self.file_type = self.filetype_button.get_value() # To be removed
+                self.file_type = self.filetype_button.get_value()  # To be removed
                 self.compute_file_types(self.filetype_button.get_value())
                 self.list_box.update()
 
             filetype_button = ChoiceButton(choices=self.suffixes, width=250, choose=set_file_type)
             if default_suffix:
-                v = next((s for s in self.suffixes if ("*.%s;"%default_suffix in s or "*.%s)"%default_suffix in s)), None)
+                v = next((s for s in self.suffixes if ("*.%s;" % default_suffix in s or "*.%s)" % default_suffix in s)), None)
                 if v:
                     filetype_button.selectedChoice = v
                     self.compute_file_types(v)
@@ -374,7 +382,7 @@ class FileDialog(Dialog):
         self.shrink_wrap()
         self._directory = None
         self.directory = os.getcwdu()
-        #print "FileDialog: cwd =", repr(self.directory) ###
+        # print "FileDialog: cwd =", repr(self.directory) ###
         if self.saving:
             filename_box.focus()
 
@@ -440,7 +448,7 @@ class FileDialog(Dialog):
 
     def ok(self):
         self.dir_box_click(True)
-        #self.dismiss(True)
+        # self.dismiss(True)
 
     def cancel(self):
         self.dismiss(False)
@@ -485,7 +493,7 @@ class FileSaveDialog(FileDialog):
                 answer = ask(_("Replace existing '%s'?") % os.path.basename(path))
                 if answer != "OK":
                     return
-            #FileDialog.ok(self)
+            # FileDialog.ok(self)
             self.dismiss(True)
 
     def update(self):
@@ -508,7 +516,7 @@ class FileOpenDialog(FileDialog):
 
     pathname = property(get_pathname)
 
-    #def update(self):
+    # def update(self):
     #    FileDialog.update(self)
 
     def ok_enable(self):

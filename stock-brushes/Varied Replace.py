@@ -1,9 +1,9 @@
-from pymclevel.materials import Block
-from editortools.brush import createBrushMask, createTileEntities
-from albow import alert
-from pymclevel import block_fill
-import numpy
 import random
+
+import numpy
+
+from editortools.brush import createBrushMask, createTileEntities
+from pymclevel import block_fill
 
 displayName = "Varied Replace"
 mainBlock = "Block 1"
@@ -12,16 +12,16 @@ secondaryBlock = "Block"
 
 def createInputs(self):
     self.inputs = (
-    {'Hollow': False, 'Noise': 100},
-    {'W': (3, 1, 4096), 'H': (3, 1, 4096), 'L': (3, 1, 4096)},
-    {'Block': materials.blockWithID(1, 0)},
-    {'Block 1': materials.blockWithID(1, 0)},
-    {'Block 2': materials.blockWithID(1, 0)},
-    {'Block 3': materials.blockWithID(1, 0)},
-    {'Block 4': materials.blockWithID(1, 0)},
-    {'Weight 1': (1, 0, None), 'Weight 2': (1, 0, None)},
-    {'Weight 3': (1, 0, None), 'Weight 4': (1, 0, None)},
-    {'Minimum Spacing': 1},
+        {'Hollow': False, 'Noise': 100},
+        {'W': (3, 1, 4096), 'H': (3, 1, 4096), 'L': (3, 1, 4096)},
+        {'Block': materials.blockWithID(1, 0)},
+        {'Block 1': materials.blockWithID(1, 0)},
+        {'Block 2': materials.blockWithID(1, 0)},
+        {'Block 3': materials.blockWithID(1, 0)},
+        {'Block 4': materials.blockWithID(1, 0)},
+        {'Weight 1': (1, 0, None), 'Weight 2': (1, 0, None)},
+        {'Weight 3': (1, 0, None), 'Weight 4': (1, 0, None)},
+        {'Minimum Spacing': 1},
     )
 
 
@@ -40,14 +40,16 @@ def applyToChunkSlices(self, op, chunk, slices, brushBox, brushBoxThisChunk):
     totalChance = chanceA + chanceB + chanceC + chanceD
 
     if totalChance == 0:
-        print "Total Chance value can't be 0."
+        print
+        "Total Chance value can't be 0."
         return
 
     blocks = chunk.Blocks[slices]
     data = chunk.Data[slices]
 
     if op.options['Block'].wildcard:
-        print "Wildcard replace"
+        print
+        "Wildcard replace"
         blocksToReplace = []
         for i in range(16):
             blocksToReplace.append(op.editor.level.materials.blockWithID(op.options['Block'].ID, i))

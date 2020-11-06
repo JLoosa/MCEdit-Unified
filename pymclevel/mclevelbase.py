@@ -1,8 +1,8 @@
-'''
+"""
 Created on Jul 22, 2011
 
 @author: Rio
-'''
+"""
 
 from contextlib import contextmanager
 from logging import getLogger

@@ -12,20 +12,23 @@ WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE."""
 
-#Modified by D.C.-G. for translation purposes
-import imp
-import traceback
 import copy
-from OpenGL import GL
+# Modified by D.C.-G. for translation purposes
+import imp
 import os
 import sys
-from albow import AttrRef, ItemRef, Button, ValueDisplay, Row, Label, ValueButton, Column, IntField, FloatField, alert, CheckBox, TextFieldWrapped, TableView, TableColumn
-from albow.dialogs import Dialog
+import traceback
+
+from OpenGL import GL
+
 import albow.translate
+from albow import AttrRef, ItemRef, Button, ValueDisplay, Row, Label, ValueButton, Column, FloatField, alert, TextFieldWrapped, TableView, TableColumn
+from albow.dialogs import Dialog
+
 _ = albow.translate._
 import ast
 import bresenham
-from clone import CloneTool
+from editortools.clone import CloneTool
 from config import config
 import directories
 from editortools.blockpicker import BlockPicker
@@ -37,18 +40,19 @@ from glutils import gl
 from albow.root import get_root
 import logging
 from mceutils import alertException, drawTerrainCuttingWire
-from albow import ChoiceButton, CheckBoxLabel, showProgress, IntInputRow, FloatInputRow
+from albow.extended_widgets import ChoiceButton, CheckBoxLabel, showProgress, IntInputRow, FloatInputRow
 import mcplatform
 from numpy import newaxis
 import numpy
-from operation import Operation
-from pymclevel import  BoundingBox, blockrotation
+from editortools.operation import Operation
+from pymclevel import BoundingBox, blockrotation
 import pymclevel
 from pymclevel.mclevelbase import exhaust
 from pymclevel.entity import TileEntity
 import types
 from pymclevel.materials import Block
 from locale import getdefaultlocale
+
 DEF_ENC = getdefaultlocale()[1]
 if DEF_ENC is None:
     DEF_ENC = "UTF-8"
@@ -64,7 +68,7 @@ class BrushOperation(Operation):
         self.options = tool.options
         self.brushMode = tool.brushMode
         boxes = [self.tool.getDirtyBox(p, self.tool) for p in self.points]
-        self._dirtyBox = reduce(lambda a, b: a.union(b), boxes)
+        self._dirtyBox = numpy.reduce(lambda a, b: a.union(b), boxes)
         self.canUndo = False
 
     def dirtyBox(self):
@@ -105,6 +109,7 @@ class BrushOperation(Operation):
                         else:
                             yield j * len(self.points) + i, len(self.points) * self._dirtyBox.chunkCount, _("Applying {0} brush...").format(_(self.brushMode.displayName))
                     chunk.chunkChanged()
+
         if len(self.points) > 10:
             showProgress("Performing brush...", _perform(), cancel=True)
         else:
@@ -124,10 +129,10 @@ class BrushPanel(Panel):
 
         self.brushModeButtonLabel = Label("Mode:")
         self.brushModeButton = ChoiceButton(sorted([mode for mode in tool.brushModes]),
-                                       width=150,
-                                       choose=self.brushModeChanged,
-                                       doNotTranslate=True,
-                                       )
+                                            width=150,
+                                            choose=self.brushModeChanged,
+                                            doNotTranslate=True,
+                                            )
         modeRow = Row([self.brushModeButtonLabel, self.brushModeButton])
 
         self.brushStyleButtonLabel = Label("Style:")
@@ -205,7 +210,7 @@ class BrushPanel(Panel):
             elif isinstance(check_value, str):
                 field = Label(value, doNotTranslate=doNotTranslate)
             else:
-                print type(check_value)
+                print(type(check_value))
                 field = None
         return field
 
@@ -271,7 +276,7 @@ class BrushPanel(Panel):
                 alert("That preset name is reserved. Try pick another preset name.")
                 return
 
-            for p in ['<','>',':','\"', '/', '\\', '|', '?', '*', '.']:
+            for p in ['<', '>', ':', '\"', '/', '\\', '|', '?', '*', '.']:
                 if p in name:
                     alert('Invalid character in file name')
                     return
@@ -281,8 +286,8 @@ class BrushPanel(Panel):
 
         okButton = Button("OK", action=okPressed)
         cancelButton = Button("Cancel", action=panel.dismiss)
-        namerow = Row([label,nameField])
-        buttonRow = Row([okButton,cancelButton])
+        namerow = Row([label, nameField])
+        buttonRow = Row([okButton, cancelButton])
 
         panel.add(Column([namerow, buttonRow]))
         panel.shrink_wrap()
@@ -362,13 +367,13 @@ class BrushTool(CloneTool):
     toolIconName = "brush"
 
     options = {
-               'Style': 'Round',
-              }
+        'Style': 'Round',
+    }
     settings = {
-                'chooseBlockImmediately': False,
-                'updateBrushOffset': False,
-                'brushAlpha': 1.0,
-               }
+        'chooseBlockImmediately': False,
+        'updateBrushOffset': False,
+        'brushAlpha': 1.0,
+    }
     brushModes = {}
     recentBlocks = {}
     previewDirty = False
@@ -411,6 +416,7 @@ class BrushTool(CloneTool):
     """
     Properties W,H,L. Used to reset the Brush Preview whenever they change.
     """
+
     @property
     def W(self):
         return self.options['W']
@@ -441,6 +447,7 @@ class BrushTool(CloneTool):
     """
     Statustext property, rendered in the black line at the bottom of the screen.
     """
+
     @property
     def statusText(self):
         return _("Click and drag to place blocks. Pick block: {P}-Click. Increase: {R}. Decrease: {F}. Rotate: {E}. Roll: {G}. Mousewheel to adjust distance.").format(
@@ -449,7 +456,7 @@ class BrushTool(CloneTool):
             F=config.keys.decreaseBrush.get(),
             E=config.keys.rotateBrush.get(),
             G=config.keys.rollBrush.get(),
-            )
+        )
 
     def toolEnabled(self):
         """
@@ -491,9 +498,9 @@ class BrushTool(CloneTool):
         Imports all Stock Brush Modes from their files.
         Called by setupBrushModes
         """
-        #sys.path.append(os.path.join(directories.getDataDir(), u'stock-filters')) ### Why? Is 'stock-filters' needed here? Shouldn't be 'stock-brushes'?
+        # sys.path.append(os.path.join(directories.getDataDir(), u'stock-filters')) ### Why? Is 'stock-filters' needed here? Shouldn't be 'stock-brushes'?
         sys.path.append(directories.getDataFile('stock-filters'))
-        #files = [x for x in os.listdir(os.path.join(directories.getDataDir(), u'stock-brushes')) if x.endswith(".py")]
+        # files = [x for x in os.listdir(os.path.join(directories.getDataDir(), u'stock-brushes')) if x.endswith(".py")]
         files = [x for x in os.listdir(directories.getDataFile('stock-brushes')) if x.endswith('.py')]
         more_files = [x for x in os.listdir(directories.brushesDir) if x.endswith(".py")]
         modes = [self.tryImport(x[:-3], 'stock-brushes') for x in files]
@@ -510,7 +517,7 @@ class BrushTool(CloneTool):
         embeded = bool(dir == "stock-brushes")
         try:
             path = os.path.join(dir, (name + ".py"))
-            if isinstance(path, unicode) and DEF_ENC != "UTF-8":
+            if isinstance(path, bytes) and DEF_ENC != "UTF-8":
                 path = path.encode(DEF_ENC)
             globals()[name] = m = imp.load_source(name, path)
             if not embeded:
@@ -532,7 +539,7 @@ class BrushTool(CloneTool):
             m.createInputs(m)
             return m
         except Exception as e:
-            print traceback.format_exc()
+            print(traceback.format_exc())
             alert(_(u"Exception while importing brush mode {}. See console for details.\n\n{}").format(name, e))
             return object()
 
@@ -555,14 +562,14 @@ class BrushTool(CloneTool):
                 aw = True
             blockPicker = BlockPicker(self.options[key], self.editor.level.materials, allowWildcards=aw)
             if blockPicker.present():
-                    self.options[key] = blockPicker.blockInfo
+                self.options[key] = blockPicker.blockInfo
         if self.settings['updateBrushOffset']:
             self.reticleOffset = self.offsetMax()
         self.resetToolDistance()
         if os.path.isfile(os.path.join(directories.brushesDir, '__temp__.preset')):
             self.loadBrushPreset('__temp__')
         else:
-            print 'No __temp__ file found.'
+            print('No __temp__ file found.')
             self.showPanel()
             self.setupPreview()
         if getattr(self.brushMode, 'addPasteButton', False):
@@ -701,7 +708,7 @@ class BrushTool(CloneTool):
         """
 
         if getattr(self.brushMode, 'draggableBrush', True):
-            if len(self.draggedPositions):  #If we're dragging the mouse
+            if len(self.draggedPositions):  # If we're dragging the mouse
                 self.lastPosition = lastPoint = self.draggedPositions[-1]
                 direction = self.draggedDirection
                 point = [p + d * self.reticleOffset for p, d in zip(pos, direction)]
@@ -766,7 +773,7 @@ class BrushTool(CloneTool):
         key = getattr(self.brushMode, 'mainBlock', 'Block')
         wcb = getattr(self.brushMode, 'wildcardBlocks', [])
         aw = (key in wcb)
-        #if key in wcb:
+        # if key in wcb:
         #    aw = True
         blockPicker = BlockPicker(self.options[key], self.editor.level.materials, allowWildcards=aw)
         if blockPicker.present():
@@ -950,7 +957,7 @@ class BrushTool(CloneTool):
             self.setupPreview()
             self.renderedBlock = self.options[getattr(self.brushMode, 'mainBlock', 'Block')]
 
-        if self.pickBlockKey == 1:  #Alt is pressed
+        if self.pickBlockKey == 1:  # Alt is pressed
             self.editor.drawWireCubeReticle(color=(0.2, 0.6, 0.9, 1.0))
         else:
             pos, direction = self.editor.blockFaceUnderCursor
@@ -959,11 +966,11 @@ class BrushTool(CloneTool):
             if reticlePoint != pos:
                 GL.glColor4f(1.0, 1.0, 0.0, 0.7)
                 with gl.glBegin(GL.GL_LINES):
-                    GL.glVertex3f(*[a + 0.5 for a in reticlePoint])  #Center of reticle block
-                    GL.glVertex3f(*map(lambda a, b: a + 0.5 + b * 0.5, pos, direction))  #Top side of surface block
+                    GL.glVertex3f(*[a + 0.5 for a in reticlePoint])  # Center of reticle block
+                    GL.glVertex3f(*map(lambda a, b: a + 0.5 + b * 0.5, pos, direction))  # Top side of surface block
             dirtyBox = self.getDirtyBox(reticlePoint, self)
             self.drawTerrainPreview(dirtyBox.origin)
-            if self.lineToolKey and self.lastPosition and getattr(self.brushMode, 'draggableBrush', True):  #If dragging mouse with Linetool pressed.
+            if self.lineToolKey and self.lastPosition and getattr(self.brushMode, 'draggableBrush', True):  # If dragging mouse with Linetool pressed.
                 GL.glColor4f(1.0, 1.0, 1.0, 0.7)
                 with gl.glBegin(GL.GL_LINES):
                     GL.glVertex3f(*[a + 0.5 for a in self.lastPosition])
@@ -998,6 +1005,7 @@ class BrushTool(CloneTool):
         Rotates the brush.
         :keyword blocksOnly: Also rotate the data value of the block we're brushing with.
         """
+
         def rotateBlock():
             list = [key for key in self.options if isinstance(self.options[key], Block)]
             list = getattr(self.brushMode, 'rotatableBlocks', list)
@@ -1021,8 +1029,9 @@ class BrushTool(CloneTool):
         Rolls the brush.
         :keyword blocksOnly: Also roll the data value of the block we're brushing with.
         """
+
         def rollBlock():
-            list = [key for key in self.options if self.options[key].__class__.__name__ == 'Block'] # TODO Pod
+            list = [key for key in self.options if self.options[key].__class__.__name__ == 'Block']  # TODO Pod
             list = getattr(self.brushMode, 'rotatableBlocks', list)
             for key in list:
                 bl = self.options[key]
@@ -1055,7 +1064,7 @@ class BrushTool(CloneTool):
     def loadLevel(self, level):
         self.level = level
         self.options['Minimum Spacing'] = min([s / 4 for s in level.size])
-        CloneTool.setupPreview(self, alpha = self.settings['brushAlpha'])
+        CloneTool.setupPreview(self, alpha=self.settings['brushAlpha'])
 
 
 def createBrushMask(shape, style="Round", offset=(0, 0, 0), box=None, chance=100, hollow=False):
@@ -1071,7 +1080,7 @@ def createBrushMask(shape, style="Round", offset=(0, 0, 0), box=None, chance=100
     :param hollow, input to calculate a hollow brush.
     """
 
-    #We are returning indices for a Blocks array, so swap axes
+    # We are returning indices for a Blocks array, so swap axes
     if box is None:
         box = BoundingBox(offset, shape)
     if chance < 100 or hollow:

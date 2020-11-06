@@ -2,15 +2,19 @@
 #
 #    Albow - Pull-down or pop-up menu
 #
-#---------------------------------------------------------------------------
-#-# Modified by D.C.-G. for translation purpose
+# ---------------------------------------------------------------------------
+# -# Modified by D.C.-G. for translation purpose
 import sys
-from root import get_root, get_focus
-from dialogs import Dialog
-from theme import ThemeProperty
+
 from pygame import Rect, draw
-from translate import _
-#---------------------------------------------------------------------------
+
+from albow.dialogs import Dialog
+from albow.root import get_focus
+from albow.theme import ThemeProperty
+from albow.translate import _
+
+
+# ---------------------------------------------------------------------------
 
 
 class MenuItem(object):
@@ -47,7 +51,7 @@ class MenuItem(object):
             self.keyname = self.cmd_name + keyname
 
 
-#---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 
 
 class Menu(Dialog):
@@ -75,7 +79,7 @@ class Menu(Dialog):
         self.root = self.get_root()
         self.calc_size()
 
-    #&#
+    # &#
     def set_items(self, items):
         self.items = items
         self._items = [MenuItem(*item, doNotTranslate=self.doNotTranslate) for item in items]
@@ -86,7 +90,8 @@ class Menu(Dialog):
         else:
             self.scroll_items = len(self.items)
         self.calc_size()
-    #&#
+
+    # &#
 
     def calc_size(self):
         h = self.font.get_linesize()
@@ -238,7 +243,7 @@ class Menu(Dialog):
     def find_enabled_item(self, e):
         x, y = e.local
         if 0 <= x < (self.width - self.margin - self.scroll_button_size
-                     if self.scrolling else self.width):
+        if self.scrolling else self.width):
             h = self.font.get_linesize()
             i = (y - h // 2) // h + self.scroll
             items = self._items
@@ -308,6 +313,7 @@ class Menu(Dialog):
         :param event: object: The event to be processed."""
         key = self.root.getKey(event)
         last_index = len(self._items) - 1
+
         # Just define a dummy method when scrolling is not necessary.
         def _x(*args, **kwargs):
             """..."""

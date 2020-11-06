@@ -1,11 +1,13 @@
-from level import FakeChunk
 import logging
-from materials import pocketMaterials
-from mclevelbase import ChunkNotPresent, notclosing
-from nbt import TAG_List
-from numpy import array, fromstring, zeros
 import os
 import struct
+
+from numpy import array, fromstring, zeros
+
+from pymclevel.level import FakeChunk
+from pymclevel.materials import pocketMaterials
+from pymclevel.mclevelbase import ChunkNotPresent, notclosing
+from pymclevel.nbt import TAG_List
 
 # values are usually little-endian, unlike Minecraft PC
 
@@ -19,7 +21,7 @@ class PocketChunksFile(object):
 
     @property
     def file(self):
-        openfile = lambda: file(self.path, "rb+")
+        openfile = lambda: open(self.path, "rb+")
         if PocketChunksFile.holdFileOpen:
             if self._file is None:
                 self._file = openfile()
@@ -36,7 +38,7 @@ class PocketChunksFile(object):
         self.path = path
         self._file = None
         if not os.path.exists(path):
-            file(path, "w").close()
+            open(path, "w").close()
 
         with self.file as f:
 
@@ -63,10 +65,10 @@ class PocketChunksFile(object):
             sector = offset >> 8
             count = offset & 0xff
 
-            for i in xrange(sector, sector + count):
+            for i in range(sector, sector + count):
                 if i >= len(self.freeSectors):
                     # raise RegionMalformed("Region file offset table points to sector {0} (past the end of the file)".format(i))
-                    print "Region file offset table points to sector {0} (past the end of the file)".format(i)
+                    print("Region file offset table points to sector {0} (past the end of the file)".format(i))
                     needsRepair = True
                     break
                 if self.freeSectors[i] is False:
@@ -128,7 +130,7 @@ class PocketChunksFile(object):
     #                    zPos = lev["zPos"].value
     #                    overlaps = False
     #
-    #                    for i in xrange(sectorStart, sectorStart + sectorCount):
+    #                    for i in range(sectorStart, sectorStart + sectorCount):
     #                        if _freeSectors[i] is False:
     #                            overlaps = True
     #                        _freeSectors[i] = False
@@ -211,7 +213,7 @@ class PocketChunksFile(object):
             # we need to allocate new sectors
 
             # mark the sectors previously used for this chunk as free
-            for i in xrange(sectorNumber, sectorNumber + sectorsAllocated):
+            for i in range(sectorNumber, sectorNumber + sectorsAllocated):
                 self.freeSectors[i] = True
 
             runLength = 0
@@ -294,8 +296,8 @@ class PocketChunksFile(object):
         return coords
 
 
-from infiniteworld import ChunkedLevelMixin
-from level import MCLevel, LightedChunk
+from pymclevel.infiniteworld import ChunkedLevelMixin
+from pymclevel.level import MCLevel, LightedChunk
 
 
 class PocketWorld(ChunkedLevelMixin, MCLevel):
@@ -428,4 +430,4 @@ class PocketChunk(LightedChunk):
                         packData(self.SkyLight).tostring(),
                         packData(self.BlockLight).tostring(),
                         self.DirtyColumns.tostring(),
-        ])
+                        ])

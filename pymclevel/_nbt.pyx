@@ -21,7 +21,6 @@ http://www.minecraft.net/docs/NBT.txt
 Copyright 2012 David Rio Vierra
 """
 
-
 #  UNICODE_NAMES
 # According to NBT specification, tag names are UTF-8 encoded text. Decoding the bytes to unicode objects takes
 # time and also takes a lot of memory because unicode strings can't be interned. Since all known tag names can be
@@ -40,24 +39,26 @@ DEF UNICODE_CACHE = True
 
 import collections
 import gzip
-import zlib
-
-from cStringIO import StringIO
-from cpython cimport PyTypeObject, PyUnicode_DecodeUTF8, PyList_Append, PyString_FromStringAndSize
-from contextlib import contextmanager
-import numpy
 import logging
+import zlib
+from contextlib import contextmanager
+
+import numpy
+from cStringIO import StringIO
+from cpython cimport
+
+PyTypeObject, PyUnicode_DecodeUTF8, PyList_Append, PyString_FromStringAndSize
 logger = logging.getLogger(__name__)
 
 cdef extern from "cStringIO.h":
     struct PycStringIO_CAPI:
-        int cwrite(object o, char * buf, Py_ssize_t len)
-        PyTypeObject * OutputType
+        int cwrite(object o, char *buf, Py_ssize_t len)
+        PyTypeObject *OutputType
 cdef extern from "cobject.h":
-    void * PyCObject_Import(char * module_name, char * cobject_name)
+    void *PyCObject_Import(char *module_name, char *cobject_name)
 
 cdef PycStringIO_CAPI *PycStringIO = <PycStringIO_CAPI *> PyCObject_Import("cStringIO", "cStringIO_CAPI")
-cdef PyTypeObject * StringO = PycStringIO.OutputType
+cdef PyTypeObject *StringO = PycStringIO.OutputType
 
 # Tag IDs
 
@@ -95,8 +96,10 @@ ID_SHORT_ARRAY = _ID_SHORT_ARRAY
 ID_LONG_ARRAY = _ID_LONG_ARRAY
 ID_MAX = _ID_MAX
 
-class NBTFormatError (ValueError):
+
+class NBTFormatError(ValueError):
     """Indicates the NBT format is invalid."""
+
 
 # NBT spec requires the data to be gzipped.
 # If gunzipping fails, for compatibility we assume the data is unzipped and try again.
@@ -145,9 +148,9 @@ cdef class TAG_Value:
         return self.__class__, (self.value, self._name)
 
     def __richcmp__(self, other, type):
-        if type == 2: # __eq__
+        if type == 2:  # __eq__
             return self.__class__ == other.__class__ and self.value == other.value
-        if type == 3: # __ne__
+        if type == 3:  # __ne__
             return self.__class__ != other.__class__ or self.value != other.value
         return NotImplemented
 
@@ -160,7 +163,6 @@ cdef class TAG_Value:
     def isCompound(self):
         return False
 
-
 cdef class TAG_Byte(TAG_Value):
     cdef public char value
 
@@ -171,7 +173,6 @@ cdef class TAG_Byte(TAG_Value):
         self.value = value
         self.name = name
         self.tagID = _ID_BYTE
-
 
 cdef class TAG_Short(TAG_Value):
     cdef public short value
@@ -184,7 +185,6 @@ cdef class TAG_Short(TAG_Value):
         self.name = name
         self.tagID = _ID_SHORT
 
-
 cdef class TAG_Int(TAG_Value):
     cdef public int value
 
@@ -195,7 +195,6 @@ cdef class TAG_Int(TAG_Value):
         self.value = value
         self.name = name
         self.tagID = _ID_INT
-
 
 cdef class TAG_Long(TAG_Value):
     cdef public long long value
@@ -208,7 +207,6 @@ cdef class TAG_Long(TAG_Value):
         self.name = name
         self.tagID = _ID_LONG
 
-
 cdef class TAG_Float(TAG_Value):
     cdef public float value
 
@@ -220,7 +218,6 @@ cdef class TAG_Float(TAG_Value):
         self.name = name
         self.tagID = _ID_FLOAT
 
-
 cdef class TAG_Double(TAG_Value):
     cdef public double value
 
@@ -231,7 +228,6 @@ cdef class TAG_Double(TAG_Value):
         self.value = value
         self.name = name
         self.tagID = _ID_DOUBLE
-
 
 cdef class TAG_Byte_Array(TAG_Value):
     cdef public object value
@@ -252,9 +248,9 @@ cdef class TAG_Byte_Array(TAG_Value):
         return "<%s name=%r length=%d>" % (self.__class__.__name__, self.name, len(self.value))
 
     def __richcmp__(self, other, type):
-        if type == 2: # __eq__
+        if type == 2:  # __eq__
             return self.__class__ == other.__class__ and all(self.value == other.value)
-        if type == 3: # __ne__
+        if type == 3:  # __ne__
             return self.__class__ != other.__class__ or any(self.value != other.value)
         return NotImplemented
 
@@ -280,9 +276,9 @@ cdef class TAG_Int_Array(TAG_Value):
         return "<%s name=%r length=%d>" % (self.__class__.__name__, self.name, len(self.value))
 
     def __richcmp__(self, other, type):
-        if type == 2: # __eq__
+        if type == 2:  # __eq__
             return self.__class__ == other.__class__ and all(self.value == other.value)
-        if type == 3: # __ne__
+        if type == 3:  # __ne__
             return self.__class__ != other.__class__ or any(self.value != other.value)
         return NotImplemented
 
@@ -308,9 +304,9 @@ cdef class TAG_Long_Array(TAG_Value):
         return "<%s name=%r length=%d>" % (self.__class__.__name__, self.name, len(self.value))
 
     def __richcmp__(self, other, type):
-        if type == 2: # __eq__
+        if type == 2:  # __eq__
             return self.__class__ == other.__class__ and all(self.value == other.value)
-        if type == 3: # __ne__
+        if type == 3:  # __ne__
             return self.__class__ != other.__class__ or any(self.value != other.value)
         return NotImplemented
 
@@ -338,9 +334,9 @@ cdef class TAG_Short_Array(TAG_Value):
         return "<%s name=%r length=%d>" % (self.__class__.__name__, self.name, len(self.value))
 
     def __richcmp__(self, other, type):
-        if type == 2: # __eq__
+        if type == 2:  # __eq__
             return self.__class__ == other.__class__ and all(self.value == other.value)
-        if type == 3: # __ne__
+        if type == 3:  # __ne__
             return self.__class__ != other.__class__ or any(self.value != other.value)
         return NotImplemented
 
@@ -367,7 +363,6 @@ cdef class TAG_String(TAG_Value):
     cdef void save_value(self, buf):
         save_string(self._value.encode('utf-8'), buf)
 
-
 cdef class _TAG_List(TAG_Value):
     cdef public list value
     cdef public char list_type
@@ -383,11 +378,10 @@ cdef class _TAG_List(TAG_Value):
                 self.check_tag(tag)
             self.value = list(value)
 
-
     def __repr__(self):
         return "<%s name=%r list_type=%r length=%d>" % (self.__class__.__name__, self.name,
-                                                          tag_classes[self.list_type],
-                                                          len(self))
+                                                        tag_classes[self.list_type],
+                                                        len(self))
 
     def check_tag(self, value):
         if value.tagID != self.list_type:
@@ -431,7 +425,7 @@ cdef class _TAG_List(TAG_Value):
         cdef TAG_Value tag
 
         save_tag_id(list_type, buf)
-        save_int(<int>len(self.value), buf)
+        save_int(<int> len(self.value), buf)
 
         cdef TAG_Value subtag
         for subtag in self.value:
@@ -551,6 +545,7 @@ cdef class _TAG_Compound(TAG_Value):
     def isCompound(self):
         return True
 
+
 class TAG_Compound(_TAG_Compound, collections.MutableMapping):
     pass
 
@@ -569,7 +564,7 @@ def littleEndianNBT():
     yield
     _BIG_ENDIAN = 1
 
-cdef void swab(void * vbuf, int nbytes):
+cdef void swab(void *vbuf, int nbytes):
     """
     Converts big endian to little endian. If littleEndianNBT is enabled,
     this should do nothing.
@@ -579,11 +574,10 @@ cdef void swab(void * vbuf, int nbytes):
     """
     if not _BIG_ENDIAN:
         return
-    cdef unsigned char * buf = <unsigned char *> vbuf
+    cdef unsigned char *buf = <unsigned char *> vbuf
     cdef int i
-    for i in xrange((nbytes+1)/2):
-        buf[i], buf[nbytes - i -1] = buf[nbytes - i - 1], buf[i]
-
+    for i in xrange((nbytes + 1) / 2):
+        buf[i], buf[nbytes - i - 1] = buf[nbytes - i - 1], buf[i]
 
 #
 # --- NBT Loading ---
@@ -618,7 +612,7 @@ def load(filename="", buf=None):
     if len(data) < 1:
         raise NBTFormatError("NBT Stream too short!")
 
-    cdef unsigned int * magic_no = <unsigned int *> ctx.buffer
+    cdef unsigned int *magic_no = <unsigned int *> ctx.buffer
 
     if ctx.buffer[0] != _ID_COMPOUND:
         raise NBTFormatError('Not an NBT file with a root TAG_Compound '
@@ -632,29 +626,24 @@ def load(filename="", buf=None):
 
     return tag
 
-
-
 # Simple input stream, buffers the entire file. Faster than builtin file, StringIO, or GzipFile.
 
 cdef class load_ctx:
     cdef size_t offset
-    cdef char * buffer
+    cdef char *buffer
     cdef size_t size
 
 IF UNICODE_CACHE:
     cdef dict u_cache = dict()
 
-
-cdef char * read(load_ctx self, size_t s) except NULL:
+cdef char *read(load_ctx self, size_t s) except NULL:
     if s > self.size - self.offset:
         raise NBTFormatError(
             "NBT Stream too short. Asked for {0:d}, only had {1:d}".format(s, (self.size - self.offset)))
 
-    cdef char * ret = self.buffer + self.offset
+    cdef char *ret = self.buffer + self.offset
     self.offset += s
     return ret
-
-
 
 # --- Load value types ---
 
@@ -664,51 +653,45 @@ cdef TAG_Byte load_byte(load_ctx ctx):
     tag.tagID = _ID_BYTE
     return tag
 
-
 cdef TAG_Short load_short(load_ctx ctx):
-    cdef short * ptr = <short *> read(ctx, 2)
+    cdef short *ptr = <short *> read(ctx, 2)
     cdef TAG_Short tag = TAG_Short.__new__(TAG_Short)
     tag.value = ptr[0]
     swab(&tag.value, 2)
     tag.tagID = _ID_SHORT
     return tag
 
-
 cdef TAG_Int load_int(load_ctx ctx):
-    cdef int * ptr = <int *> read(ctx, 4)
+    cdef int *ptr = <int *> read(ctx, 4)
     cdef TAG_Int tag = TAG_Int.__new__(TAG_Int)
     tag.value = (ptr[0])
     swab(&tag.value, 4)
     tag.tagID = _ID_INT
     return tag
 
-
 cdef TAG_Long load_long(load_ctx ctx):
-    cdef long long * ptr = <long long *> read(ctx, 8)
+    cdef long long *ptr = <long long *> read(ctx, 8)
     cdef TAG_Long tag = TAG_Long.__new__(TAG_Long)
     tag.value = ptr[0]
     swab(&tag.value, 8)
     tag.tagID = _ID_LONG
     return tag
 
-
 cdef TAG_Float load_float(load_ctx ctx):
-    cdef float * ptr = <float *> read(ctx, 4)
+    cdef float *ptr = <float *> read(ctx, 4)
     cdef TAG_Float tag = TAG_Float.__new__(TAG_Float)
     tag.value = ptr[0]
     swab(&tag.value, 4)
     tag.tagID = _ID_FLOAT
     return tag
 
-
 cdef TAG_Double load_double(load_ctx ctx):
-    cdef double * ptr = <double *> read(ctx, 8)
+    cdef double *ptr = <double *> read(ctx, 8)
     cdef TAG_Double tag = TAG_Double.__new__(TAG_Double)
     tag.value = ptr[0]
     swab(&tag.value, 8)
     tag.tagID = _ID_DOUBLE
     return tag
-
 
 # --- Load container types ---
 
@@ -726,17 +709,15 @@ cdef load_compound(load_ctx ctx):
 
     return root_tag
 
-
 cdef load_named(load_ctx ctx, char tagID):
     name = load_name(ctx)
     cdef TAG_Value tag = load_tag(tagID, ctx)
     tag._name = name
     return tag
 
-
 cdef load_list(load_ctx ctx):
     cdef char list_type = read(ctx, 1)[0]
-    cdef int * ptr = <int *> read(ctx, 4)
+    cdef int *ptr = <int *> read(ctx, 4)
     cdef int length = ptr[0]
     swab(&length, 4)
 
@@ -749,7 +730,7 @@ cdef load_list(load_ctx ctx):
     return tag
 
 cdef unicode load_string(load_ctx ctx):
-    cdef unsigned short * ptr = <unsigned short *> read(ctx, 2)
+    cdef unsigned short *ptr = <unsigned short *> read(ctx, 2)
     cdef unsigned short length = ptr[0]
     swab(&length, 2)
     b = read(ctx, length)
@@ -761,7 +742,7 @@ IF UNICODE_NAMES:
         """
         Like load_string, but caches the unicode object in u_cache to save memory
         """
-        cdef unsigned short * ptr = <unsigned short *> read(ctx, 2)
+        cdef unsigned short *ptr = <unsigned short *> read(ctx, 2)
         cdef unsigned short length = ptr[0]
         swab(&length, 2)
         b = read(ctx, length)
@@ -788,7 +769,7 @@ ELSE:
 # --- Load array types ---
 
 cdef TAG_Byte_Array load_byte_array(load_ctx ctx):
-    cdef int * ptr = <int *> read(ctx, 4)
+    cdef int *ptr = <int *> read(ctx, 4)
     cdef int length = ptr[0]
     swab(&length, 4)
 
@@ -797,7 +778,7 @@ cdef TAG_Byte_Array load_byte_array(load_ctx ctx):
     return TAG_Byte_Array(numpy.fromstring(arr[:byte_length], dtype=TAG_Byte_Array.dtype, count=length))
 
 cdef TAG_Short_Array load_short_array(load_ctx ctx):
-    cdef int * ptr = <int *> read(ctx, 4)
+    cdef int *ptr = <int *> read(ctx, 4)
     cdef int length = ptr[0]
     swab(&length, 4)
 
@@ -807,7 +788,7 @@ cdef TAG_Short_Array load_short_array(load_ctx ctx):
     return TAG_Short_Array(numpy.fromstring(arr[:byte_length], dtype=numpy.dtype(dtype), count=length))
 
 cdef TAG_Int_Array load_int_array(load_ctx ctx):
-    cdef int * ptr = <int *> read(ctx, 4)
+    cdef int *ptr = <int *> read(ctx, 4)
     cdef int length = ptr[0]
     swab(&length, 4)
 
@@ -817,7 +798,7 @@ cdef TAG_Int_Array load_int_array(load_ctx ctx):
     return TAG_Int_Array(numpy.fromstring(arr[:byte_length], dtype=numpy.dtype(dtype), count=length))
 
 cdef TAG_Long_Array load_long_array(load_ctx ctx):
-    cdef int * ptr = <int *> read(ctx, 4)
+    cdef int *ptr = <int *> read(ctx, 4)
     cdef int length = ptr[0]
     swab(&length, 4)
 
@@ -825,9 +806,6 @@ cdef TAG_Long_Array load_long_array(load_ctx ctx):
     cdef char *arr = read(ctx, byte_length)
     dtype = '>q' if _BIG_ENDIAN else '<q'
     return TAG_Long_Array(numpy.fromstring(arr[:byte_length], dtype=numpy.dtype(dtype), count=length))
-
-
-
 
 # --- Identify tag type and load tag ---
 
@@ -871,28 +849,24 @@ cdef load_tag(char tagID, load_ctx ctx):
     if tagID == _ID_SHORT_ARRAY:
         return load_short_array(ctx)
 
-
 def hexdump(src, length=8):
-    FILTER=''.join([(len(repr(chr(x)))==3) and chr(x) or '.' for x in xrange(256)])
-    N=0
-    result=''
+    FILTER = ''.join([(len(repr(chr(x))) == 3) and chr(x) or '.' for x in xrange(256)])
+    N = 0
+    result = ''
     while src:
         s, src = src[:length], src[length:]
-        hexa = ' '.join(["%02X"%ord(x) for x in s])
+        hexa = ' '.join(["%02X" % ord(x) for x in s])
         s = s.translate(FILTER)
         result += "%04X   %-*s   %s\n" % (N, length * 3, hexa, s)
-        N+=length
+        N += length
     return result
-
 
 cdef void cwrite(obj, char *buf, size_t len):
     #print "cwrite %s %s %d" % (map(ord, buf[:min(4, len)]), buf[:min(4, len)].decode('ascii', 'replace'), len)
     PycStringIO.cwrite(obj, buf, len)
 
-
 cdef void save_tag_id(char tagID, object buf):
     cwrite(buf, &tagID, 1)
-
 
 cdef save_tag_name(TAG_Value tag, object buf):
     IF UNICODE_NAMES:
@@ -901,52 +875,43 @@ cdef save_tag_name(TAG_Value tag, object buf):
     ELSE:
         save_string(tag.name, buf)
 
-
 cdef void save_string(bytes value, object buf):
-    cdef short length = <short>len(value)
-    cdef char * s = value
+    cdef short length = <short> len(value)
+    cdef char *s = value
     swab(&length, 2)
     cwrite(buf, <char *> &length, 2)
     cwrite(buf, s, len(value))
 
-
 cdef void save_array(object value, object buf, char size):
     value = value.tostring()
-    cdef char * s = value
-    cdef int length = <int>len(value) / size
+    cdef char *s = value
+    cdef int length = <int> len(value) / size
     swab(&length, 4)
     cwrite(buf, <char *> &length, 4)
     cwrite(buf, s, len(value))
 
-
 cdef void save_byte(char value, object buf):
     cwrite(buf, <char *> &value, 1)
-
 
 cdef void save_short(short value, object buf):
     swab(&value, 2)
     cwrite(buf, <char *> &value, 2)
 
-
 cdef void save_int(int value, object buf):
     swab(&value, 4)
     cwrite(buf, <char *> &value, 4)
-
 
 cdef void save_long(long long value, object buf):
     swab(&value, 8)
     cwrite(buf, <char *> &value, 8)
 
-
 cdef void save_float(float value, object buf):
     swab(&value, 4)
     cwrite(buf, <char *> &value, 4)
 
-
 cdef void save_double(double value, object buf):
     swab(&value, 8)
     cwrite(buf, <char *> &value, 8)
-
 
 cdef void save_tag_value(TAG_Value tag, object buf):
     cdef char tagID = tag.tagID
@@ -988,7 +953,6 @@ cdef void save_tag_value(TAG_Value tag, object buf):
 
     if tagID == _ID_SHORT_ARRAY:
         (<TAG_Short_Array> tag).save_value(buf)
-
 
 tag_classes = {TAG().tagID: TAG for TAG in (TAG_Byte, TAG_Short, TAG_Int, TAG_Long, TAG_Float, TAG_Double, TAG_String,
                                             TAG_Byte_Array, TAG_List, TAG_Compound, TAG_Int_Array, TAG_Long_Array,

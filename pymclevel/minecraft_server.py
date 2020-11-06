@@ -1,10 +1,9 @@
 import atexit
 import itertools
+import json
 import logging
 import os
-from os.path import dirname, join, basename
 import random
-from pymclevel import PocketLeveldbWorld
 import re
 import shutil
 import subprocess
@@ -12,16 +11,18 @@ import sys
 import tempfile
 import time
 import urllib
-import json
-import urllib2
+import urllib.request
+from os.path import dirname, join, basename
 
-import infiniteworld
+import pymclevel.infiniteworld as infiniteworld
 from directories import getCacheDir
-from mclevelbase import exhaust, ChunkNotPresent
+from pymclevel import PocketLeveldbWorld
+from pymclevel.mclevelbase import exhaust, ChunkNotPresent
 
 log = logging.getLogger(__name__)
 
 __author__ = 'Rio'
+
 
 # Thank you, Stackoverflow
 # http://stackoverflow.com/questions/377017/test-if-executable-exists-in-python
@@ -57,14 +58,14 @@ alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
 
 def getVersions(doSnapshot):
     JAR_VERSION_URL_TEMPLATE = "https://s3.amazonaws.com/Minecraft.Download/versions/{}/minecraft_server.{}.jar"
-    versionSite = urllib2.urlopen("http://s3.amazonaws.com/Minecraft.Download/versions/versions.json")
+    versionSite = urllib.request.urlopen("http://s3.amazonaws.com/Minecraft.Download/versions/versions.json")
     versionSiteResponse = versionSite.read()
     versionJSON = json.loads(versionSiteResponse)
     if doSnapshot:
         version = versionJSON["latest"]["snapshot"]
     else:
         version = versionJSON["latest"]["release"]
-    print "Version: " + version
+    print("Version: " + version)
     URL = JAR_VERSION_URL_TEMPLATE.format(version, version)
     return URL
 
@@ -114,23 +115,23 @@ this way.
             for f in cacheDirList:
                 p = os.path.join(self._cacheDir, f)
                 if f.startswith("minecraft_server") and f.endswith(".jar") and os.path.isfile(p):
-                    print "Unclassified minecraft_server.jar found in cache dir. Discovering version number..."
+                    print("Unclassified minecraft_server.jar found in cache dir. Discovering version number...")
                     self.cacheNewVersion(p)
                     os.remove(p)
 
-        print "Minecraft_Server.jar storage initialized."
-        print u"Each server is stored in a subdirectory of {0} named with the server's version number".format(
-            self._cacheDir)
+        print("Minecraft_Server.jar storage initialized.")
+        print(u"Each server is stored in a subdirectory of {0} named with the server's version number".format(
+            self._cacheDir))
 
-        print "Cached servers: ", self.versions
+        print("Cached servers: ", self.versions)
 
     def downloadCurrentServer(self, getSnapshot):
         self.snapshot = getSnapshot
-        print "Downloading the latest Minecraft Server..."
+        print("Downloading the latest Minecraft Server...")
         try:
             (filename, headers) = urllib.urlretrieve(getVersions(getSnapshot))
         except Exception as e:
-            print "Error downloading server: {0!r}".format(e)
+            print("Error downloading server: {0!r}".format(e))
             return
 
         self.cacheNewVersion(filename, allowDuplicate=False)
@@ -140,7 +141,7 @@ this way.
         it into the proper subfolder of the server jar cache folder"""
 
         version = MCServerChunkGenerator._serverVersionFromJarFile(filename)
-        print "Found version ", version
+        print("Found version ", version)
         versionDir = os.path.join(self._cacheDir, version)
 
         i = 1
@@ -179,7 +180,7 @@ this way.
 
     def getJarfile(self, version=None):
         if len(self.versions) == 0:
-            print "No servers found in cache."
+            print("No servers found in cache.")
             self.downloadCurrentServer(False)
 
         version = version or self.latestVersion
@@ -251,11 +252,11 @@ def findJava():
                                 w = l.split(None, 2)
                                 javaHome = w[-1]
                                 java_exe = os.path.join(javaHome, "bin", "java.exe")
-                                print "RegQuery: java.exe found at ", java_exe
+                                print("RegQuery: java.exe found at ", java_exe)
                                 break
 
             except Exception as e:
-                print "Error while locating java.exe using the Registry: ", repr(e)
+                print("Error while locating java.exe using the Registry: ", repr(e))
     else:
         java_exe = which(java_exe_path)
 
@@ -416,7 +417,7 @@ class MCServerChunkGenerator(object):
 
                     simSeconds = max(8, int(duration) + 1)
 
-                    for i in xrange(simSeconds):
+                    for i in range(simSeconds):
                         # process tile ticks
                         yield "%2d/%2d: Simulating the world for a little bit..." % (i, simSeconds)
                         time.sleep(1)
@@ -446,9 +447,9 @@ class MCServerChunkGenerator(object):
             tempChunkBytes = tempWorld._getChunkBytes(cx, cz)
         except ChunkNotPresent as e:
             raise ChunkNotPresent("While generating a world in {0} using server {1} ({2!r})".format(tempWorld,
-                                                                                                     self.serverJarFile,
-                                                                                                     e), sys.exc_info()[
-                2])
+                                                                                                    self.serverJarFile,
+                                                                                                    e), sys.exc_info()[
+                                      2])
         if isinstance(level, PocketLeveldbWorld):
             level.saveGeneratedChunk(cx, cz, tempChunkBytes)
         else:
@@ -469,7 +470,7 @@ class MCServerChunkGenerator(object):
         return exhaust(self.createLevelIter(level, box, simulate, **kw))
 
     def createLevelIter(self, level, box, simulate=False, worldType="DEFAULT", **kw):
-        if isinstance(level, basestring):
+        if isinstance(level, (str, bytes)):
             filename = level
             level = infiniteworld.MCInfdevOldLevel(filename, create=True, **kw)
 
@@ -477,8 +478,8 @@ class MCServerChunkGenerator(object):
         minRadius = self.minRadius
 
         genPositions = list(itertools.product(
-            xrange(box.mincx, box.maxcx, minRadius * 2),
-            xrange(box.mincz, box.maxcz, minRadius * 2)))
+            range(box.mincx, box.maxcx, minRadius * 2),
+            range(box.mincz, box.maxcz, minRadius * 2)))
 
         for i, (cx, cz) in enumerate(genPositions):
             log.info("Generating at %s" % ((cx, cz),))
@@ -516,7 +517,7 @@ class MCServerChunkGenerator(object):
 
             # boxedChunks = [cPos for cPos in chunks if inBox(cPos)]
 
-            print "Generating {0} chunks out of {1} starting from {2}".format("XXX", len(chunks), (centercx, centercz))
+            print("Generating {0} chunks out of {1} starting from {2}".format("XXX", len(chunks), (centercx, centercz)))
             yield startLength - len(chunks), startLength
 
             # chunks = [c for c in chunks if not inBox(c)]
@@ -526,13 +527,13 @@ class MCServerChunkGenerator(object):
 
             i = 0
             for cx, cz in itertools.product(
-                    xrange(centercx - maxRadius, centercx + maxRadius),
-                    xrange(centercz - maxRadius, centercz + maxRadius)):
+                    range(centercx - maxRadius, centercx + maxRadius),
+                    range(centercz - maxRadius, centercz + maxRadius)):
                 if level.containsChunk(cx, cz):
                     chunks.discard((cx, cz))
                 elif ((cx, cz) in chunks
                       and all(tempWorld.containsChunk(ncx, ncz) for ncx, ncz in
-                              itertools.product(xrange(cx - 1, cx + 2), xrange(cz - 1, cz + 2)))
+                              itertools.product(range(cx - 1, cx + 2), range(cz - 1, cz + 2)))
                 ):
                     self.copyChunkAtPosition(tempWorld, level, cx, cz)
                     i += 1
@@ -540,7 +541,7 @@ class MCServerChunkGenerator(object):
                     yield startLength - len(chunks), startLength
 
             if length == len(chunks):
-                print "No chunks were generated. Aborting."
+                print("No chunks were generated. Aborting.")
                 break
 
         level.saveInPlace()
@@ -567,7 +568,7 @@ class MCServerChunkGenerator(object):
             centercx, centercz = chunks.pop()
             chunks.add((centercx, centercz))
 
-            print "Generated {0} chunks out of {1} starting from {2}".format(startLength - len(chunks), startLength, (centercx, centercz))
+            print("Generated {0} chunks out of {1} starting from {2}".format(startLength - len(chunks), startLength, (centercx, centercz)))
             yield startLength - len(chunks), startLength, "Generating..."
 
             for p in self.generateAtPositionIter(tempWorld, tempDir, centercx, centercz, simulate):
@@ -575,8 +576,8 @@ class MCServerChunkGenerator(object):
 
             yield i, startLength, "Adding chunks to world..."
             for cx, cz in itertools.product(
-                    xrange(centercx - maxRadius, centercx + maxRadius),
-                    xrange(centercz - maxRadius, centercz + maxRadius)):
+                    range(centercx - maxRadius, centercx + maxRadius),
+                    range(centercz - maxRadius, centercz + maxRadius)):
                 if level.containsChunk(cx, cz):
                     chunks.discard((cx, cz))
                     if (cx, cz) in uncreated_chunks:
@@ -593,7 +594,7 @@ class MCServerChunkGenerator(object):
                         uncreated_chunks.append((cx, cz))
                 else:
                     if (cx, cz) in boxedChunks and (cx, cz) not in uncreated_chunks:
-                        log.info("adding (%s, %s) to uncreated_chunks"%(cx, cz))
+                        log.info("adding (%s, %s) to uncreated_chunks" % (cx, cz))
                         uncreated_chunks.append((cx, cz))
             yield i, startLength, "Generating..."
 
@@ -605,19 +606,19 @@ class MCServerChunkGenerator(object):
         if msg:
             log.warning(msg)
 
-#         print "len(uncreated_chunks)", len(uncreated_chunks)
+        #         print "len(uncreated_chunks)", len(uncreated_chunks)
 
         level.saveInPlace()
 
-#     if __builtins__.get('mcenf_generateChunksInLevelIter', False):
-#         log.info("Using new MCServerChunkGenerator.generateChunksInLevelIter")
-#         generateChunksInLevelIter = generateChunksInLevelIter_new
-#     else:
-#         generateChunksInLevelIter = generateChunksInLevelIter_old
+    #     if __builtins__.get('mcenf_generateChunksInLevelIter', False):
+    #         log.info("Using new MCServerChunkGenerator.generateChunksInLevelIter")
+    #         generateChunksInLevelIter = generateChunksInLevelIter_new
+    #     else:
+    #         generateChunksInLevelIter = generateChunksInLevelIter_old
     generateChunksInLevelIter = generateChunksInLevelIter_new
 
     def runServer(self, startingDir):
-        if isinstance(startingDir, unicode):
+        if isinstance(startingDir, bytes):
             startingDir = startingDir.encode(sys.getfilesystemencoding())
 
         return self._runServer(startingDir, self.serverJarFile)
@@ -639,10 +640,10 @@ class MCServerChunkGenerator(object):
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.STDOUT,
                                 universal_newlines=True,
-        )
+                                )
         cls.processes.append(proc)
         return proc
-    
+
     @classmethod
     def terminateProcesses(cls):
         for process in cls.processes:

@@ -2,9 +2,10 @@
 #
 #   Albow - Music
 #
-#---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 
 from __future__ import division
+
 import os
 from random import randrange
 
@@ -12,29 +13,30 @@ try:
     from pygame.mixer import music
 except ImportError:
     music = None
-    print "Music not available"
+    print("Music not available")
 
 if music:
     import root
 
     music.set_endevent(root.MUSIC_END_EVENT)
 
-from resource import resource_path
-from root import schedule
+from albow.resource import resource_path
+from albow.root import schedule
 
-#---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 
 fadeout_time = 1  # Time over which to fade out music (sec)
 change_delay = 2  # Delay between end of one item and starting the next (sec)
 
-#---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 
 music_enabled = True
 current_music = None
 current_playlist = None
 next_change_delay = 0
 
-#---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
 
 
 class PlayList(object):
@@ -65,7 +67,7 @@ class PlayList(object):
             return item
 
 
-#---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 
 
 def get_music(*names, **kwds):
@@ -88,7 +90,7 @@ def get_playlist(*names, **kwds):
 def change_playlist(new_playlist):
     """Fade out any currently playing music and start playing from the given
     playlist."""
-    #print "albow.music: change_playlist" ###
+    # print "albow.music: change_playlist" ###
     global current_music, current_playlist, next_change_delay
     if music and new_playlist is not current_playlist:
         current_playlist = new_playlist
@@ -103,7 +105,7 @@ def change_playlist(new_playlist):
 def change_music(new_music, repeat=False):
     """Fade out any currently playing music and start playing the given
     music file."""
-    #print "albow.music: change_music" ###
+    # print "albow.music: change_music" ###
     if music and new_music is not current_music:
         if new_music:
             new_playlist = PlayList([new_music], repeat=repeat)
@@ -113,7 +115,7 @@ def change_music(new_music, repeat=False):
 
 
 def music_end():
-    #print "albow.music: music_end" ###
+    # print "albow.music: music_end" ###
     schedule(next_change_delay, jog_music)
 
 
@@ -126,12 +128,12 @@ def jog_music():
 
 def start_next_music():
     """Start playing the next item from the current playlist immediately."""
-    #print "albow.music: start_next_music" ###
+    # print "albow.music: start_next_music" ###
     global current_music, next_change_delay
     if music_enabled and current_playlist:
         next_music = current_playlist.next()
         if next_music:
-            print "albow.music: loading", repr(next_music)  ###
+            print("albow.music: loading", repr(next_music))  ###
             music.load(next_music)
             music.play()
             next_change_delay = change_delay
@@ -148,25 +150,26 @@ def set_music_enabled(state):
         music_enabled = state
         if state:
             # Music pausing doesn't always seem to work.
-            #music.unpause()
+            # music.unpause()
             if current_music:
                 # After stopping and restarting currently loaded music,
                 # fadeout no longer works.
-                #print "albow.music: reloading", repr(current_music) ###
+                # print "albow.music: reloading", repr(current_music) ###
                 music.load(current_music)
                 music.play()
             else:
                 jog_music()
         else:
-            #music.pause()
+            # music.pause()
             music.stop()
 
-#---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
 
 from pygame import Rect
 from albow.widget import Widget
 from albow.controls import Label, Button, CheckBox
-from albow.layout import Row, Column, Grid
+from albow.layout import Column, Grid
 from albow.dialogs import Dialog
 
 

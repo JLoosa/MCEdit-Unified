@@ -3,9 +3,6 @@
 
 from libc.stdlib cimport abs as c_abs
 
-cimport cpython.array
-
-
 # TODO: I don't know how can I not return any value (void doesn't work)
 cpdef int undo_filter_sub(int filter_unit, unsigned char[:] scanline,
                           unsigned char[:] previous, unsigned char[:] result) nogil:

@@ -1,14 +1,16 @@
-#-# Modified by D.C.-G. for translation purpose
+# -# Modified by D.C.-G. for translation purpose
 import textwrap
-from pygame import event, key
-from pygame.locals import *
-from widget import Widget
-from controls import Label, Button
-from layout import Row, Column
-from fields import TextFieldWrapped
-from scrollpanel import ScrollPanel
-from table_view import TableView, TableColumn
-from translate import _
+
+from pygame import event
+
+from albow.controls import Label, Button
+from albow.fields import TextFieldWrapped
+from albow.layout import Row, Column
+from albow.scrollpanel import ScrollPanel
+from albow.table_view import TableView, TableColumn
+from albow.translate import _
+from albow.widget import Widget
+
 
 class Modal(object):
     enter_response = True
@@ -104,9 +106,11 @@ def wrapped_label(text, wrap_width, **kwds):
 def alert(mess, **kwds):
     ask(mess, ["OK"], **kwds)
 
+
 ask_tied_to = None
 # ask_tied_to = []
 ask_tied_tos = []
+
 
 def ask(mess, responses=("OK", "Cancel"), default=0, cancel=-1,
         wrap_width=60, **kwds):
@@ -140,7 +144,8 @@ def ask(mess, responses=("OK", "Cancel"), default=0, cancel=-1,
         lines = mess.split('\n')
         # ScrolledPanel refuses to render properly for now, so Tableview is used instead.
         w = TableView().font.size(_(colLbl))[0]
-        lb = TableView(columns=[TableColumn(colLbl, max(lb.width, w)),], nrows=(height - (2 * brow.height) - box.margin - box.font.get_linesize()) / box.font.get_linesize(), height=height - (2 * brow.height) - (box.font.get_linesize() * 2) - box.margin) #, width=w)
+        lb = TableView(columns=[TableColumn(colLbl, max(lb.width, w)), ], nrows=(height - (2 * brow.height) - box.margin - box.font.get_linesize()) / box.font.get_linesize(),
+                       height=height - (2 * brow.height) - (box.font.get_linesize() * 2) - box.margin)  # , width=w)
 
         def num_rows():
             return len(lines)
@@ -223,7 +228,7 @@ def input_text_buttons(prompt, width, initial=None, allowed_chars=None, **kwds):
 
     lb = Label(prompt)
     lb.topleft = (d, d)
-    tf = TextFieldWrapped(width,allowed_chars=allowed_chars)
+    tf = TextFieldWrapped(width, allowed_chars=allowed_chars)
     if initial:
         tf.set_text(initial)
     tf.enter_action = ok

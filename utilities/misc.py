@@ -1,4 +1,3 @@
-
 # Taken from: http://stackoverflow.com/a/7346105
 class Singleton:
     """
@@ -38,28 +37,30 @@ class Singleton:
 
     def __instancecheck__(self, inst):
         return isinstance(inst, self._decorated)
-    
-    
+
+
 def deprecated(func):
     '''
     Function decorator to denote that a function shouldn't be used
     
     :param func: The function that is deprecated
     '''
+
     def new_func(*args, **kwargs):
-        #logger.warn("Function \""+str(func.__name__)+"\" is deprecated and should not be used")
-        return func(*args, **kwargs)   
+        # logger.warn("Function \""+str(func.__name__)+"\" is deprecated and should not be used")
+        return func(*args, **kwargs)
+
     new_func.__name__ = func.__name__
     if func.__doc__ is not None:
-        new_func.__doc__ = '''*Deprecated*\n%s'''%func.__doc__
+        new_func.__doc__ = '''*Deprecated*\n%s''' % func.__doc__
     else:
         new_func.__doc__ = '''*Deprecated*'''
     new_func.__dict__.update(func.__dict__)
     return new_func
 
-def unicoded(func):
 
+def unicoded(func):
     def wrapper(*args, **kwargs):
-        return unicode(func(*args, **kwargs))
+        return bytes(func(*args, **kwargs), encoding="utf-8")
 
     return wrapper

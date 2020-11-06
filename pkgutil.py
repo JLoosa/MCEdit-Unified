@@ -3,10 +3,10 @@
 # NOTE: This module must remain compatible with Python 2.3, as it is shared
 # by setuptools for distribution with Python 2.3 and up.
 
-import os
-import sys
 import imp
+import os
 import os.path
+import sys
 from types import ModuleType
 
 __all__ = [
@@ -45,18 +45,20 @@ def simplegeneric(func):
             try:
                 class cls(cls, object):
                     pass
+
                 mro = cls.__mro__[1:]
             except TypeError:
-                mro = object,   # must be an ExtensionClass or some such  :(
+                mro = object,  # must be an ExtensionClass or some such  :(
         for t in mro:
             if t in registry:
                 return registry[t](*args, **kw)
         else:
             return func(*args, **kw)
+
     try:
         wrapper.__name__ = func.__name__
     except (TypeError, AttributeError):
-        pass    # Python 2.3 doesn't allow functions to be renamed
+        pass  # Python 2.3 doesn't allow functions to be renamed
 
     def register(typ, func=None):
         if func is None:
@@ -124,7 +126,7 @@ def walk_packages(path=None, prefix='', onerror=None):
                 # don't traverse path items we've seen before
                 path = [p for p in path if not seen(p)]
 
-                for item in walk_packages(path, name+'.', onerror):
+                for item in walk_packages(path, name + '.', onerror):
                     yield item
 
 
@@ -152,11 +154,12 @@ def iter_modules(path=None, prefix=''):
                 yield i, name, ispkg
 
 
-#@simplegeneric
+# @simplegeneric
 def iter_importer_modules(importer, prefix=''):
     if not hasattr(importer, 'iter_modules'):
         return []
     return importer.iter_modules(prefix)
+
 
 iter_importer_modules = simplegeneric(iter_importer_modules)
 
@@ -205,7 +208,7 @@ class ImpImporter:
 
         for fn in filenames:
             modname = inspect.getmodulename(fn)
-            if modname=='__init__' or modname in yielded:
+            if modname == '__init__' or modname in yielded:
                 continue
 
             path = os.path.join(self.path, fn)
@@ -220,11 +223,11 @@ class ImpImporter:
                     dircontents = []
                 for fn in dircontents:
                     subname = inspect.getmodulename(fn)
-                    if subname=='__init__':
+                    if subname == '__init__':
                         ispkg = True
                         break
                 else:
-                    continue    # not a package
+                    continue  # not a package
 
             if modname and '.' not in modname:
                 yielded[modname] = 1
@@ -260,7 +263,7 @@ class ImpLoader:
     def _reopen(self):
         if self.file and self.file.closed:
             mod_type = self.etc[2]
-            if mod_type==imp.PY_SOURCE:
+            if mod_type == imp.PY_SOURCE:
                 self.file = open(self.filename, 'rU')
             elif mod_type in (imp.PY_COMPILED, imp.C_EXTENSION):
                 self.file = open(self.filename, 'rb')
@@ -274,40 +277,40 @@ class ImpLoader:
         return fullname
 
     def is_package(self, fullname):
-        return self.etc[2]==imp.PKG_DIRECTORY
+        return self.etc[2] == imp.PKG_DIRECTORY
 
     def get_code(self, fullname=None):
         fullname = self._fix_name(fullname)
         if self.code is None:
             mod_type = self.etc[2]
-            if mod_type==imp.PY_SOURCE:
+            if mod_type == imp.PY_SOURCE:
                 source = self.get_source(fullname)
                 self.code = compile(source, self.filename, 'exec')
-            elif mod_type==imp.PY_COMPILED:
+            elif mod_type == imp.PY_COMPILED:
                 self._reopen()
                 try:
                     self.code = read_code(self.file)
                 finally:
                     self.file.close()
-            elif mod_type==imp.PKG_DIRECTORY:
+            elif mod_type == imp.PKG_DIRECTORY:
                 self.code = self._get_delegate().get_code()
         return self.code
 
     def get_source(self, fullname=None):
         if self.source is None:
             mod_type = self.etc[2]
-            if mod_type==imp.PY_SOURCE:
+            if mod_type == imp.PY_SOURCE:
                 self._reopen()
                 try:
                     self.source = self.file.read()
                 finally:
                     self.file.close()
-            elif mod_type==imp.PY_COMPILED:
+            elif mod_type == imp.PY_COMPILED:
                 if os.path.exists(self.filename[:-1]):
                     f = open(self.filename[:-1], 'rU')
                     self.source = f.read()
                     f.close()
-            elif mod_type==imp.PKG_DIRECTORY:
+            elif mod_type == imp.PKG_DIRECTORY:
                 self.source = self._get_delegate().get_source()
         return self.source
 
@@ -315,7 +318,7 @@ class ImpLoader:
         return ImpImporter(self.filename).find_module('__init__')
 
     def get_filename(self, fullname=None):
-        if self.etc[2]==imp.PKG_DIRECTORY:
+        if self.etc[2] == imp.PKG_DIRECTORY:
             return self._get_delegate().get_filename()
         elif self.etc[2] in (imp.PY_SOURCE, imp.PY_COMPILED, imp.C_EXTENSION):
             return self.filename
@@ -325,6 +328,7 @@ class ImpLoader:
 try:
     import zipimport
     from zipimport import zipimporter
+
 
     def iter_zipimport_modules(importer, prefix=''):
         dirlist = zipimport._zip_directory_cache[importer.archive].keys()
@@ -339,21 +343,22 @@ try:
 
             fn = fn[plen:].split(os.sep)
 
-            if len(fn)==2 and fn[1].startswith('__init__.py'):
+            if len(fn) == 2 and fn[1].startswith('__init__.py'):
                 if fn[0] not in yielded:
                     yielded[fn[0]] = 1
                     yield fn[0], True
 
-            if len(fn)!=1:
+            if len(fn) != 1:
                 continue
 
             modname = inspect.getmodulename(fn[0])
-            if modname=='__init__':
+            if modname == '__init__':
                 continue
 
             if modname and '.' not in modname and modname not in yielded:
                 yielded[modname] = 1
                 yield prefix + modname, False
+
 
     iter_importer_modules.register(zipimporter, iter_zipimport_modules)
 
@@ -374,7 +379,7 @@ def get_importer(path_item):
     The cache (or part of it) can be cleared manually if a
     rescan of sys.path_hooks is necessary.
     """
-    if type(path_item) == unicode:
+    if type(path_item) == bytes:
         path_item = path_item.encode(sys.getfilesystemencoding())
     try:
         importer = sys.path_importer_cache[path_item]
@@ -528,7 +533,7 @@ def extend_path(path, name):
     path = path[:]  # Start with a copy of the existing path
 
     for dir in sys.path:
-        if not isinstance(dir, basestring) or not os.path.isdir(dir):
+        if not isinstance(dir, (str, bytes)) or not os.path.isdir(dir):
             continue
         subdir = os.path.join(dir, pname)
         # XXX This may still add duplicate entries to path on
@@ -542,7 +547,7 @@ def extend_path(path, name):
         if os.path.isfile(pkgfile):
             try:
                 f = open(pkgfile)
-            except IOError, msg:
+            except IOError as msg:
                 sys.stderr.write("Can't open %s: %s\n" %
                                  (pkgfile, msg))
             else:

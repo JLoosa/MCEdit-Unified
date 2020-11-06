@@ -2,15 +2,16 @@ import itertools
 import os
 import shutil
 import unittest
+
 import numpy
 
-from pymclevel import mclevel
-from pymclevel.infiniteworld import MCInfdevOldLevel
-from pymclevel import nbt
-from pymclevel.schematic import MCSchematic
-from pymclevel.box import BoundingBox
 from pymclevel import block_copy
-from templevel import mktemp, TempLevel
+from pymclevel import mclevel
+from pymclevel import nbt
+from pymclevel.box import BoundingBox
+from pymclevel.infiniteworld import MCInfdevOldLevel
+from pymclevel.schematic import MCSchematic
+from pymclevel.test.templevel import mktemp, TempLevel
 
 __author__ = 'Rio'
 
@@ -38,7 +39,7 @@ class TestAnvilLevel(unittest.TestCase):
 
     def testGetEntities(self):
         level = self.anvilLevel.level
-        print len(level.getEntitiesInBox(level.bounds))
+        print(len(level.getEntitiesInBox(level.bounds)))
 
     def testCreateChunks(self):
         level = self.anvilLevel.level
@@ -98,7 +99,7 @@ class TestAnvilLevel(unittest.TestCase):
     def testRecreateChunks(self):
         level = self.anvilLevel.level
 
-        for x, z in itertools.product(xrange(-1, 3), xrange(-1, 2)):
+        for x, z in itertools.product(range(-1, 3), range(-1, 2)):
             level.deleteChunk(x, z)
             assert not level.containsChunk(x, z)
             level.createChunk(x, z)

@@ -1,18 +1,22 @@
 from __future__ import division
+
+import resource
 import sys
-import albow # used for translation update
+
+import numpy
+from OpenGL import GL, GLU
+from numpy import fromstring
 from pygame import Rect, Surface, image
+from pygame.cursors import arrow as arrow_cursor
 from pygame.locals import K_RETURN, K_KP_ENTER, K_ESCAPE, K_TAB, KEYDOWN, SRCALPHA
 from pygame.mouse import set_cursor
-from pygame.cursors import arrow as arrow_cursor
 from pygame.transform import rotozoom
-from vectors import add, subtract
-from utils import frame_rect
-import theme
-from theme import ThemeProperty, FontProperty
-import resource
-from numpy import fromstring
-from OpenGL import GL, GLU
+
+import albow  # used for translation update
+import albow.theme as theme
+from albow.theme import ThemeProperty, FontProperty
+from albow.utils import frame_rect
+from albow.vectors import add, subtract
 
 debug_rect = False
 debug_tab = True
@@ -26,8 +30,8 @@ def overridable_property(name, doc=None):
     the underlying object to get and set the property value, so that
     the property's behaviour may be easily overridden by subclasses."""
 
-    getter_name = intern('get_' + name)
-    setter_name = intern('set_' + name)
+    getter_name = numpy.intern('get_' + name)
+    setter_name = numpy.intern('set_' + name)
     return property(
         lambda self: getattr(self, getter_name)(),
         lambda self, value: getattr(self, setter_name)(value),
@@ -104,11 +108,11 @@ class Widget(object):
         if rect and not isinstance(rect, Rect):
             raise TypeError("Widget rect not a pygame.Rect")
         self._rect = Rect(rect or (0, 0, 100, 100))
-        #-# Translation live update preparation
+        # -# Translation live update preparation
         self.__lang = albow.translate.getLang()
         self.__update_translation = False
         self.shrink_wrapped = False
-        #-#
+        # -#
         self.parent = None
         self.subwidgets = []
         self.focus_switch = None
@@ -120,7 +124,7 @@ class Widget(object):
     def __repr__(self):
         return "{0} {1}, child of {2}".format(super(Widget, self).__repr__(), getattr(self, "text", "\b").encode('ascii', errors='backslashreplace'), self.parent)
 
-    #-# Translation live update preparation
+    # -# Translation live update preparation
     @property
     def get_update_translation(self):
         return self.__update_translation
@@ -137,13 +141,14 @@ class Widget(object):
             self.invalidate()
         self.__update_translation = v
 
-    #-#
+    # -#
 
     def setup_spacings(self):
         def new_size(size):
             size = float(size * 1000) / float(100)
             size = int(size * resource.font_proportion / 1000)
             return size
+
         self.margin = new_size(self.margin)
         if hasattr(self, 'spacing'):
             self.spacing = new_size(self.spacing)
@@ -174,7 +179,7 @@ class Widget(object):
             anchor += chars[i]
         self.anchor = anchor + value
 
-    def _resized(self, (old_width, old_height)):
+    def _resized(self, old_width, old_height):
         new_width, new_height = self._rect.size
         dw = new_width - old_width
         dh = new_height - old_height
@@ -183,14 +188,14 @@ class Widget(object):
 
     def resized(self, dw, dh):
         if self.debug_resize:
-            print "Widget.resized:", self, "by", (dw, dh), "to", self.size
+            print("Widget.resized:", self, "by", (dw, dh), "to", self.size)
         for widget in self.subwidgets:
             widget.parent_resized(dw, dh)
 
     def parent_resized(self, dw, dh):
         debug_resize = self.debug_resize or getattr(self.parent, 'debug_resize', False)
         if debug_resize:
-            print "Widget.parent_resized:", self, "by", (dw, dh)
+            print("Widget.parent_resized:", self, "by", (dw, dh))
         left, top, width, height = self._rect
         move = False
         resize = False
@@ -206,10 +211,10 @@ class Widget(object):
             if any(factors):
                 resize = factors[1]
                 move = factors[0] or factors[2]
-                #print "lwr", factors
+                # print "lwr", factors
                 left += factors[0] * dw / sum(factors)
                 width += factors[1] * dw / sum(factors)
-                #left = (left + width) + factors[2] * dw / sum(factors) - width
+                # left = (left + width) + factors[2] * dw / sum(factors) - width
 
         if dh:
             factors = [1, 1, 1]  # bottom, height, top
@@ -222,18 +227,18 @@ class Widget(object):
             if any(factors):
                 resize = factors[1]
                 move = factors[0] or factors[2]
-                #print "bht", factors
+                # print "bht", factors
                 top += factors[2] * dh / sum(factors)
                 height += factors[1] * dh / sum(factors)
-                #top = (top + height) + factors[0] * dh / sum(factors) - height
+                # top = (top + height) + factors[0] * dh / sum(factors) - height
 
         if resize:
             if debug_resize:
-                print "Widget.parent_resized: changing rect to", (left, top, width, height)
+                print("Widget.parent_resized: changing rect to", (left, top, width, height))
             self.rect = Rect((left, top, width, height))
         elif move:
             if debug_resize:
-                print "Widget.parent_resized: moving to", (left, top)
+                print("Widget.parent_resized: moving to", (left, top))
             self._rect.topleft = (left, top)
 
     rect = property(get_rect, set_rect)
@@ -307,12 +312,12 @@ class Widget(object):
         else:
             self.subwidgets.append(widget)
         if hasattr(widget, "idleevent"):
-            #print "Adding idle handler for ", widget
+            # print "Adding idle handler for ", widget
             self.root.add_idle_handler(widget)
 
     def _remove(self, widget):
         if hasattr(widget, "idleevent"):
-            #print "Removing idle handler for ", widget
+            # print "Removing idle handler for ", widget
             self.root.remove_idle_handler(widget)
         self.subwidgets.remove(widget)
 
@@ -350,8 +355,8 @@ class Widget(object):
             for widget in self.subwidgets:
                 sub_rect = widget.rect
                 if debug_rect:
-                    print "Widget: Drawing subwidget %s of %s with rect %s" % (
-                        widget, self, sub_rect)
+                    print("Widget: Drawing subwidget %s of %s with rect %s" % (
+                        widget, self, sub_rect))
                 sub_rect = surf_rect.clip(sub_rect)
                 if sub_rect.width > 0 and sub_rect.height > 0:
                     try:
@@ -495,7 +500,7 @@ class Widget(object):
 
     def key_down(self, event):
         k = event.key
-        #print "Widget.key_down:", k ###
+        # print "Widget.key_down:", k ###
         if k == K_RETURN or k == K_KP_ENTER:
             if self.enter_response is not None:
                 self.dismiss(self.enter_response)
@@ -526,7 +531,7 @@ class Widget(object):
         return self.root.hover_widget is self
 
     def present(self, centered=True):
-        #print "Widget: presenting with rect", self.rect
+        # print "Widget: presenting with rect", self.rect
         if self.root is None:
             self.root = self.get_root()
         if "ControlPanel" not in str(self):
@@ -539,7 +544,7 @@ class Widget(object):
             self.dispatch_attention_loss()
         finally:
             self.root.remove(self)
-        #print "Widget.present: returning", self.modal_result
+        # print "Widget.present: returning", self.modal_result
         if "ControlPanel" not in str(self):
             self.root.notMove = False
         return self.modal_result
@@ -590,14 +595,14 @@ class Widget(object):
         contents = self.subwidgets
         if contents:
             rects = [widget.rect for widget in contents]
-            #rmax = Rect.unionall(rects) # broken in PyGame 1.7.1
+            # rmax = Rect.unionall(rects) # broken in PyGame 1.7.1
             rmax = rects.pop()
             for r in rects:
                 rmax = rmax.union(r)
             self._rect.size = add(rmax.topleft, rmax.bottomright)
-        #-# Translation live update preparation
+        # -# Translation live update preparation
         self.shrink_wrapped = True
-        #-#
+        # -#
 
     def invalidate(self):
         if self.root:
@@ -638,7 +643,7 @@ class Widget(object):
         if width is not None:
             font = self.font
             d = 2 * self.margin
-            if isinstance(width, basestring):
+            if isinstance(width, (str, bytes)):
                 width, height = font.size(width)
                 width += d + 2
             else:
@@ -794,7 +799,7 @@ class Widget(object):
     def gl_draw_all(self, root, offset):
         if not self.visible:
             return
-        #from OpenGL import GL, GLU
+        # from OpenGL import GL, GLU
 
         rect = self.rect.move(offset)
         if self.is_gl_container:
@@ -806,7 +811,7 @@ class Widget(object):
             try:
                 surface = Surface(self.size, SRCALPHA)
             except:
-                #size error?
+                # size error?
                 return
             self.draw_all(surface)
             data = image.tostring(surface, 'RGBA', 1)

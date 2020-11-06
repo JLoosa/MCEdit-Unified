@@ -1,10 +1,10 @@
-import os.path
-import directories
 import json
-import urllib2
 import sys
+import urllib.request
+import urllib.request
 from sys import platform as _platform
 
+import directories
 
 VERSION = None
 TAG = None
@@ -17,7 +17,7 @@ def build_version_tag_dev():
     MCEdit-Unified is in, and if the program is in development mode.
     '''
     try:
-        #with open(os.path.join(directories.getDataDir(), "RELEASE-VERSION.json"), 'rb') as jsonString:
+        # with open(os.path.join(directories.getDataDir(), "RELEASE-VERSION.json"), 'rb') as jsonString:
         with open(directories.getDataFile('RELEASE-VERSION.json'), 'rb') as jsonString:
             current = json.load(jsonString)
             return (current["name"].replace("{tag_name}", current["tag_name"]).replace("{mc_versions}", current["mc_versions"]).replace("{pe_versions}", current["pe_versions"]),
@@ -52,7 +52,7 @@ def is_dev():
 
 
 def fetch_new_version_info():
-    return json.loads(urllib2.urlopen("https://api.github.com/repos/Podshot/MCEdit-Unified/releases").read())
+    return json.loads(urllib.request.urlopen("https://api.github.com/repos/Podshot/MCEdit-Unified/releases").read())
 
 
 def check_for_new_version(release_api_response):
@@ -88,5 +88,5 @@ def check_for_new_version(release_api_response):
         else:
             return False
     except:
-        print "An error occurred checking for updates."
+        print("An error occurred checking for updates.")
         return False

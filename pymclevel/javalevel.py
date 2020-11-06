@@ -6,19 +6,20 @@ Created on Jul 22, 2011
 
 __all__ = ["MCJavaLevel"]
 
-from cStringIO import StringIO
 import gzip
-from level import MCLevel
-from logging import getLogger
-from numpy import fromstring
 import os
 import re
+from io import StringIO
+from logging import getLogger
+
+from numpy import fromstring
+
+from pymclevel.level import MCLevel
 
 log = getLogger(__name__)
 
 
 class MCJavaLevel(MCLevel):
-
     _gamePlatform = 'javalevel'
 
     def setBlockDataAt(self, *args):
@@ -74,7 +75,7 @@ class MCJavaLevel(MCLevel):
 
     def __init__(self, filename, data):
         self.filename = filename
-        if isinstance(data, basestring):
+        if isinstance(data, (str, bytes)):
             data = fromstring(data, dtype='uint8')
         self.filedata = data
 
@@ -132,7 +133,7 @@ class MCJavaLevel(MCLevel):
         try:
             with open(self.filename, 'wb') as f:
                 f.write(s.getvalue())
-        except Exception, e:
+        except Exception as e:
             log.info(u"Error while saving java level in place: {0}".format(e))
             try:
                 os.remove(self.filename)

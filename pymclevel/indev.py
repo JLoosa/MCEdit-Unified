@@ -59,13 +59,15 @@ TAG_Compound "MinecraftLevel"
 }
 """
 
-from entity import TileEntity
-from level import MCLevel
-from logging import getLogger
-from materials import indevMaterials
-from numpy import array, swapaxes
-import nbt
 import os
+from logging import getLogger
+
+from numpy import array, swapaxes
+
+import pymclevel.nbt as nbt
+from pymclevel.entity import TileEntity
+from pymclevel.level import MCLevel
+from pymclevel.materials import indevMaterials
 
 log = getLogger(__name__)
 
@@ -90,7 +92,7 @@ Spawn = "Spawn"
 
 __all__ = ["MCIndevLevel"]
 
-from level import EntityLevel
+from pymclevel.level import EntityLevel
 
 
 class MCIndevLevel(EntityLevel):
@@ -177,7 +179,7 @@ class MCIndevLevel(EntityLevel):
 
             self.Data >>= 4
 
-            self.Spawn = [mapTag[Spawn][i].value for i in xrange(3)]
+            self.Spawn = [mapTag[Spawn][i].value for i in range(3)]
 
             if "Entities" not in root_tag:
                 root_tag["Entities"] = nbt.TAG_List()
@@ -286,6 +288,7 @@ class MCIndevLevel(EntityLevel):
         self.root_tag["Map"] = mapTag
 
         self.Entities.append(self.LocalPlayer)
+
         # fix up Entities imported from Alpha worlds
 
         def numbersToFloats(ent):

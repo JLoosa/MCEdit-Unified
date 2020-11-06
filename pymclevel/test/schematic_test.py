@@ -1,10 +1,11 @@
 import itertools
 import os
 import unittest
+
 from pymclevel import mclevel
-from templevel import TempLevel, mktemp
-from pymclevel.schematic import MCSchematic
 from pymclevel.box import BoundingBox
+from pymclevel.schematic import MCSchematic
+from pymclevel.test.templevel import TempLevel, mktemp
 
 __author__ = 'Rio'
 
@@ -36,7 +37,7 @@ class TestSchematics(unittest.TestCase):
         tempSchematic.copyBlocksFrom(schem, BoundingBox((0, 0, 0), (1, 1, 3)), (0, 0, 0))
 
         level = self.anvilLevel.level
-        for cx, cz in itertools.product(xrange(0, 4), xrange(0, 4)):
+        for cx, cz in itertools.product(range(0, 4), range(0, 4)):
             try:
                 level.createChunk(cx, cz)
             except ValueError:

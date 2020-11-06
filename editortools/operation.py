@@ -1,15 +1,17 @@
-#-# Modified by D.C.-G. for translation purpose
+# -# Modified by D.C.-G. for translation purpose
 import atexit
 import os
 import shutil
 import tempfile
+
+import numpy
+
 import albow
+import pymclevel
+from albow.extended_widgets import showProgress
+from albow.root import Cancel
 from albow.translate import _
 from pymclevel import BoundingBox
-import numpy
-from albow.root import Cancel
-import pymclevel
-from albow import showProgress
 from pymclevel.mclevelbase import exhaust
 
 undo_folder = os.path.join(tempfile.gettempdir(), "mcedit_undo", str(os.getpid()))

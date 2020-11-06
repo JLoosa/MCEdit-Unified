@@ -18,13 +18,13 @@ glutils.py
 Pythonesque wrappers around certain OpenGL functions.
 """
 
-from OpenGL import GL
-import numpy
+import sys
+import weakref
 from contextlib import contextmanager
 
-import weakref
+import numpy
+from OpenGL import GL
 from OpenGL.GL import framebufferobjects as FBO
-import sys
 
 
 class gl(object):
@@ -142,7 +142,7 @@ class DisplayList(object):
         drawFunc()
         # try:
         GL.glEndList()
-        #except GL.GLError:
+        # except GL.GLError:
         #    print "Error while compiling display list. Retrying display list code to pinpoint error"
         #    self.drawFunc()
 
@@ -224,7 +224,7 @@ class FramebufferTexture(Texture):
 
             status = FBO.glCheckFramebufferStatus(FBO.GL_FRAMEBUFFER)
             if status != FBO.GL_FRAMEBUFFER_COMPLETE:
-                print "glCheckFramebufferStatus", status
+                print("glCheckFramebufferStatus", status)
                 self.enabled = False
                 return
 

@@ -173,13 +173,12 @@ def createShop(level, x, y, z, emptyTrade, invincible, profession, unlimited, xp
         villager["Silent"] = TAG_Byte(1)
     else:
         villager["Silent"] = TAG_Byte(0)
-        
+
     if nameVisible:
         villager["CustomName"] = TAG_String(name)
         villager["CustomNameVisible"] = TAG_Byte(1)
     else:
         villager["CustomNameVisible"] = TAG_Byte(0)
-        
 
     for i in range(9):
         if (i in priceList or i in priceListB) and i in saleList:
@@ -228,7 +227,7 @@ def createShop(level, x, y, z, emptyTrade, invincible, profession, unlimited, xp
             Head["tag"] = TAG_Compound()
             Head["tag"]["SkullOwner"] = TAG_String(PlayerName)
         if legacy == True:
-            villager["Equipment"] = TAG_List([TAG_Compound(), TAG_Compound(), TAG_Compound(),TAG_Compound(), Head],)
+            villager["Equipment"] = TAG_List([TAG_Compound(), TAG_Compound(), TAG_Compound(), TAG_Compound(), Head], )
         else:
             villager["ArmorItems"] = TAG_List([TAG_Compound(), TAG_Compound(), TAG_Compound(), Head])
 

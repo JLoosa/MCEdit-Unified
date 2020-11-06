@@ -1,5 +1,7 @@
-from numpy import zeros, array
 import itertools
+
+from numpy import zeros, array
+
 from pymclevel.level import extractHeights
 
 terrainBlocktypes = [1, 2, 3, 7, 12, 13, 14, 15, 16, 56, 73, 74, 87, 88, 89]
@@ -12,6 +14,7 @@ inputs = (
 )
 
 displayName = "Smooth - 2D"
+
 
 def perform(level, box, options):
     if box.volume > 16000000:
@@ -33,8 +36,8 @@ def perform(level, box, options):
         nonTerrainBlocks &= schema.Blocks != 0
 
         newHeightmap = (heightmap[1:-1, 1:-1] + (
-        heightmap[0:-2, 1:-1] + heightmap[2:, 1:-1] + heightmap[1:-1, 0:-2] + heightmap[1:-1, 2:]) * 0.7) / 3.8
-        #heightmap -= 0.5;
+                heightmap[0:-2, 1:-1] + heightmap[2:, 1:-1] + heightmap[1:-1, 0:-2] + heightmap[1:-1, 2:]) * 0.7) / 3.8
+        # heightmap -= 0.5;
         newHeightmap += 0.5
         newHeightmap[newHeightmap < 0] = 0
         newHeightmap[newHeightmap > schema.Height] = schema.Height
@@ -48,7 +51,7 @@ def perform(level, box, options):
 
             column = array(schema.Blocks[x, z])
             column[nonTerrainBlocks[x, z]] = 0
-            #schema.Blocks[x,z][nonTerrainBlocks[x,z]] = 0
+            # schema.Blocks[x,z][nonTerrainBlocks[x,z]] = 0
 
             if nh > oh:
 
@@ -59,7 +62,7 @@ def perform(level, box, options):
                 column[:d] = schema.Blocks[x, z, -d:]
                 column[d:oh + 1] = schema.Blocks[x, z, min(oh + 1, schema.Height - 1)]
 
-            #preserve non-terrain blocks
+            # preserve non-terrain blocks
             column[~terrainBlockmask[column]] = 0
             column[nonTerrainBlocks[x, z]] = schema.Blocks[x, z][nonTerrainBlocks[x, z]]
 

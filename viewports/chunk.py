@@ -1,6 +1,7 @@
-from camera import CameraViewport
 from OpenGL import GL
+
 import mceutils
+from .camera import CameraViewport
 
 
 class ChunkViewport(CameraViewport):

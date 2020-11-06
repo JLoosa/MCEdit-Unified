@@ -11,34 +11,34 @@ ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
 WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE."""
-#-# Modified by D.C.-G. for translation purpose
+import logging
+# -# Modified by D.C.-G. for translation purpose
 import os
 import traceback
-from OpenGL import GL
+
 import numpy
-from albow import Widget, IntField, Column, Row, Label, Button, CheckBox, AttrRef, FloatField, alert, CheckBoxLabel, IntInputRow, \
-    showProgress
+import pygame
+from OpenGL import GL
+
+import mcplatform
+import pymclevel
+from albow import Widget, IntField, Column, Row, Label, Button, CheckBox, AttrRef, FloatField, alert
+from albow.extended_widgets import CheckBoxLabel, IntInputRow, showProgress
 from albow.translate import _
 from depths import DepthOffset
 from editortools.editortool import EditorTool
 from editortools.nudgebutton import NudgeButton
+from editortools.operation import Operation
+from editortools.select import SelectionOperation
 from editortools.tooloptions import ToolOptions
 from glbackground import Panel
 from glutils import gl
 from mceutils import setWindowCaption, alertException, drawFace
-import mcplatform
-from operation import Operation
-import pymclevel
-from pymclevel.box import Vector
-from renderer import PreviewRenderer
-import pygame
-
-from select import SelectionOperation
-from pymclevel.pocket import PocketWorld
-from pymclevel.leveldbpocket import PocketLeveldbWorld
 from pymclevel import block_copy, BoundingBox, BOParser
-
-import logging
+from pymclevel.box import Vector
+from pymclevel.leveldbpocket import PocketLeveldbWorld
+from pymclevel.pocket import PocketWorld
+from renderer import PreviewRenderer
 
 log = logging.getLogger(__name__)
 
@@ -139,7 +139,8 @@ class BlockCopyOperation(Operation):
 
         with setWindowCaption("Copying - "):
             i = self.level.copyBlocksFromIter(self.sourceLevel, self.sourceBox, self.destPoint, blocksToCopy,
-                                              create=True, biomes=self.copyBiomes, staticCommands=self.staticCommands, moveSpawnerPos=self.moveSpawnerPos, regenerateUUID=self.regenerateUUID, first=False)
+                                              create=True, biomes=self.copyBiomes, staticCommands=self.staticCommands, moveSpawnerPos=self.moveSpawnerPos, regenerateUUID=self.regenerateUUID,
+                                              first=False)
             showProgress(_("Copying {0:n} blocks...").format(self.sourceBox.volume), i)
 
     @staticmethod
@@ -159,7 +160,7 @@ class CloneOperation(Operation):
         else:
             delta = (0, 0, 0)
 
-        for i in xrange(repeatCount):
+        for i in range(repeatCount):
             op = BlockCopyOperation(editor, sourceLevel, sourceBox, destLevel, destPoint, copyAir, copyWater,
                                     copyBiomes, staticCommands, moveSpawnerPos, regenerateUUID)
             dirty = op.dirtyBox()
@@ -180,7 +181,7 @@ class CloneOperation(Operation):
 
         if len(dirtyBoxes):
             def enclosingBox(dirtyBoxes):
-                return reduce(lambda a, b: a.union(b), dirtyBoxes)
+                return numpy.reduce(lambda a, b: a.union(b), dirtyBoxes)
 
             self._dirtyBox = enclosingBox(dirtyBoxes)
 
@@ -348,14 +349,14 @@ class CloneToolPanel(Panel):
         self.performButton.action = tool.confirm
         self.performButton.enable = lambda: (tool.destPoint is not None)
 
-        max_height = self.tool.editor.mainViewport.height - self.tool.editor.toolbar.height - self.tool.editor.subwidgets[0].height # - self.performButton.height - 2
+        max_height = self.tool.editor.mainViewport.height - self.tool.editor.toolbar.height - self.tool.editor.subwidgets[0].height  # - self.performButton.height - 2
 
         def buildPage(*items):
             height = 0
             cls = []
             idx = 0
             for i, r in enumerate(items):
-                r.margin=0
+                r.margin = 0
                 r.shrink_wrap()
                 height += r.height
                 if height > max_height:
@@ -367,7 +368,7 @@ class CloneToolPanel(Panel):
 
         if self.useOffsetInput:
             cols = buildPage(rotaterollRow, flipmirrorRow, alignRow, self.offsetInput, repeatRow, scaleRow, copyAirRow,
-                      copyWaterRow, copyBiomesRow, staticCommandsRow, moveSpawnerPosRow, regenerateUUIDRow)
+                             copyWaterRow, copyBiomesRow, staticCommandsRow, moveSpawnerPosRow, regenerateUUIDRow)
         else:
             cols = buildPage(rotaterollRow, flipmirrorRow, alignRow, self.nudgeButton, scaleRow, copyAirRow, copyWaterRow, copyBiomesRow,
                              staticCommandsRow, moveSpawnerPosRow, regenerateUUIDRow)
@@ -394,10 +395,10 @@ class CloneToolOptions(ToolOptions):
         spaceLabel = Label("")
         cloneNudgeLabel = Label("Clone Fast Nudge Settings")
         cloneNudgeCheckBox = CheckBoxLabel("Move by the width of selection ",
-                                                ref=config.fastNudgeSettings.cloneWidth,
-                                                tooltipText="Moves clone by his width")
+                                           ref=config.fastNudgeSettings.cloneWidth,
+                                           tooltipText="Moves clone by his width")
         cloneNudgeNumber = IntInputRow("Width of clone movement: ",
-                                                ref=config.fastNudgeSettings.cloneWidthNumber, width=100, min=2, max=50)
+                                       ref=config.fastNudgeSettings.cloneWidthNumber, width=100, min=2, max=50)
 
         row = Row((self.autoPlaceCheckBox, self.autoPlaceLabel))
         col = Column((Label("Clone Options"), row, spaceLabel, cloneNudgeLabel, cloneNudgeCheckBox, cloneNudgeNumber, Button("OK", action=self.dismiss)))
@@ -663,7 +664,7 @@ class CloneTool(EditorTool):
             return
         if size[1] >= self.editor.level.Height:
             direction = (
-            0, 1, 0)  # always use the upward face whenever we're splicing full-height pieces, to avoid "jitter"
+                0, 1, 0)  # always use the upward face whenever we're splicing full-height pieces, to avoid "jitter"
 
         # print size; raise SystemExit
         if any(direction) and pos[1] >= 0:
@@ -742,7 +743,7 @@ class CloneTool(EditorTool):
             if self.draggingFace is not None:
                 o = list(self.draggingOrigin())
                 s = list(box.size)
-                for i in xrange(3):
+                for i in range(3):
                     if i == self.draggingFace >> 1:
                         continue
                     o[i] -= 1000
@@ -780,7 +781,7 @@ class CloneTool(EditorTool):
         # it's not really sensible to repeat a crane because the origin point is literally out of this world.
         delta = box.origin - self.selectionBox().origin
 
-        for i in xrange(self.repeatCount):
+        for i in range(self.repeatCount):
             self.editor.drawConstructionCube(box, color)
             box = BoundingBox(box.origin + delta, box.size)
 
@@ -811,7 +812,7 @@ class CloneTool(EditorTool):
         if self.canRotateLevel:
             self.rotation += amount
             self.rotation &= 0x3
-            for i in xrange(amount & 0x3):
+            for i in range(amount & 0x3):
                 if blocksOnly:
                     self.level.rotateLeftBlocks()
                 else:
@@ -822,7 +823,7 @@ class CloneTool(EditorTool):
     @alertException
     def roll(self, amount=1, blocksOnly=False):
         if self.canRotateLevel:
-            for i in xrange(amount & 0x3):
+            for i in range(amount & 0x3):
                 if blocksOnly:
                     self.level.rollBlocks()
                 else:
@@ -833,7 +834,7 @@ class CloneTool(EditorTool):
     @alertException
     def flip(self, amount=1, blocksOnly=False):
         if self.canRotateLevel:
-            for i in xrange(amount & 0x1):
+            for i in range(amount & 0x1):
                 if blocksOnly:
                     self.level.flipVerticalBlocks()
                 else:
@@ -934,7 +935,7 @@ class CloneTool(EditorTool):
 
             if self.panel and self.panel.useOffsetInput:
                 self.panel.offsetInput.setCoords(self.destPoint - box.origin)
-            print "Destination: ", self.destPoint
+            print("Destination: ", self.destPoint)
 
     @alertException
     def mouseUp(self, evt, pos, direction):
@@ -945,7 +946,7 @@ class CloneTool(EditorTool):
         self.draggingFace = None
         self.draggingStartPoint = None
 
-    def keyDown(self,evt):
+    def keyDown(self, evt):
         keyname = evt.dict.get('keyname', None) or self.root.getKey(evt)
         if keyname == config.keys.snapCloneToAxis.get():
             self.snapCloneKey = 1
@@ -1010,7 +1011,7 @@ class CloneTool(EditorTool):
         self.cloneCameraDistance = numpy.sqrt(d[0] * d[0] + d[1] * d[1] + d[2] * d[2])
         self.destPoint = None
         # self.panel.performButton.enabled = False
-        print "Picked up"
+        print("Picked up")
 
     @alertException
     def confirm(self):
@@ -1073,10 +1074,10 @@ class ConstructionToolOptions(ToolOptions):
 
         importNudgeLabel = Label("Import Fast Nudge Settings:")
         importNudgeCheckBox = CheckBoxLabel("Move by the width of schematic ",
-                                                ref=config.fastNudgeSettings.importWidth,
-                                                tooltipText="Moves selection by his width")
+                                            ref=config.fastNudgeSettings.importWidth,
+                                            tooltipText="Moves selection by his width")
         importNudgeNumber = IntInputRow("Width of import movement: ",
-                                                ref=config.fastNudgeSettings.importWidthNumber, width=100, min=2, max=50)
+                                        ref=config.fastNudgeSettings.importWidthNumber, width=100, min=2, max=50)
 
         col = Column((Label("Import Options"), importNudgeLabel, importNudgeCheckBox, importNudgeNumber, Button("OK", action=self.dismiss)))
 
@@ -1138,7 +1139,7 @@ class ConstructionTool(CloneTool):
 
     def createTestBoard(self, anyBlock=True):
         if anyBlock:
-            allBlocks = [self.editor.level.materials[a, b] for a in xrange(256) for b in xrange(16)]
+            allBlocks = [self.editor.level.materials[a, b] for a in range(256) for b in range(16)]
             blockWidth = 64
         else:
             allBlocks = self.editor.level.materials.allBlocks
@@ -1174,22 +1175,22 @@ class ConstructionTool(CloneTool):
         clipFilename = mcplatform.askOpenFile(title='Import a schematic or level...', schematics=True)
         # xxx mouthful
         if clipFilename:
-            if unicode(clipFilename).split(".")[-1] in ("schematic", "schematic.gz", "zip", "inv"):
+            if bytes(clipFilename).split(".")[-1] in ("schematic", "schematic.gz", "zip", "inv"):
                 self.loadSchematic(clipFilename)
-            elif unicode(clipFilename).split(".")[-1].lower() == "nbt":
+            elif bytes(clipFilename).split(".")[-1].lower() == "nbt":
                 structure = pymclevel.schematic.StructureNBT(filename=clipFilename)
                 self.loadLevel(structure.toSchematic())
-            elif unicode(clipFilename).split(".")[-1].lower() == "bo2":
+            elif bytes(clipFilename).split(".")[-1].lower() == "bo2":
                 self.loadLevel(BOParser.BO2(clipFilename).getSchematic())
-            elif unicode(clipFilename).split(".")[-1].lower() == "bo3":
+            elif bytes(clipFilename).split(".")[-1].lower() == "bo3":
                 self.loadLevel(BOParser.BO3(clipFilename).getSchematic())
-#                alert("BO3 support is currently not available")
+            #                alert("BO3 support is currently not available")
             else:
                 self.loadSchematic(clipFilename)
 
-        print "Canceled"
+        print("Canceled")
         if self.level is None:
-            print "No level selected."
+            print("No level selected.")
 
             self.editor.toolbar.selectTool(-1)
 

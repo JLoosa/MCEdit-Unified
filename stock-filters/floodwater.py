@@ -1,13 +1,15 @@
-from numpy import *
-from pymclevel import alphaMaterials, faceDirections, FaceYIncreasing
-from collections import deque
 import datetime
+from collections import deque
+
+from numpy import *
+
+from pymclevel import alphaMaterials, faceDirections, FaceYIncreasing
 
 displayName = "Classic Water Flood"
 inputs = (
     (
-    "Makes water in the region flood outwards and downwards, becoming full source blocks in the process. This is similar to Minecraft Classic water.",
-    "label"),
+        "Makes water in the region flood outwards and downwards, becoming full source blocks in the process. This is similar to Minecraft Classic water.",
+        "label"),
     ("Flood Water", True),
     ("Flood Lava", False),
 )
@@ -29,7 +31,8 @@ def perform(level, box, options):
             y = y + (point[1] + box.miny)
             coords.append(transpose((x, y, z)))
 
-        print "Stacking coords..."
+        print
+        "Stacking coords..."
         coords = vstack(tuple(coords))
 
         def processCoords(coords):
@@ -57,10 +60,12 @@ def perform(level, box, options):
                 start = datetime.datetime.now()
 
                 num = len(coords)
-                print "Did {0} coords in ".format(num),
+                print
+                "Did {0} coords in ".format(num),
                 coords = processCoords(coords)
                 d = datetime.datetime.now() - start
-                print d
+                print
+                d
                 yield "Did {0} coords in {1}".format(num, d)
 
         level.showProgress("Spreading water...", spread(coords), cancel=True)

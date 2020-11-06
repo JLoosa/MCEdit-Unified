@@ -1,4 +1,5 @@
 from pygame import Rect
+
 from albow.resource import get_image
 
 
@@ -26,9 +27,9 @@ class ImageArray(object):
         else:
             row, col = index
         # left = iwidth * col // ncols
-        #top = iheight * row // nrows
-        #width = iwidth // ncols
-        #height = iheight // nrows
+        # top = iheight * row // nrows
+        # width = iwidth // ncols
+        # height = iheight // nrows
         width, height = self.size
         left = width * col
         top = height * row

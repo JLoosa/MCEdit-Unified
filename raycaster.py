@@ -1,4 +1,5 @@
 import math
+
 """
 This function will produce a generator that will give out the blocks
 visited by a raycast in sequence. It is up to the user to terminate the generator.
@@ -20,53 +21,54 @@ def _rawRaycast(origin, direction):
         else:
             return 0
 
-    def _intbound(s,ds):
-        if ds<0:
-            return _intbound(-s,-ds)
+    def _intbound(s, ds):
+        if ds < 0:
+            return _intbound(-s, -ds)
         else:
             s %= 1
-            return (1-s)/ds
+            return (1 - s) / ds
 
-    x,y,z = map(int,map(math.floor,origin))
-    dx,dy,dz = direction
+    x, y, z = map(int, map(math.floor, origin))
+    dx, dy, dz = direction
 
-    if dx == 0:  #Yes, I know this is hacky. It works though.
+    if dx == 0:  # Yes, I know this is hacky. It works though.
         dx = 0.000000001
     if dy == 0:
         dy = 0.000000001
     if dz == 0:
         dz = 0.000000001
 
-    stepX,stepY,stepZ = map(_signum,direction)
-    tMaxX,tMaxY,tMaxZ = map(_intbound,origin,(dx,dy,dz))
-    tDeltaX = stepX/dx
-    tDeltaY = stepY/dy
-    tDeltaZ = stepZ/dz
+    stepX, stepY, stepZ = map(_signum, direction)
+    tMaxX, tMaxY, tMaxZ = map(_intbound, origin, (dx, dy, dz))
+    tDeltaX = stepX / dx
+    tDeltaY = stepY / dy
+    tDeltaZ = stepZ / dz
 
     if dx == 0 and dy == 0 and dz == 0:
         raise Exception('Infinite ray trace detected')
 
     face = None
     while True:
-        yield ((x,y,z),face)
+        yield ((x, y, z), face)
         if tMaxX < tMaxY:
             if tMaxX < tMaxZ:
                 x += stepX
                 tMaxX += tDeltaX
-                face = (-stepX, 0,0)
+                face = (-stepX, 0, 0)
             else:
                 z += stepZ
                 tMaxZ += tDeltaZ
-                face = (0,0,-stepZ)
+                face = (0, 0, -stepZ)
         else:
             if tMaxY < tMaxZ:
                 y += stepY
                 tMaxY += tDeltaY
-                face = (0,-stepY,0)
+                face = (0, -stepY, 0)
             else:
                 z += stepZ
                 tMaxZ += tDeltaZ
-                face = (0,0,-stepZ)
+                face = (0, 0, -stepZ)
+
 
 """
 Finds the first block from origin in the given direction by ray tracing
@@ -92,7 +94,7 @@ def firstBlock(origin, direction, level, radius, viewMode=None):
         tooMuch += 1
         block = level.blockAt(*i[0])
         if callback.check(i[0], block):
-            return i[0],i[1]
+            return i[0], i[1]
         if _tooFar(origin, i[0], radius) or _tooHighOrLow(i[0]):
             raise TooFarException("There are no valid blocks within range")
         if tooMuch >= 720:
@@ -124,7 +126,8 @@ class Callback:
     """
     Returns true if the ray tracer is to be terminated
     """
-    def check(self, position,block):
+
+    def check(self, position, block):
         pass
 
 

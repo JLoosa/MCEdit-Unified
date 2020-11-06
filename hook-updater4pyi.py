@@ -1,8 +1,9 @@
 # hook for pyinstaller
 
+import os.path
+
 import updater4pyi
 import updater4pyi.util
-import os.path
 
 
 def locpath(x):
@@ -23,5 +24,5 @@ elif updater4pyi.util.is_win():
     ]
 
 # from hookutils import collect_data_files
-#datas = collect_data_files('updater4pyi')
-print "DATAS IS\n\t%r" % datas
+# datas = collect_data_files('updater4pyi')
+print("DATAS IS\n\t%r" % datas)

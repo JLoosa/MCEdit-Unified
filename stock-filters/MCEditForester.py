@@ -5,19 +5,20 @@
    Needs the dummy mcInterface for MCEdit, and the default Forester script.
 '''
 
-from pymclevel.materials import alphaMaterials
 import Forester
+
+from pymclevel.materials import alphaMaterials
 
 displayName = "Forester"
 
 libraries = [
-             {
-              "name": "mcInterface",
-              "path": "Bundled Libraries<sep>mcInterface.py",
-              "URL": "None",
-              "optional": False,
-             }
-            ]
+    {
+        "name": "mcInterface",
+        "path": "Bundled Libraries<sep>mcInterface.py",
+        "URL": "None",
+        "optional": False,
+    }
+]
 
 inputs = (
     ("Forester script by dudecon", "label"),
@@ -30,7 +31,7 @@ inputs = (
                "Cone",
                "Rainforest",
                "Mangrove",
-    )),
+               )),
 
     ("Tree Count", 2),
     ("Tree Height", 35),
@@ -67,6 +68,7 @@ def perform(level, box, options):
     optmap = {
         "Tree Height": "CENTERHEIGHT",
     }
+
     # automatically set the options that map 1 to 1 from options to Forester
 
     def setOption(opt):

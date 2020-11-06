@@ -1,14 +1,13 @@
-from pymclevel.materials import Block
-from pymclevel.entity import TileEntity
-from editortools.brush import createBrushMask
-import numpy
-from editortools.operation import mkundotemp
-from albow import showProgress
-import pymclevel
-import datetime
 import collections
-from pymclevel import BoundingBox
+import datetime
 import logging
+
+import pymclevel
+from albow import showProgress
+from editortools.operation import mkundotemp
+from pymclevel import BoundingBox
+from pymclevel.entity import TileEntity
+
 log = logging.getLogger(__name__)
 
 displayName = 'Flood Fill'
@@ -17,9 +16,10 @@ disableStyleButton = True
 
 def createInputs(self):
     self.inputs = (
-    {'Block': materials.blockWithID(1, 0)},
-    {'Indiscriminate': False},
+        {'Block': materials.blockWithID(1, 0)},
+        {'Indiscriminate': False},
     )
+
 
 def createTileEntities(tileEntityTag, level):
     x, y, z = TileEntity.pos(tileEntityTag)

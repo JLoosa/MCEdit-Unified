@@ -1,12 +1,13 @@
 import logging
 import os
 import struct
+import time
 import zlib
 
 from numpy import fromstring
-import time
-from mclevelbase import notclosing, RegionMalformed, ChunkNotPresent
-import nbt
+
+import pymclevel.nbt as nbt
+from pymclevel.mclevelbase import notclosing, RegionMalformed, ChunkNotPresent
 
 log = logging.getLogger(__name__)
 
@@ -75,10 +76,10 @@ class MCRegionFile(object):
             sector = offset >> 8
             count = offset & 0xff
 
-            for i in xrange(sector, sector + count):
+            for i in range(sector, sector + count):
                 if i >= len(self.freeSectors):
                     # raise RegionMalformed("Region file offset table points to sector {0} (past the end of the file)".format(i))
-                    print "Region file offset table points to sector {0} (past the end of the file)".format(i)
+                    print("Region file offset table points to sector {0} (past the end of the file)".format(i))
                     needsRepair = True
                     break
                 if self.freeSectors[i] is False:
@@ -140,7 +141,7 @@ class MCRegionFile(object):
                     zPos = lev["zPos"].value
                     overlaps = False
 
-                    for i in xrange(sectorStart, sectorStart + sectorCount):
+                    for i in range(sectorStart, sectorStart + sectorCount):
                         if _freeSectors[i] is False:
                             overlaps = True
                         _freeSectors[i] = False
@@ -245,7 +246,7 @@ class MCRegionFile(object):
             # we need to allocate new sectors
 
             # mark the sectors previously used for this chunk as free
-            for i in xrange(sectorNumber, sectorNumber + sectorsAllocated):
+            for i in range(sectorNumber, sectorNumber + sectorsAllocated):
                 self.freeSectors[i] = True
 
             runLength = 0
@@ -253,7 +254,7 @@ class MCRegionFile(object):
             try:
                 runStart = self.freeSectors.index(True)
 
-                for i in xrange(runStart, len(self.freeSectors)):
+                for i in range(runStart, len(self.freeSectors)):
                     if runLength:
                         if self.freeSectors[i]:
                             runLength += 1

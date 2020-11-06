@@ -337,7 +337,8 @@ TRUNKFILLINFO = {'B': TRUNKFILLMAT, 'D': TRUNKFILLDATA}
 
 import mcInterface
 
-#some handy functions
+
+# some handy functions
 
 
 def dist_to_mat(cord, vec, matidxlist, mcmap, invert=False, limit=False):
@@ -372,11 +373,12 @@ def dist_to_mat(cord, vec, matidxlist, mcmap, invert=False, limit=False):
             break
     return iterations
 
+
 # This is the end of the MCLevel interface.
 
 # Now, on to the actual code.
 
-from random import random, choice, sample
+from random import random, choice
 from math import sqrt, sin, cos, pi
 
 
@@ -392,7 +394,7 @@ def calc_column_lighting(x, z, mclevel):
     set_block = mclevel.set_block
     get_height = mclevel.retrieve_heightmap
     set_height = mclevel.set_heightmap
-    #get the current heightmap
+    # get the current heightmap
     cur_height = get_height(x, z)
     # set a flag that the highest point has been updated
     height_updated = False
@@ -401,7 +403,7 @@ def calc_column_lighting(x, z, mclevel):
         return None
     light_reduction_lookup = {0: 0, 20: 0, 18: 1, 8: 2, 79: 2}
     while True:
-        #get the block sky light and type
+        # get the block sky light and type
         block_info = get_block(x, y, z, 'BS')
         block_light = block_info['S']
         block_type = block_info['B']
@@ -413,13 +415,13 @@ def calc_column_lighting(x, z, mclevel):
                 new_height = 255
             set_height(x, new_height, z)
             height_updated = True
-        #compare block with cur_light, escape if both 0
+        # compare block with cur_light, escape if both 0
         if block_light == 0 and cur_light == 0:
             break
-        #set the block light if necessary
+        # set the block light if necessary
         if block_light != cur_light:
             set_block(x, y, z, {'S': cur_light})
-        #set the new cur_light
+        # set the new cur_light
         if block_type in light_reduction_lookup:
             # partial light reduction
             light_reduction = light_reduction_lookup[block_type]
@@ -429,7 +431,7 @@ def calc_column_lighting(x, z, mclevel):
         cur_light += -light_reduction
         if cur_light < 0:
             cur_light = 0
-        #increment and check y
+        # increment and check y
         y += -1
         if y < 0:
             break
@@ -544,8 +546,8 @@ class NormalTree(StickTree):
             for xoff in range(-rad, rad + 1):
                 for zoff in range(-rad, rad + 1):
                     if (random() > 0.618
-                        and abs(xoff) == abs(zoff)
-                        and abs(xoff) == rad
+                            and abs(xoff) == abs(zoff)
+                            and abs(xoff) == rad
                     ):
                         continue
 
@@ -942,9 +944,9 @@ class ProceduralTree(Tree):
                              mcmap, WOODINFO)
         self.taperedcylinder([x, midy, z], [x, topy, z], midrad, endrad,
                              mcmap, WOODINFO)
-        #Make the branches
+        # Make the branches
         self.makebranches(mcmap)
-        #Make the roots, if indicated.
+        # Make the roots, if indicated.
         if ROOTS in ["yes", "tostone", "hanging"]:
             self.makeroots(rootbases, mcmap)
         # Hollow the trunk, if specified
@@ -1221,7 +1223,7 @@ def planttrees(mcmap, treelist):
                         # this sample contains foliage!
                         # add it to the total
                         foliage_count += 1
-            #now that we have the total count, find the ratio
+            # now that we have the total count, find the ratio
             total_searched = search_size ** 2
             foliage_ratio = foliage_count / total_searched
             # the acceptable amount is about a third

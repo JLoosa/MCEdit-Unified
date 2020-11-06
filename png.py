@@ -313,9 +313,9 @@ def check_color(c, greyscale, which):
                 "%s colour for greyscale must be integer" % which)
     else:
         if not (len(c) == 3 and
-                    isinteger(c[0]) and
-                    isinteger(c[1]) and
-                    isinteger(c[2])):
+                isinteger(c[0]) and
+                isinteger(c[1]) and
+                isinteger(c[2])):
             raise ValueError(
                 "%s colour must be a triple of integers" % which)
     return c
@@ -1380,7 +1380,7 @@ class Reader:
         if _guess is not None:
             if isarray(_guess):
                 kw["bytes"] = _guess
-            elif isinstance(_guess, (str, unicode)):
+            elif isinstance(_guess, (str, bytes)):
                 kw["filename"] = _guess
             elif hasattr(_guess, 'read'):
                 kw["file"] = _guess
@@ -1875,7 +1875,7 @@ class Reader:
     def _process_sBIT(self, data):
         self.sbit = data
         if (self.colormap and len(data) != 3 or
-                    not self.colormap and len(data) != self.planes):
+                not self.colormap and len(data) != self.planes):
             raise FormatError("sBIT chunk has incorrect length.")
 
     def _process_pHYs(self, data):
@@ -2430,9 +2430,9 @@ def read_pam_header(infile):
     depth = int(header[DEPTH])
     maxval = int(header[MAXVAL])
     if (width <= 0 or
-                height <= 0 or
-                depth <= 0 or
-                maxval <= 0):
+            height <= 0 or
+            depth <= 0 or
+            maxval <= 0):
         raise Error(
             'WIDTH, HEIGHT, DEPTH, MAXVAL must all be positive integers')
     return 'P7', width, height, depth, maxval

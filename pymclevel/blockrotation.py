@@ -1,10 +1,9 @@
-import materials
-from materials import alphaMaterials
+# #!# Needed for the bad hack done with 'blocktable'...
+import re
+
 from numpy import arange, zeros
 
-# #!# Needed for the bad hack done with 'blocktable'...
-import collections
-import re
+import pymclevel.materials as materials
 
 
 class __Rotation:
@@ -153,6 +152,7 @@ Stair.roll[Stair.South] = Stair.TopSouth
 Stair.roll[Stair.TopSouth] = Stair.TopNorth
 Stair.roll[Stair.TopNorth] = Stair.North
 
+
 # data value 0-8 bottom and 9-15 Top
 
 
@@ -161,7 +161,7 @@ class HalfSlab(__Rotation):
 
 
 HalfSlab.flipVertical = arange(16, dtype='uint8')
-for i in xrange(8):
+for i in range(8):
     HalfSlab.flipVertical[i] = i + 8
     HalfSlab.flipVertical[i + 8] = i
 rotationClasses.append(HalfSlab)
@@ -358,6 +358,7 @@ class Button(__Rotation):
     East = 4
     Up = 5
 
+
 applyThrownBit(Button)
 
 
@@ -380,8 +381,8 @@ class SignPost(__Rotation):
     SouthEastEast = 13
     SouthEast = 14
     SouthSouthEast = 15
-    
-    #rotate by increasing clockwise
+
+    # rotate by increasing clockwise
     rotateLeft = arange(16, dtype='uint8')
     rotateLeft -= 4
     rotateLeft &= 0xf
@@ -402,7 +403,6 @@ SignPost.flipNorthSouth[SignPost.NorthEast] = SignPost.NorthWest
 SignPost.flipNorthSouth[SignPost.NorthWest] = SignPost.NorthEast
 SignPost.flipNorthSouth[SignPost.NorthNorthEast] = SignPost.NorthNorthWest
 SignPost.flipNorthSouth[SignPost.NorthNorthWest] = SignPost.NorthNorthEast
-
 
 SignPost.flipEastWest = arange(16, dtype='uint8')
 SignPost.flipEastWest[SignPost.North] = SignPost.South
@@ -481,7 +481,7 @@ Door.rotateLeft[Door.SouthOpen] = Door.WestOpen
 Door.rotateLeft[Door.WestOpen] = Door.NorthOpen
 Door.rotateLeft[Door.NorthOpen] = Door.EastOpen
 Door.rotateLeft[Door.EastOpen] = Door.SouthOpen
-    
+
 # applyBit4(Door.rotateLeft)
 
 Door.flipEastWest = arange(16, dtype='uint8')
@@ -519,7 +519,7 @@ class Log(__Rotation):
     Type1EastWest = 8
     Type2EastWest = 9
     Type3EastWest = 10
-    Type4EastWest = 11  
+    Type4EastWest = 11
 
 
 Log.rotateLeft = arange(16, dtype='uint8')
@@ -766,6 +766,7 @@ class CocoaPlant(__Rotation):
 
 applyBits48(CocoaPlant)  # growth state
 
+
 @genericFlipRotation
 class TripwireHook(__Rotation):
     blocktypes = ['alphaMaterials.TripwireHook.ID']
@@ -808,10 +809,10 @@ Hopper.roll[Hopper.North] = Hopper.Down
 @genericFlipRotation
 class DropperCommandblock(__Rotation):
     blocktypes = [
-        'alphaMaterials.Dropper.ID', 
-        'alphaMaterials.Dispenser.ID', 
+        'alphaMaterials.Dropper.ID',
+        'alphaMaterials.Dispenser.ID',
         'alphaMaterials.CommandBlock.ID',
-        'alphaMaterials.CommandBlockRepeating.ID', 
+        'alphaMaterials.CommandBlockRepeating.ID',
         'alphaMaterials.CommandBlockChain.ID'
     ]
     Down = 0
@@ -825,7 +826,7 @@ class DropperCommandblock(__Rotation):
 applyBit8(DropperCommandblock)
 
 
-@genericFlipRotation 
+@genericFlipRotation
 class RedstoneComparator(__Rotation):
     blocktypes = ['alphaMaterials.RedstoneComparatorInactive.ID', 'alphaMaterials.RedstoneComparatorActive.ID']
 

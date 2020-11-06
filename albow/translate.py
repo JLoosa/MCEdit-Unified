@@ -8,7 +8,7 @@
 #
 # Translation module for Python 2.7, especialy for Albow 2 and MCEdit 1.8 799
 #
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 """This module adds translation functionnalities to Albow.
 
 It looks for locale files in a sub folder 'lang' according to the system
@@ -28,7 +28,7 @@ Vous pouvez constater qu'elle est sur deux lignes.
 The 'oN' markers on the begining of a line marks the original string;
 the 'tN', the translations.
 Strings can be splited on several lines and contain any sort of
-characters (thus, be aware of unicode).
+characters (thus, be aware of bytes).
 
 Files are named according to their language name, e.g. fr_FR.trn for
 french.
@@ -48,13 +48,14 @@ You need, a least, these three function in your program:
 """
 
 import logging
+
 log = logging.getLogger(__name__)
 
 import os
 import re
 import codecs
 import json
-import resource
+import albow.resource as resource
 import directories
 
 import platform, locale
@@ -84,10 +85,10 @@ def getPlatInfo(**kwargs):
                 verObjName = verObjNames.pop()
                 verObj = getattr(mod, verObjName, None)
                 if verObj:
-                    if isinstance(verObj, (str, unicode, int, list, tuple)):
+                    if isinstance(verObj, (str, bytes, int, list, tuple)):
                         ver = "%s" % verObj
                         break
-                    elif "%s" % type(verObj) == "<type 'module'>": # There is no define module type, so this should stay
+                    elif "%s" % type(verObj) == "<type 'module'>":  # There is no define module type, so this should stay
                         verObjNames += ["%s.%s" % (verObjName, a) for a in re.findall(reVer, "%s" % dir(verObj))]
                     else:
                         ver = verObj()
@@ -103,13 +104,13 @@ if enc is None:
 
 string_cache = {}
 font_lang_cache = {}
-#langPath = directories.getDataDir("lang")
+# langPath = directories.getDataDir("lang")
 langPath = directories.getDataFile("lang")
 lang = "Default"
 
 # template building
 strNum = 0
-template = {} # {"string": number}
+template = {}  # {"string": number}
 buildTemplate = False
 trnHeader = """# TRANSLATION BASICS
 #
@@ -136,18 +137,20 @@ buildTemplateMarker = """
 ###
 ### And, remove this paragraph too...
 """
-#-------------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------------
 # Translation loading and mapping functions
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
 def _(string, doNotTranslate=False, hotKey=False):
     """Returns the translated 'string', or 'string' itself if no translation found."""
     if isinstance(string, str):
-        string = unicode(string, enc)
+        string = bytes(string, enc)
     if doNotTranslate:
         return string
-    if not isinstance(string, (str, unicode)):
+    if not isinstance(string, (str, bytes)):
         return string
     trn = string_cache.get(string, string)
     if trn == string and '-' in string:
@@ -163,7 +166,8 @@ def _(string, doNotTranslate=False, hotKey=False):
             strNum += 1
     return trn or string
 
-#-------------------------------------------------------------------------------
+
+# -------------------------------------------------------------------------------
 
 
 def loadTemplate(fName="template.trn"):
@@ -177,13 +181,13 @@ def loadTemplate(fName="template.trn"):
         oldData = codecs.open(fName, "r", "utf-8").read() + buildTemplateMarker
         trnHeader = u""
         # find the first oXX
-        start = re.search(ur"^o\d+[ ]", oldData, re.M|re.S)
+        start = re.search("^o\d+[ ]", oldData, re.M | re.S)
         if start:
             start = start.start()
         else:
-            print "*** %s malformed. Could not find entry point.\n    Template not loaded."%os.path.split(fName)[-1]
+            print("*** %s malformed. Could not find entry point.\n    Template not loaded." % os.path.split(fName)[-1])
         trnHeader += oldData[:max(0, start - 1)]
-        trnPattern = re.compile(ur"^o\d+[ ]|^t\d+[ ]", re.M|re.S)
+        trnPattern = re.compile("^o\d+[ ]|^t\d+[ ]", re.M | re.S)
         grps = re.finditer(trnPattern, oldData)
         oStart = -1
         oEnd = -1
@@ -215,7 +219,8 @@ def loadTemplate(fName="template.trn"):
         strNum = num
     return template
 
-#-------------------------------------------------------------------------------
+
+# -------------------------------------------------------------------------------
 
 
 def saveTemplate():
@@ -230,7 +235,8 @@ def saveTemplate():
             f.write(u"\no%s %s\nt%s %s" % (key, org, key, trn))
         f.close()
 
-#-------------------------------------------------------------------------------
+
+# -------------------------------------------------------------------------------
 
 
 def setLangPath(path):
@@ -249,14 +255,16 @@ def setLangPath(path):
     log.debug("setLangPath >>>")
     return False
 
-#-------------------------------------------------------------------------------
+
+# -------------------------------------------------------------------------------
 
 
 def getLangPath():
     """Return the actual 'lang' folder."""
     return langPath
 
-#-------------------------------------------------------------------------------
+
+# -------------------------------------------------------------------------------
 
 
 def getLang():
@@ -283,7 +291,8 @@ def setLang(newlang):
         result = True
     return oldLang, lang, result
 
-#-------------------------------------------------------------------------------
+
+# -------------------------------------------------------------------------------
 
 
 def correctEncoding(data, oldEnc="ascii", newEnc=enc):
@@ -292,14 +301,14 @@ def correctEncoding(data, oldEnc="ascii", newEnc=enc):
     return data  # disabled for now, but can be use full in the future
     if type(data) == str:
         data = data.decode(newEnc)
-    elif type(data) == unicode:
+    elif type(data) == bytes:
         data = data.encode(oldEnc)
     if "\n" in data:
         data = data.replace("\n", "\n\n")
     return data
 
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 def getLangName(file, path=None):
     """Return the language name defined in the .trn file.
     If the name is not found, return the file base name."""
@@ -335,7 +344,9 @@ def getLangName(file, path=None):
 
 
 from time import time
-#-------------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------------
 
 
 def buildTranslation(lang, extend=False, langPath=None):
@@ -347,7 +358,7 @@ def buildTranslation(lang, extend=False, langPath=None):
     tm = time()
     if not langPath:
         langPath = getLangPath()
-    #str_cache = {}
+    # str_cache = {}
     global string_cache
     fileFound = False
     lang = u"%s" % lang
@@ -357,10 +368,10 @@ def buildTranslation(lang, extend=False, langPath=None):
         fileFound = True
         rawData = codecs.open(fName, "r", "utf-8").read()
         log.debug("fName is valid and read.")
-        log.debug("Type of file data is %s"%("%s"%type(rawData)).strip("<type '").strip(">")[:-1])
+        log.debug("Type of file data is %s" % ("%s" % type(rawData)).strip("<type '").strip(">")[:-1])
         log.debug("Parsing file and building JSON resource.")
-        log.debug("  * Start on %s"%tm)
-        start = re.search(r"^o\d+[ ]", rawData, re.M|re.S)
+        log.debug("  * Start on %s" % tm)
+        start = re.search(r"^o\d+[ ]", rawData, re.M | re.S)
         if start:
             start = start.start()
         else:
@@ -368,12 +379,12 @@ def buildTranslation(lang, extend=False, langPath=None):
             # exiting without further operations
             return {}, False
         data = rawData[start:]
-        trnPattern = re.compile(r"^o\d+[ ]|^t\d+[ ]", re.M|re.S)
+        trnPattern = re.compile(r"^o\d+[ ]|^t\d+[ ]", re.M | re.S)
         grps = re.findall(trnPattern, data)
         if len(grps) % 2 != 0:
-            grps1 = re.findall(r"^o\d+[ ]", data, re.M|re.S)
-            grps2 = re.findall(r"^t\d+[ ]", data, re.M|re.S)
-            log.warning("    Unpaired original and translated strings. %s is longer (oXX: %s, tXX: %s)."%({True: "tXX", False: "oXX"}[len(grps1) < len(grps2)], len(grps1), len(grps2)))
+            grps1 = re.findall(r"^o\d+[ ]", data, re.M | re.S)
+            grps2 = re.findall(r"^t\d+[ ]", data, re.M | re.S)
+            log.warning("    Unpaired original and translated strings. %s is longer (oXX: %s, tXX: %s)." % ({True: "tXX", False: "oXX"}[len(grps1) < len(grps2)], len(grps1), len(grps2)))
             bugStrs = []
 
             def compLists(lst1, lst1N, lst2, lst2N, repl, bugStrs=bugStrs):
@@ -385,16 +396,17 @@ def buildTranslation(lang, extend=False, langPath=None):
                         lst2.pop(idx)
                     else:
                         bug.append(item)
-                bugStrs += ["Not found in %s"%lst1N, bug]
-                bugStrs += ["Not found in %s"%lst2N, lst2]
+                bugStrs += ["Not found in %s" % lst1N, bug]
+                bugStrs += ["Not found in %s" % lst2N, lst2]
+
             if len(grps1) < len(grps2):
                 compLists(grps1, "grps1", grps2, "grps2", u"t")
                 log.warning("    Compared oXX tXX:")
-                log.warning("    %s"%bugStrs)
+                log.warning("    %s" % bugStrs)
             else:
                 compLists(grps2, "grps2", grps1, "grps1", u"o")
                 log.warning("    Compared tXX oXX:")
-                log.warning("    %s"%bugStrs)
+                log.warning("    %s" % bugStrs)
             return {}, False
         n1 = len(grps) / 2
         result = u""
@@ -403,12 +415,12 @@ def buildTranslation(lang, extend=False, langPath=None):
         r = u"" + data.replace(u"\\", u"\\\\").replace(u"\"", u'\\"').replace(u"\r\n", u"\n").replace(u"\r", u"\n")
         log.debug("    Replacing oXX/tXX.")
         while n:
-            r, n = re.subn(r"^o\d+[ ]|\no\d+[ ]", "\",\"", r, flags=re.M|re.S)
-            r, n = re.subn(r"^t\d+[ ]|\nt\d+[ ]", "\":\"", r, flags=re.M|re.S)
+            r, n = re.subn(r"^o\d+[ ]|\no\d+[ ]", "\",\"", r, flags=re.M | re.S)
+            r, n = re.subn(r"^t\d+[ ]|\nt\d+[ ]", "\":\"", r, flags=re.M | re.S)
             n2 += n
             if n2 == n1:
                 n = 0
-        log.debug("    Replaced %s occurences."%n2)
+        log.debug("    Replaced %s occurences." % n2)
         result += r[2:]
         result = u"{" + result.replace(u"\r\n", u"\\n").replace(u"\n", u"\\n").replace(u"\t", u"\\t") + u"\"}"
         log.debug("    Conversion done. Loading JSON resource.")
@@ -418,13 +430,13 @@ def buildTranslation(lang, extend=False, langPath=None):
                 string_cache.update([(a, b) for (a, b) in str_cache.items() if a not in string_cache.keys()])
         except Exception as e:
             log.debug("Error while loading JSON resource:")
-            log.debug("    %s"%e)
-            log.debug("Dumping JSON data in %s.json"%lang)
-            f = open('%s.json'%lang, 'w')
+            log.debug("    %s" % e)
+            log.debug("Dumping JSON data in %s.json" % lang)
+            f = open('%s.json' % lang, 'w')
             f.write(result)
             f.close()
             return {}, False
-#         log.debug("    Setting up font.") # Forgotten this here???
+        #         log.debug("    Setting up font.") # Forgotten this here???
         if not extend:
             line = rawData.splitlines()[0]
             if "#-# " in line:
@@ -436,7 +448,7 @@ def buildTranslation(lang, extend=False, langPath=None):
             except:
                 resource.__curLang = lngNm
         tm1 = time()
-        log.debug("  * End on %s duration %s"%(tm, tm1 - tm))
+        log.debug("  * End on %s duration %s" % (tm, tm1 - tm))
     else:
         log.debug("fName is not valid beacause:")
         if not os.access(fName, os.F_OK):
@@ -452,13 +464,14 @@ def buildTranslation(lang, extend=False, langPath=None):
     log.debug("buildTranslation >>>")
     return string_cache, fileFound
 
-#-------------------------------------------------------------------------------
+
+# -------------------------------------------------------------------------------
 if __name__ == "__main__":
 
     ### FOR TEST
     import sys
 
     for k, v in buildTranslation("template").items():
-        print k, v
+        print(k, v)
     sys.exit()
     ###

@@ -11,22 +11,23 @@
 # * add local undo/redo for loaded NBT files
 # * change/optimize the undo/redo when edit level NBT data
 # * add a style editor and an image wrapper for the bullets
-from pygame import key, draw, image, Rect, event, MOUSEBUTTONDOWN
+from numpy import array
+from pygame import draw, image, Rect
+
 from albow import Column, Row, Label, Tree, TableView, TableColumn, Button, \
     FloatField, IntField, TextFieldWrapped, AttrRef, ItemRef, CheckBox, Widget, \
-    ScrollPanel, ask, alert, input_text_buttons, CheckBoxLabel, ChoiceButton, Menu, Frame
+    ask, alert, input_text_buttons, Frame
 from albow.dialogs import Dialog
-from albow.tree import TreeRow, setup_map_types_item
-from albow.utils import blit_in_rect
+from albow.extended_widgets import CheckBoxLabel, ChoiceButton
+from albow.scrollpanel import ScrollPanel
+from albow.theme import root
 from albow.translate import _, getLang
+from albow.tree import setup_map_types_item
+from albow.utils import blit_in_rect
 from glbackground import Panel
 from pymclevel.nbt import load, TAG_Byte, TAG_Short, TAG_Int, TAG_Long, TAG_Float, \
     TAG_Double, TAG_String, TAG_Byte_Array, TAG_List, TAG_Compound, TAG_Int_Array, \
-    TAG_Short_Array, littleEndianNBT, NBTFormatError, TAG_BYTE, TAG_SHORT, TAG_INT, \
-    TAG_LONG, TAG_FLOAT, TAG_DOUBLE, TAG_STRING, TAG_BYTE_ARRAY, TAG_LIST, TAG_COMPOUND, \
-    TAG_INT_ARRAY, TAG_SHORT_ARRAY
-from numpy import array
-from albow.theme import root
+    TAG_Short_Array, littleEndianNBT, NBTFormatError
 
 scroll_button_size = 0 + root.PaletteView.scroll_button_size
 bullet_color_active = root.Tree.bullet_color_active
@@ -37,10 +38,10 @@ from editortools.editortool import EditorTool
 from editortools.operation import Operation
 from editortools.tooloptions import ToolOptions
 import copy
-from directories import getDataDir, getDataFile
+from directories import getDataFile
 import os
 import mcplatform
-from config import config, DEF_ENC
+from config import config
 from albow.resource import resource_path
 
 # &# Protoype for blocks/items names
@@ -48,11 +49,13 @@ from pymclevel.materials import alphaMaterials
 
 map_block = {}
 
+
 def build_map_block():
     from pymclevel.materials import block_map
     global map_block
     for k, v in block_map.items():
         map_block[v] = k
+
 
 from pymclevel.items import items as mcitems
 
@@ -88,7 +91,7 @@ import struct
 
 # -----------------------------------------------------------------------------
 bullet_image = None
-#default_bullet_images = os.path.join(getDataDir(), "Nbtsheet.png")
+# default_bullet_images = os.path.join(getDataDir(), "Nbtsheet.png")
 default_bullet_images = getDataFile('Nbtsheet.png')
 
 
@@ -102,17 +105,17 @@ def get_bullet_image(index, w=16, h=16):
                 bullet_image = image.load(default_bullet_images)
             else:
                 bullet_image = image.load(resource_path(config.nbtTreeSettings.bulletFileName.get()))
-        except Exception, e:
-            print "*** MCEDIT DEBUG: bullets image could not be loaded."
-            print "*** MCEDIT DEBUG:", e
-            print "*** MCEDIT DEBUG: bullets image file:", resource_path(config.nbtTreeSettings.bulletFileName.get())
-            print "*** MCEDIT DEBUG: current directory:", os.getcwd()
+        except Exception as e:
+            print("*** MCEDIT DEBUG: bullets image could not be loaded.")
+            print("*** MCEDIT DEBUG:", e)
+            print("*** MCEDIT DEBUG: bullets image file:", resource_path(config.nbtTreeSettings.bulletFileName.get()))
+            print("*** MCEDIT DEBUG: current directory:", os.getcwd())
             from pygame import Surface, draw, SRCALPHA
             bullet_image = Surface((64, 64), SRCALPHA)
             bullet_image.fill((0, 0, 0, 0))
-            for i in xrange(4):
-                for j in xrange(4):
-                    bullet_image.fill((255/(i or 1), 255/(j or 1), 255, 255), [16*i, 16*j, 16*i+16, 16*j+16])
+            for i in range(4):
+                for j in range(4):
+                    bullet_image.fill((255 / (i or 1), 255 / (j or 1), 255, 255), [16 * i, 16 * j, 16 * i + 16, 16 * j + 16])
 
     r = Rect(0, 0, w, h)
     line_length = int(bullet_image.get_width() / w)
@@ -145,8 +148,8 @@ def change_styles():
     global bullet_styles
     if config.nbtTreeSettings.useBulletStyles.get() and \
             ((config.nbtTreeSettings.useBulletImages.get() and \
-            os.path.exists(config.nbtTreeSettings.bulletFileName.get())) \
-            or config.nbtTreeSettings.defaultBulletImages.get()):
+              os.path.exists(config.nbtTreeSettings.bulletFileName.get())) \
+             or config.nbtTreeSettings.defaultBulletImages.get()):
         i = 0
         for key in (
                 TAG_Byte, TAG_Double, TAG_Float, TAG_Int, TAG_Long, TAG_Short, TAG_String, TAG_Compound, TAG_Byte_Array,
@@ -211,7 +214,7 @@ item_types_map = {TAG_Byte: ("Byte", IntField, 0),
 map_types_item = setup_map_types_item(item_types_map)
 
 TAG_List_Type.choices = map_types_item.keys()
-    
+
 
 # -----------------------------------------------------------------------------
 def create_base_item(self, i_type, i_name, i_value):
@@ -241,6 +244,7 @@ def create_array_item(self, i_type, i_name, i_value):
 
 create_TAG_Byte_Array = create_TAG_Int_Array = create_TAG_Short_Array = create_array_item
 
+
 # -----------------------------------------------------------------------------
 class NBTTree(Tree):
     def __init__(self, *args, **kwargs):
@@ -268,7 +272,7 @@ class NBTTree(Tree):
         for key in styles.keys():
             if hasattr(key, '__name__'):
                 name = key.__name__
-            elif isinstance(key, (str, unicode)):
+            elif isinstance(key, (str, bytes)):
                 name = key
             else:
                 name = repr(key)
@@ -333,7 +337,7 @@ class NBTTree(Tree):
 
     def rename_item(self):
         result = input_text_buttons("Choose a name", 300, self.selected_item[3])
-        if isinstance(result, (str, unicode)):
+        if isinstance(result, (str, bytes)):
             self.selected_item[3] = result
             self.selected_item[9].name = result
             self.build_layout()
@@ -404,7 +408,7 @@ class NBTExplorerOptions(ToolOptions):
                               TextFieldWrapped(ref=config.nbtTreeSettings.bulletFileName, width=300)), margin=0)
 
         defaultBulletImagesBox = CheckBoxLabel(title="Reset to default",
-                                         ref=config.nbtTreeSettings.defaultBulletImages)
+                                               ref=config.nbtTreeSettings.defaultBulletImages)
         self.defaultBulletImagesBox = defaultBulletImagesBox
 
         def mouse_down(e):
@@ -416,7 +420,7 @@ class NBTExplorerOptions(ToolOptions):
         frameContent = Column((defaultBulletImagesBox, bulletFilePath))
         color = self.bg_color
         if len(color) == 4:
-            color = (max(color[0] + 200, 255), max(color[1] + 200, 255), max(color[2] + 200, 255), max(color[3] + 100,255))
+            color = (max(color[0] + 200, 255), max(color[1] + 200, 255), max(color[2] + 200, 255), max(color[3] + 100, 255))
         else:
             color = tuple([max([i] * 2, 255) for i in color])
         bulletFilePathFrame = Frame(frameContent, border_width=1, border_color=color)
@@ -468,8 +472,8 @@ class NBTExplorerOptions(ToolOptions):
 
     def defaultBulletImagesBox_click(self, e):
         enabled = not config.nbtTreeSettings.defaultBulletImages.get() \
-                    and config.nbtTreeSettings.useBulletImages.get() \
-                    and config.nbtTreeSettings.useBulletStyles.get()
+                  and config.nbtTreeSettings.useBulletImages.get() \
+                  and config.nbtTreeSettings.useBulletStyles.get()
         for sub in self.bulletFilePath.subwidgets:
             sub.enabled = enabled
             if isinstance(sub, TextFieldWrapped):
@@ -559,8 +563,8 @@ class SlotEditor(Dialog):
 
         try:
             self.tableview.rows.scroll_to_item(self.selected_item_index)
-        except Exception, e:
-            print e
+        except Exception as e:
+            print(e)
             pass
 
     def ok(self, *args, **kwargs):
@@ -726,7 +730,7 @@ class NBTExplorerToolPanel(Panel):
         if kwargs.get('no_header', False):
             self.max_height = max_height = kwargs.get('height', editor.mainViewport.height - editor.toolbar.height -
                                                       editor.subwidgets[0].height) - (
-                                               self.margin * 2) - btnRow.height - 2
+                                                   self.margin * 2) - btnRow.height - 2
         else:
             title = _("NBT Explorer")
             if fileName:
@@ -734,7 +738,7 @@ class NBTExplorerToolPanel(Panel):
             header = Label(title, doNotTranslate=True)
             self.max_height = max_height = kwargs.get('height', editor.mainViewport.height - editor.toolbar.height -
                                                       editor.subwidgets[0].height) - header.height - (
-                                               self.margin * 2) - btnRow.height - 2
+                                                   self.margin * 2) - btnRow.height - 2
         self.setCompounds()
         self.tree = NBTTree(height=max_height - btnRow.height - 2, inner_width=250, data=self.data,
                             compound_types=self.compounds,
@@ -897,8 +901,8 @@ class NBTExplorerToolPanel(Panel):
                     Label("%s" % (_itm.name or "%s #%03d" % (itm.name or _("Item"), itm.value.index(_itm))), align='l',
                           doNotTranslate=True))
                 fields += NBTExplorerToolPanel.build_field(_itm)
-        elif not isinstance(itm, (str, unicode)):
-            if not isinstance(getattr(itm, 'value', itm), (str, unicode, int, float)):
+        elif not isinstance(itm, (str, bytes)):
+            if not isinstance(getattr(itm, 'value', itm), (str, bytes, int, float)):
                 fld = Label
                 kw = {'align': 'l'}
             else:
@@ -969,10 +973,10 @@ class NBTExplorerToolPanel(Panel):
         inventory = parent.get('Inventory', TAG_List())
         rows = []
         items = items[0]
-        slots = [["%s" % i, "", "0", "0"] for i in xrange(36)]
-        slots += [["%s" % i, "", "0", "0"] for i in xrange(100, 104)]
+        slots = [["%s" % i, "", "0", "0"] for i in range(36)]
+        slots += [["%s" % i, "", "0", "0"] for i in range(100, 104)]
         slots_set = []
-        for item, i in zip(items, xrange(len(items))):
+        for item, i in zip(items, range(len(items))):
             # &# Prototype for blocks/items names
             item_dict = mcitems.items.get(item['id'].value, None)
             if item_dict is None:
@@ -995,7 +999,7 @@ class NBTExplorerToolPanel(Panel):
             slots_set.append(s)
             if s >= 100:
                 s = s - 100 + 36
-            if isinstance(item_name, (unicode, str)):
+            if isinstance(item_name, (bytes, str)):
                 translated_item_name = mclangres.translate(item_name)
             else:
                 translated_item_name = item_name
@@ -1208,7 +1212,7 @@ class NBTExplorerTool(EditorTool):
 # ------------------------------------------------------------------------------
 def loadFile(fName):
     """Loads a NBT file.
-    :fName: str/unicode: full file path to load.
+    :fName: str/bytes: full file path to load.
     Returns a 5 element tuple: (object nbtObject, string dataKeyName, int savePolicy, int/None magic).
     'magic' is used for PE support."""
     if not fName:
@@ -1224,7 +1228,7 @@ def loadFile(fName):
         fp.close()
 
         _magic = struct.Struct('<i').unpack(data[:4])[0]
-            
+
         if 2 < _magic < 6:
             # We have a PE world.
             magic = _magic
@@ -1259,7 +1263,7 @@ def loadFile(fName):
 
 def saveFile(fName, data, savePolicy, magic):
     """Saves the NBT data to the disk.
-    :fName: str/unicode: full file path to save data to.
+    :fName: str/bytes: full file path to save data to.
     :data: object: NBT data to be saved.
     :savePolicy: int (-1, 0 or 1): special bit to handle different data types.
     :magic: int/None: 'magic' number for PE worlds."""
@@ -1271,7 +1275,7 @@ def saveFile(fName, data, savePolicy, magic):
             folder, name = os.path.split(fName)
             suffix = os.path.splitext(name)[-1][1:]
             file_types = _("Levels and Schematics") + "\0*.dat;*.nbt"
-            if "*.%s"%suffix not in file_types:
+            if "*.%s" % suffix not in file_types:
                 file_types += "\0*.{0}\0*.{0}".format(suffix)
             file_types += "\0\0"
             fName = mcplatform.askSaveFile(folder, "Choose a NBT file...", name, file_types, suffix)

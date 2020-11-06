@@ -3,7 +3,8 @@
 #
 
 from pygame import Rect
-from widget import Widget
+
+from albow.widget import Widget
 
 
 class RowOrColumn(Widget):
@@ -17,17 +18,17 @@ class RowOrColumn(Widget):
         if isinstance(expand, int):
             expand = items[expand]
 
-        #-# Translation live update preparation
+        # -# Translation live update preparation
         self.expand = expand
         self.align = align
         self._size = size
-        #-#
+        # -#
 
-        #if kwds:
+        # if kwds:
         #    raise TypeError("Unexpected keyword arguments to Row or Column: %s"
         #        % kwds.keys())
         Widget.__init__(self, **kwds)
-    #-# Translation live update preparation
+        # -# Translation live update preparation
         self.calc_size(items)
 
     def calc_size(self, _items=None):
@@ -39,11 +40,11 @@ class RowOrColumn(Widget):
         align = self.align
         size = self._size
         spacing = self.spacing
-    #-#
+        # -#
 
         # If the 'expand' value is in 'h' or 'v', resize the widgets according
         # to the larger one.
-        if type(expand) in (str, unicode):
+        if type(expand) in (str, bytes):
             w = 'n'
             h = 'n'
             if 'h' in expand:
@@ -98,10 +99,10 @@ class RowOrColumn(Widget):
         sy = spacing * d[1]
         for item in items:
             setattr(item.rect, attr2, (px, py))
-            #-# Translation live update preparation
+            # -# Translation live update preparation
             if _items:
                 self.add(item)
-            #-#
+            # -#
             p = getattr(item.rect, attr3)
             px = p[0] + sx
             py = p[1] + sy
@@ -112,7 +113,8 @@ class RowOrColumn(Widget):
         if Widget.call_handler(self, name, *args) == 'pass':
             return self.call_parent_handler(name, *args)
 
-#---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
 
 
 class Row(RowOrColumn):
@@ -134,7 +136,7 @@ class Row(RowOrColumn):
         RowOrColumn.__init__(self, width, items, kwds)
 
 
-#---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 
 
 class Column(RowOrColumn):
@@ -156,7 +158,7 @@ class Column(RowOrColumn):
         RowOrColumn.__init__(self, height, items, kwds)
 
 
-#---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 
 
 class Grid(Widget):
@@ -185,14 +187,14 @@ class Grid(Widget):
         width = max(1, col_left - column_spacing)
         height = max(1, row_top - row_spacing)
         r = Rect(0, 0, width, height)
-        #print "albow.controls.Grid: r =", r ###
-        #print "...col_widths =", col_widths ###
-        #print "...row_heights =", row_heights ###
+        # print "albow.controls.Grid: r =", r ###
+        # print "...col_widths =", col_widths ###
+        # print "...row_heights =", row_heights ###
         Widget.__init__(self, r, **kwds)
         self.add(rows)
 
 
-#---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 
 
 class Frame(Widget):

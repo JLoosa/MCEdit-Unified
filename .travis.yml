@@ -5,14 +5,14 @@ python:
 
 matrix:
   include:
-  - os: osx
-    language: generic
-    env: PYTHON=2.7
-    osx_image: xcode8
-    rvm: 2.3
+    - os: osx
+      language: generic
+      env: PYTHON=2.7
+      osx_image: xcode8
+      rvm: 2.3
 
 before_install:
-#  - brew upgrade ruby
+  #  - brew upgrade ruby
   - brew update
   - which python
   - python --version

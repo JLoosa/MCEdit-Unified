@@ -45,25 +45,25 @@ the data in 'blocks.json' in the 'Java/1.2' subfolder will be loaded before the 
 So the '1.2.3' data will override the '1.2' data.
 """
 
-import os
-import json
-from logging import getLogger
-from pymclevel import MCEDIT_DEFS, MCEDIT_IDS
-import pymclevel
-import re
 import collections
+import json
+import os
+import re
 import sys
 from distutils.version import LooseVersion
+from logging import getLogger
 
+import pymclevel
 
 log = getLogger(__name__)
+
 
 def update(orig_dict, new_dict):
     for key, val in new_dict.iteritems():
         if isinstance(val, collections.Mapping):
             if orig_dict.get(key, {}) == val:
                 continue
-            tmp = update(orig_dict.get(key, { }), val)
+            tmp = update(orig_dict.get(key, {}), val)
             orig_dict[key] = tmp
         elif isinstance(val, list):
             if orig_dict.get(key, []) == val:
@@ -74,6 +74,7 @@ def update(orig_dict, new_dict):
                 continue
             orig_dict[key] = new_dict[key]
     return orig_dict
+
 
 def _parse_data(data, prefix, namespace, defs_dict, ids_dict, ignore_load=False):
     """Parse the JSON data and build objects accordingly.
@@ -113,7 +114,7 @@ def _parse_data(data, prefix, namespace, defs_dict, ids_dict, ignore_load=False)
                 for a_name, a_value in autobuilds.items():
                     try:
                         v = eval(a_value)
-#                             print "###", a_name, a_value, v
+                        #                             print "###", a_name, a_value, v
                         defs_dict[entry_name][a_name] = eval(a_value)
                         ids_dict[v] = entry_name
                     except Exception as e:
@@ -186,7 +187,7 @@ def ids_loader(gamePlatform, gameVersionNumber, namespace=u"minecraft", json_dic
                     r = ''
                     _data = {}
                     first = True
-                    while type(r) in (str, unicode):
+                    while type(r) in (str, bytes):
                         if first:
                             r = _parse_data(data, prefix, namespace, MCEDIT_DEFS, MCEDIT_IDS)
                             if json_dict:
@@ -196,11 +197,11 @@ def ids_loader(gamePlatform, gameVersionNumber, namespace=u"minecraft", json_dic
                             r = _parse_data(_data, prefix, namespace, MCEDIT_DEFS, MCEDIT_IDS)
                             if json_dict:
                                 _json.update(_data)
-                        if isinstance(r, (str, unicode)):
+                        if isinstance(r, (str, bytes)):
                             v = gameVersionNumber
                             if len(deps):
                                 v = deps[-1]
-                            log.info("Found dependency for %s %s"%(v, prefix))
+                            log.info("Found dependency for %s %s" % (v, prefix))
                             deps.append(r)
                             _data = _get_data(os.path.join('mcver', gamePlatform, r, file_name))
                         else:
@@ -214,20 +215,20 @@ def ids_loader(gamePlatform, gameVersionNumber, namespace=u"minecraft", json_dic
                         for dep in deps:
                             _file_name = os.path.join('mcver', gamePlatform, dep, file_name)
                             if os.path.exists(_file_name):
-                                log.info("Found %s"%_file_name)
-                                #_data.update(_get_data(_file_name))
+                                log.info("Found %s" % _file_name)
+                                # _data.update(_get_data(_file_name))
                                 update(_data, _get_data(_file_name))
                                 if timestamps:
                                     _timestamps[_file_name] = os.stat(_file_name).st_mtime
                             else:
-                                log.info("Could not find %s"%_file_name)
+                                log.info("Could not find %s" % _file_name)
                         update(_data, data)
-                        #_data.update(data)
+                        # _data.update(data)
                         _defs, _ids = _parse_data(_data, prefix, namespace, MCEDIT_DEFS, MCEDIT_IDS, ignore_load=True)
                         update(MCEDIT_DEFS, _defs)
                         update(MCEDIT_IDS, _ids)
-                        #MCEDIT_DEFS.update(_defs)
-                        #MCEDIT_IDS.update(_ids)
+                        # MCEDIT_DEFS.update(_defs)
+                        # MCEDIT_IDS.update(_ids)
                         if json_dict:
                             _json.update(_data)
                     log.info("Done")
@@ -236,7 +237,7 @@ def ids_loader(gamePlatform, gameVersionNumber, namespace=u"minecraft", json_dic
     # Override the module objects to expose them outside when (re)importing.
     pymclevel.MCEDIT_DEFS = MCEDIT_DEFS
     pymclevel.MCEDIT_IDS = MCEDIT_IDS
-    log.info("Loaded %s defs and %s ids"%(len(MCEDIT_DEFS), len(MCEDIT_IDS)))
+    log.info("Loaded %s defs and %s ids" % (len(MCEDIT_DEFS), len(MCEDIT_IDS)))
     toreturn = (MCEDIT_DEFS, MCEDIT_IDS)
     if json_dict:
         toreturn = _json
@@ -255,7 +256,9 @@ def ids_loader(gamePlatform, gameVersionNumber, namespace=u"minecraft", json_dic
         toreturn += (_timestamps,)
     return toreturn
 
+
 version_defs_ids = {}
+
 
 class MCEditDefsIds(object):
     """Class to handle MCEDIT_DEFS and MCEDIT_IDS dicts."""
@@ -286,6 +289,7 @@ class MCEditDefsIds(object):
         """Acts like MCEDIT_DEFS[def_id]"""
         return self.mcedit_defs[def_id]
 
+
 def get_defs_ids(gamePlatform, gameVersionNumber, namespace=u"minecraft"):
     """Create a MCEditDefsIds instance only if one for the game version does not already exists, or a definition file has been changed.
     See MCEditDefsIds doc.
@@ -297,4 +301,3 @@ def get_defs_ids(gamePlatform, gameVersionNumber, namespace=u"minecraft"):
             return obj
     else:
         return MCEditDefsIds(gamePlatform, gameVersionNumber, namespace=namespace)
-

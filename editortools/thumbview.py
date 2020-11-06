@@ -1,9 +1,10 @@
 from OpenGL import GLU, GL
 from numpy import array
+
+import pymclevel
 from albow import Widget
 from albow.openglwidgets import GLPerspective
 from glutils import FramebufferTexture, gl
-import pymclevel
 from renderer import PreviewRenderer
 
 
@@ -83,8 +84,8 @@ class ThumbView(GLPerspective):
             s_sz = 0
             if self.widget_index > 0:
                 s_sz = getattr(self.parent.subwidgets[self.widget_index - 1], self.parent.longways, 0)
-            #-# Do we have a bad hack or the real solution with `(self.parent.height - self.height) / 2 + 1` stuff?
-            #-# Need extensive tests to confirm...
+            # -# Do we have a bad hack or the real solution with `(self.parent.height - self.height) / 2 + 1` stuff?
+            # -# Need extensive tests to confirm...
             if self.parent.axis == 'h':
                 r = r.move(x + (self.parent.height - self.height) / 2 + 1 + self.p_margin - self.p_spacing - s_sz, y - (self.parent.height - self.height) / 2)
             else:

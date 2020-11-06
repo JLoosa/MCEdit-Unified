@@ -31,6 +31,7 @@ inputs = (
     ("Access method", ("Use blockAt", "Use temp schematic", "Use chunk slices")),
 )
 
+
 # perform() is the main entry point of a filter. Its parameters are
 # a MCLevel instance, a BoundingBox, and an options dictionary.
 # The options dictionary will have keys corresponding to the keys specified above,

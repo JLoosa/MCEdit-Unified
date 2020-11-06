@@ -11,26 +11,28 @@ ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
 WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE."""
-#-# Modified by D.C.-G. for translation purpose
+# -# Modified by D.C.-G. for translation purpose
+
+# -# Modified by D.C.-G. for translation purpose
 import traceback
-from OpenGL import GL
+
 import numpy
+from OpenGL import GL
 from numpy import newaxis
 
-from albow import Label, ValueDisplay, AttrRef, Button, Column, ask, Row, alert, Widget, Menu, showProgress, \
-    ChoiceButton, IntInputRow, CheckBoxLabel
+import mcplatform
+import pymclevel
+import renderer
+from albow import Label, ValueDisplay, AttrRef, Button, Column, ask, Row, alert, Widget, Menu
+from albow.dialogs import Dialog
+from albow.extended_widgets import showProgress, ChoiceButton, IntInputRow, CheckBoxLabel
 from albow.translate import _
+from config import config
 from editortools.editortool import EditorTool
 from glbackground import Panel
 from glutils import DisplayList, gl
 from mceutils import alertException, setWindowCaption
-import mcplatform
-import pymclevel
 from pymclevel.minecraft_server import MCServerChunkGenerator
-from config import config
-
-from albow.dialogs import Dialog
-import renderer
 
 
 class ChunkToolPanel(Panel):
@@ -52,7 +54,7 @@ class ChunkToolPanel(Panel):
         deselectButton = Button("Deselect",
                                 tooltipText=None,
                                 action=tool.editor.deselect,
-        )
+                                )
 
         createButton = Button("Create")
         createButton.tooltipText = "Create new chunks within the selection."
@@ -83,12 +85,12 @@ class ChunkToolPanel(Panel):
         dontRepopButton.highlight_color = (255, 255, 255)
 
         col = Column((
-        chunkToolLabel, self.chunksLabel, deselectButton, createButton, destroyButton, pruneButton, relightButton,
-        repopButton, dontRepopButton))
+            chunkToolLabel, self.chunksLabel, deselectButton, createButton, destroyButton, pruneButton, relightButton,
+            repopButton, dontRepopButton))
         # col.right = self.width - 10;
         self.width = col.width
         self.height = col.height
-        #self.width = 120
+        # self.width = 120
         self.add(col)
 
     @property
@@ -141,11 +143,11 @@ class ChunkTool(EditorTool):
                 if n not in self._selectedChunks:
                     positions.append([ch])
 
-        color = self.editor.selectionTool.selectionColor + (0.3, )
+        color = self.editor.selectionTool.selectionColor + (0.3,)
         GL.glColor(*color)
         with gl.glEnable(GL.GL_BLEND):
 
-            #import renderer
+            # import renderer
 
             sizedChunks = renderer.chunkMarkers(self._selectedChunks)
             for size, chunks in sizedChunks.iteritems():
@@ -217,7 +219,7 @@ class ChunkTool(EditorTool):
         self.panel.left = 10
 
         self.editor.add(self.panel)
-        
+
     def toolDeselected(self):
         self.editor.chunksToSelection()
 
@@ -246,7 +248,7 @@ class ChunkTool(EditorTool):
                     try:
                         self.editor.level.deleteChunk(cx, cz)
                     except Exception as e:
-                        print "Error during chunk delete: ", e
+                        print("Error during chunk delete: ", e)
 
         with setWindowCaption("DELETING - "):
             showProgress("Deleting chunks...", _destroyChunks())
@@ -270,7 +272,7 @@ class ChunkTool(EditorTool):
                         self.editor.level.deleteChunk(*cPos)
 
                     except Exception as e:
-                        print "Error during chunk delete: ", e
+                        print("Error during chunk delete: ", e)
 
                 yield i, maxChunks
 
@@ -440,7 +442,7 @@ def GeneratorPanel():
                                       tooltipText="Uses the Latest Snapshot Terrain Generation")
 
     simRow = Row((simRow, advancedButton), anchor="lrh")
-    #deleteCacheRow = Row((Label("Delete Temporary World File Cache?"), Button("Delete Cache!", action=clearCache, tooltipText="Click me if you think your chunks are stale.")))
+    # deleteCacheRow = Row((Label("Delete Temporary World File Cache?"), Button("Delete Cache!", action=clearCache, tooltipText="Click me if you think your chunks are stale.")))
 
     serverPanel = Column([useSnapshotServer, versionContainer, simRow], align="l")
 
@@ -488,13 +490,13 @@ def GeneratorPanel():
                 for i, (cx, cz) in enumerate(chunks):
 
                     yield i, len(chunks)
-                    #surface = blockInput.blockInfo
+                    # surface = blockInput.blockInfo
 
-                    #for cx, cz in :
+                    # for cx, cz in :
                     try:
                         level.createChunk(cx, cz)
                     except ValueError as e:  # chunk already present
-                        print e
+                        print(e)
                         continue
                     else:
                         ch = level.getChunk(cx, cz)

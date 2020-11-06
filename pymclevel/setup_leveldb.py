@@ -7,14 +7,14 @@
 __author__ = "D.C.-G. 2017"
 __version__ = "0.4.0"
 
-import sys
+import fnmatch
 import os
 import platform
-import fnmatch
 import re
+import sys
 
 if sys.platform != "linux2":
-    print "This script can't run on other platforms than Linux ones..."
+    print("This script can't run on other platforms than Linux ones...")
     sys.exit(1)
 
 bin_deps = ('gcc', 'g++', 'unzip', 'wget|curl')
@@ -40,8 +40,8 @@ silent = False
 
 
 def check_bins(bins):
-    print 'Searching for the needed binaries %s...' % repr(bins).replace("'", '')
-    missing_bin = False 
+    print('Searching for the needed binaries %s...' % repr(bins).replace("'", ''))
+    missing_bin = False
     for name in bins:
         names = []
         if '|' in name:
@@ -53,22 +53,22 @@ def check_bins(bins):
                     found = True
                     break
                 else:
-                    print "Could not find %s." % n
+                    print("Could not find %s." % n)
             if found:
                 g_keys = globals().keys()
                 g_name = name.replace('|', '_')
-                print "g_name", g_name, g_name in g_keys
+                print("g_name", g_name, g_name in g_keys)
                 if g_name in g_keys:
                     globals()[g_name] = globals()['%s_cmd' % n]
             else:
-                print '*** WARNING: None of these binaries were found on your system: %s.'%', '.join(names)
+                print('*** WARNING: None of these binaries were found on your system: %s.' % ', '.join(names))
         else:
             if os.system('which %s > /dev/null' % name):
-                print '*** WARNING: %s not found.' % name
+                print('*** WARNING: %s not found.' % name)
                 missing_bin = True
     if missing_bin:
         if not silent:
-            a = raw_input('The binary dependencies are not satisfied. The build may fail.\nContinue [y/N]?')
+            a = input('The binary dependencies are not satisfied. The build may fail.\nContinue [y/N]?')
         else:
             a = 'n'
         if a and a in 'yY':
@@ -76,12 +76,12 @@ def check_bins(bins):
         else:
             sys.exit(1)
     else:
-        print 'All the needed binaries were found.'
+        print('All the needed binaries were found.')
 
 
 # Picked from another project to find the lib and adapted to the need
 ARCH = {'32bit': '32', '64bit': '64'}[platform.architecture()[0]]
-default_paths = ['/lib', '/lib32', '/lib64', '/usr/lib', '/usr/lib32','/usr/lib64', 
+default_paths = ['/lib', '/lib32', '/lib64', '/usr/lib', '/usr/lib32', '/usr/lib64',
                  '/usr/local/lib', os.path.expanduser('~/.local/lib'), '.']
 
 
@@ -136,7 +136,7 @@ def find_lib(lib_name, input_file='/etc/ld.so.conf'):
 
     while i <= idx and not found:
         for path in paths:
-            print "Scanning %s for %s" % (path, name)
+            print("Scanning %s for %s" % (path, name))
             if os.path.exists(path):
                 for path, dirnames, filenames in os.walk(path):
                     if name in filenames:
@@ -172,18 +172,18 @@ def find_lib(lib_name, input_file='/etc/ld.so.conf'):
 
 
 def get_sources(name, url):
-    print "Downloading sources for %s" % name
-    print "URL: %s" % url
+    print("Downloading sources for %s" % name)
+    print("URL: %s" % url)
     os.system("%s %s.zip %s" % (wget_curl, name, url))
-    print "Unpacking %s" % name
+    print("Unpacking %s" % name)
     os.system("unzip -q %s.zip" % name)
     os.system("mv $(ls -d1 */ | egrep '{n}-') {n}".format(n=name))
-    print "Cleaning archive."
+    print("Cleaning archive.")
     os.remove("%s.zip" % name)
 
 
 def build_zlib():
-    print "Building zlib..."
+    print("Building zlib...")
     return os.WEXITSTATUS(os.system("./configure; make"))
 
 
@@ -235,8 +235,9 @@ void leveldb_options_set_compressor(leveldb_options_t* opt, int i, int t) {
     }
 }
 
+
 def build_leveldb(zlib):
-    print "Building leveldb..."
+    print("Building leveldb...")
 
     # Inject the needed code into the sources.
     for root, d_names, f_names in os.walk("."):
@@ -270,14 +271,15 @@ def build_leveldb(zlib):
         os.environ["CPATH"] = "./zlib"
     return os.WEXITSTATUS(os.system("make"))
 
+
 def request_zlib_build():
-    print "             Enter 'b' to build zlib v%s only for leveldb." % zlib_ideal_version
-    print "             Enter 'a' to quit now and install zlib yourself."
-    print "             Enter 'c' to continue."
+    print("             Enter 'b' to build zlib v%s only for leveldb." % zlib_ideal_version)
+    print("             Enter 'a' to quit now and install zlib yourself.")
+    print("             Enter 'c' to continue.")
     a = ""
     if not silent:
         while a.lower() not in "abc":
-            a = raw_input("Build zlib [b], abort [a] or continue [c]? ")
+            a = input("Build zlib [b], abort [a] or continue [c]? ")
     else:
         a = "a"
     if a == "b":
@@ -287,10 +289,11 @@ def request_zlib_build():
     elif a == "c":
         return None
 
+
 def main():
-    print "=" * 72
-    print "Building Linux Minecraft Pocket Edition for MCEdit..."
-    print "-----------------------------------------------------"
+    print("=" * 72)
+    print("Building Linux Minecraft Pocket Edition for MCEdit...")
+    print("-----------------------------------------------------")
     global leveldb_commit
     global zlib_commit
     global zlib_sources_url
@@ -318,10 +321,10 @@ def main():
         silent = True
 
     if "--debug-cenv" in sys.argv:
-        print 'CPATH:', os.environ.get('CPATH', 'empty!')
-        print 'PATH:', os.environ.get('PATH', 'empty!')
-        print 'LD_LIBRARY_PATH', os.environ.get('LD_LIBRARY_PATH', 'empty!')
-        print 'LIBRARY_PATH', os.environ.get('LIBRARY_PATH', 'empty!')
+        print('CPATH:', os.environ.get('CPATH', 'empty!'))
+        print('PATH:', os.environ.get('PATH', 'empty!'))
+        print('LD_LIBRARY_PATH', os.environ.get('LD_LIBRARY_PATH', 'empty!'))
+        print('LIBRARY_PATH', os.environ.get('LIBRARY_PATH', 'empty!'))
 
     check_bins(bin_deps)
     # Get the sources here.
@@ -332,48 +335,48 @@ def main():
     zlib = (None, None, None)
     # Check zlib
     if not force_zlib:
-        print "Checking zlib."
+        print("Checking zlib.")
         zlib = find_lib("libz.so.%s" % zlib_ideal_version)
-        print zlib
+        print(zlib)
         if zlib == (None, None, None):
             zlib = None
-            print "*** WARNING: zlib not found!"
-            print "             It is recommended you install zlib v%s on your system or" % zlib_ideal_version
-            print "             let this script install it only for leveldb."
+            print("*** WARNING: zlib not found!")
+            print("             It is recommended you install zlib v%s on your system or" % zlib_ideal_version)
+            print("             let this script install it only for leveldb.")
             force_zlib = request_zlib_build()
         else:
             if zlib[2] == None:
-                print "*** WARNING: zlib has been found, but the exact version could not be"
-                print "             determined."
-                print "             It is recommended you install zlib v%s on your system or" % zlib_ideal_version
-                print "             let this script install it only for leveldb."
+                print("*** WARNING: zlib has been found, but the exact version could not be")
+                print("             determined.")
+                print("             It is recommended you install zlib v%s on your system or" % zlib_ideal_version)
+                print("             let this script install it only for leveldb.")
                 force_zlib = request_zlib_build()
             elif zlib[2] not in zlib_supported_versions:
-                print "*** WARNING: zlib was found, but its version is %s." % zlib[2]
-                print "             You can try to build with this version, but it may fail,"
-                print "             or the generated libraries may not work..."
+                print("*** WARNING: zlib was found, but its version is %s." % zlib[2])
+                print("             You can try to build with this version, but it may fail,")
+                print("             or the generated libraries may not work...")
                 force_zlib = request_zlib_build()
 
             if zlib[1] == False:
-                print "*** WARNING: zlib has been found on your system, but not for the"
-                print "             current architecture."
-                print "             You apparently run on a %s, and the found zlib is %s" % (ARCH, zlib[0])
-                print "             Building the Pocket Edition support may fail. If not,"
-                print "             the support may not work."
-                print "             You can continue, but it is recommended to install zlib."
+                print("*** WARNING: zlib has been found on your system, but not for the")
+                print("             current architecture.")
+                print("             You apparently run on a %s, and the found zlib is %s" % (ARCH, zlib[0]))
+                print("             Building the Pocket Edition support may fail. If not,")
+                print("             the support may not work.")
+                print("             You can continue, but it is recommended to install zlib.")
                 force_zlib = request_zlib_build()
 
             if force_zlib is None:
-                print "Build continues with zlib v%s" % zlib[2]
+                print("Build continues with zlib v%s" % zlib[2])
             else:
-                print "Found compliant zlib v%s." % zlib[2]
+                print("Found compliant zlib v%s." % zlib[2])
             zlib = zlib[0]
 
     if force_zlib:
         os.chdir("leveldb/zlib")
         r = build_zlib()
         if r:
-            print "Zlib build failed."
+            print("Zlib build failed.")
             return r
         os.chdir(cur_dir)
         os.rename("leveldb/zlib/libz.so.1.2.10", "./libz.so.1.2.10")
@@ -392,19 +395,20 @@ def main():
             data = data.replace("LIBS += $(PLATFORM_LIBS) -lz", "LIBS += -L{d} -lz -Wl,-R{d} $(PLATFORM_LIBS)".format(d=cur_dir))
             f.seek(0)
             f.write(data)
-            
+
         zlib = None
 
     os.chdir("leveldb")
     r = build_leveldb(zlib)
     if r:
-        print "PE support build failed."
+        print("PE support build failed.")
         return r
     os.chdir(cur_dir)
     for root, d_names, f_names in os.walk("leveldb"):
         for f_name in fnmatch.filter(f_names, "libleveldb.so*"):
             os.rename(os.path.join(root, f_name), os.path.join(".", f_name))
-    print "Setup script ended."
+    print("Setup script ended.")
+
 
 if __name__ == "__main__":
     sys.exit(main())

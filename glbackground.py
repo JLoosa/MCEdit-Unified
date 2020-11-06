@@ -18,10 +18,11 @@ glbackground.py
 A UI element that only draws a single OpenGL quad.
 """
 
-from albow.openglwidgets import GLOrtho
-from albow import unparented
 from OpenGL.GL import glEnable, glColor, glVertexPointer, glDrawArrays, glDisable, GL_BLEND, GL_FLOAT, GL_QUADS
 from numpy import array
+
+from albow import unparented
+from albow.openglwidgets import GLOrtho
 
 
 class GLBackground(GLOrtho):
@@ -30,9 +31,9 @@ class GLBackground(GLOrtho):
 
     # bg_color = (30/255.0,0,255/255.0, 100/255.0)
     def gl_draw(self):
-        #if hasattr(self, 'highlight_bg_color') and self in self.get_root().find_widget(mouse.get_pos()).all_parents():
+        # if hasattr(self, 'highlight_bg_color') and self in self.get_root().find_widget(mouse.get_pos()).all_parents():
         #    color = self.highlight_bg_color
-        #else:
+        # else:
         color = tuple(self.bg_color) + (1.0,)
 
         glEnable(GL_BLEND)

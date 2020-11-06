@@ -1,7 +1,8 @@
 import unittest
-from pymclevel.minecraft_server import MCServerChunkGenerator
-from templevel import TempLevel
+
 from pymclevel.box import BoundingBox
+from pymclevel.minecraft_server import MCServerChunkGenerator
+from pymclevel.test.templevel import TempLevel
 
 __author__ = 'Rio'
 
@@ -13,7 +14,7 @@ class TestServerGen(unittest.TestCase):
 
     def testCreate(self):
         gen = MCServerChunkGenerator()
-        print "Version: ", gen.serverVersion
+        print("Version: ", gen.serverVersion)
 
         def _testCreate(filename):
             gen.createLevel(filename, BoundingBox((-128, 0, -128), (128, 128, 128)))
@@ -22,7 +23,7 @@ class TestServerGen(unittest.TestCase):
 
     def testServerGen(self):
         gen = MCServerChunkGenerator()
-        print "Version: ", gen.serverVersion
+        print("Version: ", gen.serverVersion)
 
         level = self.alphalevel.level
 

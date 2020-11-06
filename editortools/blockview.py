@@ -1,16 +1,17 @@
 from OpenGL import GL
-
 from numpy import array
+
+import editortools.blockpicker as blockpicker
+import editortools.thumbview as thumbview
+# &# Prototype for blocks/items names
+import mclangres
 from albow import ButtonBase, ValueDisplay, AttrRef, Row
 from albow.openglwidgets import GLOrtho
-import thumbview
-import blockpicker
 from glbackground import Panel, GLBackground
 from glutils import DisplayList
 
-#&# Prototype for blocks/items names
-import mclangres
-#&#
+
+# &#
 
 class BlockView(GLOrtho):
     def __init__(self, materials, blockInfo=None):
@@ -48,7 +49,7 @@ class BlockView(GLOrtho):
         # hack to get end rod to render properly
         # we really should use json models?
         if blockInfo.ID == 198:
-            texOrigin = array([17*16, 20*16])
+            texOrigin = array([17 * 16, 20 * 16])
         else:
             texOrigin = array(self.materials.blockTextures[blockInfo.ID, blockInfo.blockData, 0])
         texOrigin = texOrigin.astype(float) * pixelScale
@@ -67,10 +68,10 @@ class BlockView(GLOrtho):
 
     @property
     def tooltipText(self):
-        #&# Prototype for blocks/items names
-        #return str(self.blockInfo.name)
+        # &# Prototype for blocks/items names
+        # return str(self.blockInfo.name)
         return mclangres.translate(self.blockInfo.name)
-        #&#
+        # &#
 
 
 class BlockButton(ButtonBase, Panel):
@@ -135,10 +136,10 @@ class BlockButton(ButtonBase, Panel):
 
     @property
     def labelText(self):
-        #&# Prototype for blocks/items names
-        #labelText = self.blockInfo.name
+        # &# Prototype for blocks/items names
+        # labelText = self.blockInfo.name
         labelText = mclangres.translate(self.blockInfo.name)
-        #&#
+        # &#
         if len(labelText) > 24:
             labelText = labelText[:23] + "..."
         return labelText
@@ -179,10 +180,10 @@ class BlockButton(ButtonBase, Panel):
 
     @property
     def tooltipText(self):
-        #&# Prototype for blocks/items names
-        #return str(self.blockInfo.name)
+        # &# Prototype for blocks/items names
+        # return str(self.blockInfo.name)
         return mclangres.translate(self.blockInfo.name)
-        #&#
+        # &#
 
     def action(self):
         blockPicker = blockpicker.BlockPicker(self.blockInfo, self.materials, allowWildcards=self.allowWildcards)
@@ -190,5 +191,5 @@ class BlockButton(ButtonBase, Panel):
             self.blockInfo = blockPicker.blockInfo
 
     def draw_all(self, s):
-        #-# Looks like a bad stuf... Be aware of the 'spacing' member of the widgets parent.
+        # -# Looks like a bad stuf... Be aware of the 'spacing' member of the widgets parent.
         Panel.gl_draw_all(self, self.get_root(), (self.local_to_global_offset()[0], self.local_to_global_offset()[1] - self.height + self.parent.spacing))

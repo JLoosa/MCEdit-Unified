@@ -4,33 +4,31 @@ Created on Jul 22, 2011
 @author: Rio
 '''
 import collections
-
-from datetime import datetime
 import itertools
-from logging import getLogger
-from math import floor
 import os
 import random
 import shutil
 import struct
+import sys
 import time
 import traceback
 import weakref
 import zlib
-import sys
-
-from box import BoundingBox
-from entity import Entity, TileEntity, TileTick
-from faces import FaceXDecreasing, FaceXIncreasing, FaceZDecreasing, FaceZIncreasing
-from level import LightedChunk, EntityLevel, computeChunkHeightMap, MCLevel, ChunkBase
-from materials import alphaMaterials
-from mclevelbase import ChunkMalformed, ChunkNotPresent, ChunkAccessDenied,ChunkConcurrentException,exhaust, PlayerNotFound
-import nbt
-from numpy import array, clip, maximum, zeros, asarray, unpackbits, arange
-from regionfile import MCRegionFile
-import logging
+from datetime import datetime
+from logging import getLogger
+from math import floor
 from uuid import UUID
-import id_definitions
+
+from numpy import array, clip, maximum, zeros, asarray, unpackbits, arange
+
+import pymclevel.nbt as nbt
+from pymclevel.box import BoundingBox
+from pymclevel.entity import Entity, TileEntity, TileTick
+from pymclevel.faces import FaceXDecreasing, FaceXIncreasing, FaceZDecreasing, FaceZIncreasing
+from pymclevel.level import LightedChunk, EntityLevel, computeChunkHeightMap, MCLevel, ChunkBase
+from pymclevel.materials import alphaMaterials
+from pymclevel.mclevelbase import ChunkMalformed, ChunkNotPresent, ChunkAccessDenied, exhaust, PlayerNotFound
+from pymclevel.regionfile import MCRegionFile
 
 log = getLogger(__name__)
 
@@ -158,7 +156,7 @@ class AnvilChunkData(object):
         long_array = section["BlockStates"].value
         bits_amount = len(long_array) / 64
         binary_blocks = unpackbits(long_array[::-1].astype(">i8").view("uint8")).reshape(-1, bits_amount)
-        blocks_before_palette = binary_blocks.dot(2**arange(binary_blocks.shape[1]-1, -1, -1))[::-1]
+        blocks_before_palette = binary_blocks.dot(2 ** arange(binary_blocks.shape[1] - 1, -1, -1))[::-1]
         blocks = asarray(section["Palette"].value, dtype="object")[blocks_before_palette]
         raise NotImplementedError("1.13 version not supported yet")
 
@@ -200,7 +198,7 @@ class AnvilChunkData(object):
 
         sections = nbt.TAG_List()
         append = sections.append
-        for y in xrange(0, self.world.Height, 16):
+        for y in range(0, self.world.Height, 16):
             section = nbt.TAG_Compound()
 
             Blocks = self.Blocks[..., y:y + 16].swapaxes(0, 2)
@@ -627,7 +625,7 @@ class ChunkedLevelMixin(MCLevel):
         log.info(u"Asked to light {0} chunks".format(len(dirtyChunkPositions)))
         chunkLists = [dirtyChunkPositions]
 
-        def reverseChunkPosition((cx, cz)):
+        def reverseChunkPosition(cx, cz):
             return cz, cx
 
         def splitChunkLists(chunkLists):
@@ -747,7 +745,7 @@ class ChunkedLevelMixin(MCLevel):
 
             work = 0
 
-            for i in xrange(14):
+            for i in range(14):
                 if len(newDirtyChunks) == 0:
                     workTotal -= len(startingDirtyChunks) * (14 - i)
                     break
@@ -1104,7 +1102,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         a level.dat or a folder containing one. If create is True, it will
         also create the world using the random_seed and last_played arguments.
         If they are none, a random 64-bit seed will be selected for RandomSeed
-        and long(time.time() * 1000) will be used for LastPlayed.
+        and int(time.time() * 1000) will be used for LastPlayed.
 
         If you try to create an existing world, its level.dat will be replaced.
         """
@@ -1185,16 +1183,16 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
                         UUID(player, version=4)
                     except ValueError:
                         try:
-                            print "{0} does not seem to be in a valid UUID format".format(player)
-                        except UnicodeEncode:
+                            print("{0} does not seem to be in a valid UUID format".format(player))
+                        except UnicodeEncodeError:
                             try:
-                                print u"{0} does not seem to be in a valid UUID format".format(player)
+                                print(u"{0} does not seem to be in a valid UUID format".format(player))
                             except UnicodeError:
-                                print "{0} does not seem to be in a valid UUID format".format(repr(player))
+                                print("{0} does not seem to be in a valid UUID format".format(repr(player)))
                         self.players.remove(player)
                 if "Player" in self.root_tag["Data"]:
                     self.players.append("Player")
-    
+
                 self.preloadDimensions()
 
     # --- Load, save, create ---
@@ -1209,15 +1207,15 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         root_tag["Data"]["SpawnZ"] = nbt.TAG_Int(0)
 
         if last_played is None:
-            last_played = long(time.time() * 1000)
+            last_played = int(time.time() * 1000)
         if random_seed is None:
-            random_seed = long(random.random() * 0xffffffffffffffffL) - 0x8000000000000000L
+            random_seed = int(random.random() * 0xffffffffffffffff) - 0x8000000000000000
 
         self.root_tag = root_tag
         root_tag["Data"]['version'] = nbt.TAG_Int(self.VERSION_ANVIL)
 
-        self.LastPlayed = long(last_played)
-        self.RandomSeed = long(random_seed)
+        self.LastPlayed = int(last_played)
+        self.RandomSeed = int(random_seed)
         self.SizeOnDisk = 0
         self.Time = 1
         self.DayTime = 1
@@ -1230,7 +1228,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
     def acquireSessionLock(self):
         lock_file = self.worldFolder.getFilePath("session.lock")
         self.initTime = int(time.time() * 1000)
-        with file(lock_file, "wb") as f:
+        with open(lock_file, "wb") as f:
             f.write(struct.pack(">q", self.initTime))
             f.flush()
             os.fsync(f.fileno())
@@ -1248,7 +1246,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
 
         lockfile = self.worldFolder.getFilePath("session.lock")
         try:
-            (lock, ) = struct.unpack(">q", file(lockfile, "rb").read())
+            (lock,) = struct.unpack(">q", open(lockfile, "rb").read())
         except struct.error:
             lock = -1
         if lock != self.initTime:
@@ -1272,16 +1270,16 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
                     self.loadDefIds()
                 #
             except Exception as e:
-                filename_old = self.worldFolder.getFilePath("%s.dat_old"%dat_name)
+                filename_old = self.worldFolder.getFilePath("%s.dat_old" % dat_name)
                 log.info("Error loading {1}.dat, trying {1}.dat_old ({0})".format(e, dat_name))
                 try:
                     self.root_tag = nbt.load(filename_old)
-                    log.info("%s.dat restored from backup."%dat_name)
+                    log.info("%s.dat restored from backup." % dat_name)
                     self.saveInPlace()
                 except Exception as e:
                     traceback.print_exc()
-                    print repr(e)
-                    log.info("Error loading %s.dat_old. Initializing with defaults."%dat_name)
+                    print(repr(e))
+                    log.info("Error loading %s.dat_old. Initializing with defaults." % dat_name)
                     self._create(self.filename, random_seed, last_played)
 
         if self.root_tag.get('Data', nbt.TAG_Compound()).get('Version', nbt.TAG_Compound()).get('Id', nbt.TAG_Int(-1)).value > 1451:
@@ -1289,7 +1287,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
 
     def saveInPlaceGen(self):
         if self.readonly:
-            raise IOError("World is opened read only. (%s)"%self.filename)
+            raise IOError("World is opened read only. (%s)" % self.filename)
         self.saving = True
         self.checkSessionLock()
 
@@ -1387,7 +1385,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
     RandomSeed = TagProperty('RandomSeed', nbt.TAG_Long, 0)
     Time = TagProperty('Time', nbt.TAG_Long, 0)  # Age of the world in ticks. 20 ticks per second; 24000 ticks per day.
     DayTime = TagProperty('DayTime', nbt.TAG_Long, 0)
-    LastPlayed = TagProperty('LastPlayed', nbt.TAG_Long, lambda self: long(time.time() * 1000))
+    LastPlayed = TagProperty('LastPlayed', nbt.TAG_Long, lambda self: int(time.time() * 1000))
 
     LevelName = TagProperty('LevelName', nbt.TAG_String, lambda self: self.displayName)
     GeneratorName = TagProperty('generatorName', nbt.TAG_String, 'default')
@@ -1419,17 +1417,17 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         :rtype: pymclevel.nbt.TAG_Compound()
         '''
         if os.path.exists(self.worldFolder.getFolderPath("data")):
-                if os.path.exists(self.worldFolder.getFolderPath("data")+"/scoreboard.dat"):
-                    return nbt.load(self.worldFolder.getFolderPath("data")+"/scoreboard.dat")
-                else:
-                    root_tag = nbt.TAG_Compound()
-                    root_tag["data"] = nbt.TAG_Compound()
-                    root_tag["data"]["Objectives"] = nbt.TAG_List()
-                    root_tag["data"]["PlayerScores"] = nbt.TAG_List()
-                    root_tag["data"]["Teams"] = nbt.TAG_List()
-                    root_tag["data"]["DisplaySlots"] = nbt.TAG_List()
-                    self.save_scoreboard(root_tag)
-                    return root_tag
+            if os.path.exists(self.worldFolder.getFolderPath("data") + "/scoreboard.dat"):
+                return nbt.load(self.worldFolder.getFolderPath("data") + "/scoreboard.dat")
+            else:
+                root_tag = nbt.TAG_Compound()
+                root_tag["data"] = nbt.TAG_Compound()
+                root_tag["data"]["Objectives"] = nbt.TAG_List()
+                root_tag["data"]["PlayerScores"] = nbt.TAG_List()
+                root_tag["data"]["Teams"] = nbt.TAG_List()
+                root_tag["data"]["DisplaySlots"] = nbt.TAG_List()
+                self.save_scoreboard(root_tag)
+                return root_tag
         else:
             self.worldFolder.getFolderPath("data")
             root_tag = nbt.TAG_Compound()
@@ -1448,7 +1446,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         :param score: The scoreboard
         :type score: pymclevel.nbt.TAG_Compound()
         '''
-        score.save(self.worldFolder.getFolderPath("data")+"/scoreboard.dat")
+        score.save(self.worldFolder.getFolderPath("data") + "/scoreboard.dat")
 
     def init_player_data(self):
         dat_name = self.dat_name
@@ -1456,34 +1454,34 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         if self.oldPlayerFolderFormat:
             for p in self.players:
                 if p != "Player":
-                    player_data_file = os.path.join(self.worldFolder.getFolderPath("players"), p+".dat")
+                    player_data_file = os.path.join(self.worldFolder.getFolderPath("players"), p + ".dat")
                     player_data[p] = nbt.load(player_data_file)
                 else:
-                    data = nbt.load(self.worldFolder.getFilePath("%s.dat"%dat_name))
+                    data = nbt.load(self.worldFolder.getFilePath("%s.dat" % dat_name))
                     player_data[p] = data["Data"]["Player"]
         else:
             for p in self.players:
                 if p != "Player":
-                    player_data_file = os.path.join(self.worldFolder.getFolderPath("playerdata"), p+".dat")
+                    player_data_file = os.path.join(self.worldFolder.getFolderPath("playerdata"), p + ".dat")
                     player_data[p] = nbt.load(player_data_file)
                 else:
-                    data = nbt.load(self.worldFolder.getFilePath("%s.dat"%dat_name))
+                    data = nbt.load(self.worldFolder.getFilePath("%s.dat" % dat_name))
                     player_data[p] = data["Data"]["Player"]
 
-        #player_data = []
-        #for p in [x for x in os.listdir(self.playersFolder) if x.endswith(".dat")]:
-                #player_data.append(player.Player(self.playersFolder+"\\"+p))
+        # player_data = []
+        # for p in [x for x in os.listdir(self.playersFolder) if x.endswith(".dat")]:
+        # player_data.append(player.Player(self.playersFolder+"\\"+p))
         return player_data
 
     def save_player_data(self, player_data):
         if self.oldPlayerFolderFormat:
             for p in player_data.keys():
                 if p != "Player":
-                    player_data[p].save(os.path.join(self.worldFolder.getFolderPath("players"), p+".dat"))
+                    player_data[p].save(os.path.join(self.worldFolder.getFolderPath("players"), p + ".dat"))
         else:
             for p in player_data.keys():
                 if p != "Player":
-                    player_data[p].save(os.path.join(self.worldFolder.getFolderPath("playerdata"), p+".dat"))
+                    player_data[p].save(os.path.join(self.worldFolder.getFolderPath("playerdata"), p + ".dat"))
 
     @property
     def bounds(self):
@@ -1585,7 +1583,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
 
         return s
 
-    dirhashes = [_dirhash(n) for n in xrange(64)]
+    dirhashes = [_dirhash(n) for n in range(64)]
 
     def _oldChunkFilename(self, cx, cz):
         return self.worldFolder.getFilePath(
@@ -1780,9 +1778,9 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         :type z: int
         :rtype: int
         '''
-        biomes = self.getChunk(int(x/16),int(z/16)).root_tag["Level"]["Biomes"].value
-        xChunk = int(x/16) * 16
-        zChunk = int(z/16) * 16
+        biomes = self.getChunk(int(x / 16), int(z / 16)).root_tag["Level"]["Biomes"].value
+        xChunk = int(x / 16) * 16
+        zChunk = int(z / 16) * 16
         return int(biomes[(z - zChunk) * 16 + (x - xChunk)])
 
     def setBiomeAt(self, x, z, biomeID):
@@ -1796,9 +1794,9 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         :param biomeID: The wanted biome ID 
         :type biomeID: int
         '''
-        biomes = self.getChunk(int(x/16), int(z/16)).root_tag["Level"]["Biomes"].value
-        xChunk = int(x/16) * 16
-        zChunk = int(z/16) * 16
+        biomes = self.getChunk(int(x / 16), int(z / 16)).root_tag["Level"]["Biomes"].value
+        xChunk = int(x / 16) * 16
+        zChunk = int(z / 16) * 16
         biomes[(z - zChunk) * 16 + (x - xChunk)] = biomeID
 
     # --- Entities and TileEntities ---
@@ -1869,7 +1867,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
             return
         x, y, z = TileTick.pos(tickTag)
         try:
-            chunk = self.getChunk(x >> 4,z >> 4)
+            chunk = self.getChunk(x >> 4, z >> 4)
         except(ChunkNotPresent, ChunkMalformed):
             return
         chunk.addTileTick(tickTag)
@@ -2090,7 +2088,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         i = 0
         ret = []
         append = ret.append
-        for cx, cz in itertools.product(xrange(box.mincx, box.maxcx), xrange(box.mincz, box.maxcz)):
+        for cx, cz in itertools.product(range(box.mincx, box.maxcx), range(box.mincz, box.maxcz)):
             i += 1
             if self.containsChunk(cx, cz):
                 self.deleteChunk(cx, cz)
@@ -2197,7 +2195,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
             playerTag["Dimension"] = nbt.TAG_Int(0)
         playerTag["Dimension"].value = d
 
-    def setPlayerPosition(self, (x, y, z), player="Player"):
+    def setPlayerPosition(self, x, y, z, player="Player"):
         '''
         Sets the specified player's position
         
@@ -2338,8 +2336,8 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
 
         playerTag["Inventory"] = nbt.TAG_List()
 
-        playerTag['Motion'] = nbt.TAG_List([nbt.TAG_Double(0) for i in xrange(3)])
-        playerTag['Pos'] = nbt.TAG_List([nbt.TAG_Double([0.5, 2.8, 0.5][i]) for i in xrange(3)])
+        playerTag['Motion'] = nbt.TAG_List([nbt.TAG_Double(0) for i in range(3)])
+        playerTag['Pos'] = nbt.TAG_List([nbt.TAG_Double([0.5, 2.8, 0.5][i]) for i in range(3)])
         playerTag['Rotation'] = nbt.TAG_List([nbt.TAG_Float(0), nbt.TAG_Float(0)])
 
         if playerName != "Player":

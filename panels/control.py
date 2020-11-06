@@ -1,14 +1,15 @@
 from __future__ import unicode_literals
-from config import config
-import release
+
 import platform
 
-from albow import AttrRef, Row, Column
-from albow.resource import get_font
-from albow.controls import Label
-from albow.extended_widgets import HotkeyColumn
 from pygame import key
 
+import release
+from albow import AttrRef, Row, Column
+from albow.controls import Label
+from albow.extended_widgets import HotkeyColumn
+from albow.resource import get_font
+from config import config
 from glbackground import Panel
 
 arch = platform.architecture()[0]
@@ -48,7 +49,7 @@ class ControlPanel(Panel):
                     (config.keys.viewDistance.get(),
                      AttrRef(editor, 'viewDistanceLabelText'), editor.swapViewDistance),
                     (config.keys.quit.get(), "Quit", editor.quit),
-                   ])
+                    ])
 
         buttons = HotkeyColumn(hotkeys, keysColumn, buttonsColumn, item_spacing=2)
 

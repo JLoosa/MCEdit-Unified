@@ -1,9 +1,10 @@
-#-# Modified by D.C.-G. for translation purpose
+# -# Modified by D.C.-G. for translation purpose
+import pygame
+
 from albow import Label
 from albow.translate import _
 from config import config
 from glbackground import GLBackground
-import pygame
 
 
 class NudgeButton(GLBackground):

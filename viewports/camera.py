@@ -1,43 +1,42 @@
 # -*- coding: utf_8 -*-
 # The above line is necessary, unless we want problems with encodings...
 from __future__ import unicode_literals
-import sys
-from compass import CompassOverlay
-from raycaster import TooFarException
-import raycaster
-import keys
-import pygame
 
-import math
 import copy
-import numpy
-from config import config
-import frustum
-import logging
-import glutils
-import mceutils
 import itertools
-import pymclevel
-
-from math import isnan
+import logging
+import math
+import sys
 from datetime import datetime, timedelta
+from math import isnan
 
+import numpy
+import pygame
 from OpenGL import GL
 from OpenGL import GLU
+from pygame import mouse
 
-from albow import alert, AttrRef, Button, Column, input_text, Row, TableColumn, TableView, Widget, CheckBox, \
-    TextFieldWrapped, MenuButton, ChoiceButton, IntInputRow, TextInputRow, showProgress, IntField, ask
+import frustum
+import glutils
+import keys
+import mceutils
+import pymclevel
+import raycaster
+from albow import alert, AttrRef, Button, Column, input_text, Row, TableColumn, TableView, Widget, CheckBox, TextFieldWrapped, IntField, ask
 from albow.controls import Label, ValueDisplay
 from albow.dialogs import Dialog, wrapped_label
+from albow.extended_widgets import BasicTextInputRow, CheckBoxLabel, MenuButton, ChoiceButton, IntInputRow, showProgress
 from albow.openglwidgets import GLViewport
-from albow.extended_widgets import BasicTextInputRow, CheckBoxLabel
-from albow.translate import _
 from albow.root import get_top_widget
-from pygame import mouse
+from albow.translate import _
+from compass import CompassOverlay
+from config import config
 from depths import DepthOffset
+from editortools.nbtexplorer import SlotEditor
 from editortools.operation import Operation
 from glutils import gl
-from editortools.nbtexplorer import SlotEditor
+from raycaster import TooFarException
+
 
 class SignEditOperation(Operation):
     def __init__(self, tool, level, tileEntity, backupTileEntity):
@@ -63,6 +62,7 @@ class SignEditOperation(Operation):
         self.level.addTileEntity(self.redoBackupEntityTag)
         return pymclevel.BoundingBox(pymclevel.TileEntity.pos(self.tileEntity), (1, 1, 1))
 
+
 class CameraViewport(GLViewport):
     anchor = "tlbr"
 
@@ -77,7 +77,7 @@ class CameraViewport(GLViewport):
         GLViewport.__init__(self, rect)
 
         # Declare a pseudo showCommands function, since it is called by other objects before its creation in mouse_move.
-        self.showCommands = lambda:None
+        self.showCommands = lambda: None
 
         near = 0.5
         far = 4000.0
@@ -322,7 +322,7 @@ class CameraViewport(GLViewport):
         else:
             x, y = mouse.get_pos()
         if (x < 0 or y < 0 or x >= ws[0] or
-                    y >= ws[1]):
+                y >= ws[1]):
             return 0, 0, 0
 
         y = ws[1] - y
@@ -365,9 +365,9 @@ class CameraViewport(GLViewport):
                     backupTE = copy.deepcopy(te)
                     if te["id"].value == "Sign" or self.editor.level.defsIds.mcedit_ids.get(te["id"].value) in ("DEF_BLOCKS_STANDING_SIGN", "DEFS_BLOCKS_WALL_SIGN"):
                         if "Text1" in te and "Text2" in te and "Text3" in te and "Text4" in te:
-                            for i in xrange(1,5):
-                                if len(te["Text"+str(i)].value) > 32767:
-                                    te["Text"+str(i)] = pymclevel.TAG_String(str(te["Text"+str(i)].value)[:32767])
+                            for i in range(1, 5):
+                                if len(te["Text" + str(i)].value) > 32767:
+                                    te["Text" + str(i)] = pymclevel.TAG_String(str(te["Text" + str(i)].value)[:32767])
                                     changed = True
                     if changed:
                         response = None
@@ -398,7 +398,7 @@ class CameraViewport(GLViewport):
         faceVector = ((projectedPoint[0] - (intProjectedPoint[0] + 0.5)),
                       (projectedPoint[1] - (intProjectedPoint[1] + 0.5)),
                       (projectedPoint[2] - (intProjectedPoint[2] + 0.5))
-        )
+                      )
 
         av = map(abs, faceVector)
 
@@ -575,14 +575,14 @@ class CameraViewport(GLViewport):
         # print mcedit_ids.get(_id, _id)
         # print mcedit_defs.get(mcedit_ids.get(_id, _id), {})
         _id2 = mcedit_defs.get(mcedit_ids.get(_id, _id), {})
-        if isinstance(_id2, (str, unicode)):
+        if isinstance(_id2, (str, bytes)):
             _id = _id2
         id = mcedit_defs.get(mcedit_ids.get(_id, _id), {}).get("name", _id)
 
         addMob(id)
 
         mobTable.selectedIndex = mobs.index(id)
-        oldChoiceCol = Column((Label(_("Current: ") + _mobs.get(id, id), align='l', width=200), ))
+        oldChoiceCol = Column((Label(_("Current: ") + _mobs.get(id, id), align='l', width=200),))
         newChoiceCol = Column((ValueDisplay(width=200, get_value=lambda: _("Change to: ") + selectedMob()), mobTable))
 
         lastRow = Row((Button("OK", action=panel.dismiss), Button("Cancel", action=cancel)))
@@ -622,7 +622,7 @@ class CameraViewport(GLViewport):
                     tileEntity["EntityId"] = pymclevel.TAG_String(selectedMob())
                 if "SpawnData" in tileEntity:
                     # Try to not clear the spawn data, but only update the mob id
-    #                 tileEntity["SpawnData"] = pymclevel.TAG_Compound()
+                    #                 tileEntity["SpawnData"] = pymclevel.TAG_Compound()
                     tag_id = pymclevel.TAG_String(selectedMob())
                     if "id" in tileEntity["SpawnData"]:
                         tag_id.name = "id"
@@ -642,18 +642,18 @@ class CameraViewport(GLViewport):
                                 potential["Type"] = pymclevel.TAG_String(selectedMob())
                             # We also can change some other values in the Properties tag, but it is useless in MC 1.8+.
                             # The fact is this data will not be updated by the game after the mob type is changed, but the old mob will not spawn.
-    #                         put_entityid = False
-    #                         put_id = False
-    #                         if "EntityId" in potential["Properties"] and potential["Properties"]["EntityId"].value == id:
-    #                             put_entityid = True
-    #                         if "id" in potential["Properties"] and potential["Properties"]["id"].value == id:
-    #                             put_id = True
-    #                         new_props = pymclevel.TAG_Compound()
-    #                         if put_entityid:
-    #                             new_props["EntityId"] = pymclevel.TAG_String(selectedMob())
-    #                         if put_id:
-    #                             new_props["id"] = pymclevel.TAG_String(selectedMob())
-    #                         potential["Properties"] = new_props
+            #                         put_entityid = False
+            #                         put_id = False
+            #                         if "EntityId" in potential["Properties"] and potential["Properties"]["EntityId"].value == id:
+            #                             put_entityid = True
+            #                         if "id" in potential["Properties"] and potential["Properties"]["id"].value == id:
+            #                             put_id = True
+            #                         new_props = pymclevel.TAG_Compound()
+            #                         if put_entityid:
+            #                             new_props["EntityId"] = pymclevel.TAG_String(selectedMob())
+            #                         if put_id:
+            #                             new_props["id"] = pymclevel.TAG_String(selectedMob())
+            #                         potential["Properties"] = new_props
             op = MonsterSpawnerEditOperation(self.editor, self.editor.level)
             self.editor.addOperation(op)
             if op.canUndo:
@@ -736,7 +736,7 @@ class CameraViewport(GLViewport):
         else:
             discTable.selectedIndex = discs[id] - 2255
 
-        oldChoiceCol = Column((Label(_("Current: ") + id, align='l', width=200), ))
+        oldChoiceCol = Column((Label(_("Current: ") + id, align='l', width=200),))
         newChoiceCol = Column((ValueDisplay(width=200, get_value=lambda: _("Change to: ") + selectedDisc(discTable.selectedIndex)), discTable))
 
         lastRow = Row((Button("OK", action=panel.dismiss), Button("Cancel", action=cancel)))
@@ -836,7 +836,7 @@ class CameraViewport(GLViewport):
 
         noteTable.selectedIndex = id
 
-        oldChoiceCol = Column((Label(_("Current: ") + notes[id], align='l', width=200), ))
+        oldChoiceCol = Column((Label(_("Current: ") + notes[id], align='l', width=200),))
         newChoiceCol = Column((ValueDisplay(width=200, get_value=lambda: _("Change to: ") + selectedNote()), noteTable))
 
         lastRow = Row((Button("OK", action=panel.dismiss), Button("Cancel", action=cancel)))
@@ -880,7 +880,7 @@ class CameraViewport(GLViewport):
         tileEntity = self.editor.level.tileEntityAt(*point)
         undoBackupEntityTag = copy.deepcopy(tileEntity)
 
-        linekeys = ["Text" + str(i) for i in xrange(1, 5)]
+        linekeys = ["Text" + str(i) for i in range(1, 5)]
 
         # From version 1.8, signs accept Json format.
         # 1.9 does no more support the old raw string fomat.
@@ -888,12 +888,12 @@ class CameraViewport(GLViewport):
             splitVersion = self.editor.level.gameVersionNumber.split('.')
         else:
             splitVersion = self.editor.level.gamePlatform.split('.')
-        newFmtVersion = ['1','9']
+        newFmtVersion = ['1', '9']
         fmt = ""
         json_fmt = False
 
-        f = lambda a,b: (a + (['0'] * max(len(b) - len(a), 0)), b + (['0'] * max(len(a) - len(b), 0)))
-        if False not in map(lambda x,y: (int(x) if x.isdigit() else x) >= (int(y) if y.isdigit() else y),*f(splitVersion, newFmtVersion))[:2]:
+        f = lambda a, b: (a + (['0'] * max(len(b) - len(a), 0)), b + (['0'] * max(len(a) - len(b), 0)))
+        if False not in map(lambda x, y: (int(x) if x.isdigit() else x) >= (int(y) if y.isdigit() else y), *f(splitVersion, newFmtVersion))[:2]:
             json_fmt = True
             fmt = '{"text":""}'
 
@@ -916,7 +916,7 @@ class CameraViewport(GLViewport):
             oneText = True
             text_parts = tileEntity["Text"].value.split("\n")
             for i, text_part in enumerate(text_parts):
-                tileEntity["Text"+str(i+1)] = pymclevel.TAG_String(text_part)
+                tileEntity["Text" + str(i + 1)] = pymclevel.TAG_String(text_part)
         lineFields = [TextFieldWrapped(width=400) for l in linekeys]
         for l, f in zip(linekeys, lineFields):
             if l not in tileEntity:
@@ -954,7 +954,7 @@ class CameraViewport(GLViewport):
         ]
 
         def menu_picked(index):
-            c = u"§%d"%index
+            c = u"§%d" % index
             currentField = panel.focus_switch.focus_switch
             if currentField.insertion_step is not None:
                 currentField.text = currentField.text[:currentField.insertion_step] + c + currentField.text[currentField.insertion_step:]
@@ -973,7 +973,7 @@ class CameraViewport(GLViewport):
                 u_fmt = u'%s'
             for l, f in zip(linekeys, lineFields):
                 oldText = fmt.format(tileEntity[l])
-                tileEntity[l] = pymclevel.TAG_String(u_fmt%f.value[:255])
+                tileEntity[l] = pymclevel.TAG_String(u_fmt % f.value[:255])
                 if fmt.format(tileEntity[l]) != oldText and not unsavedChanges:
                     unsavedChanges = True
             if oneText:
@@ -1116,10 +1116,10 @@ class CameraViewport(GLViewport):
         trackOutput = CheckBox()
 
         # Fix for the '§ is Ä§' issue
-#         try:
-#             commandField.value = tileEntity["Command"].value.decode("unicode-escape")
-#         except:
-#             commandField.value = tileEntity["Command"].value
+        #         try:
+        #             commandField.value = tileEntity["Command"].value.decode("unicode-escape")
+        #         except:
+        #             commandField.value = tileEntity["Command"].value
         commandField.value = tileEntity["Command"].value
 
         oldCommand = commandField.value
@@ -1247,8 +1247,9 @@ class CameraViewport(GLViewport):
         def selectTableRow(i, evt):
             chestWidget.selectedItemIndex = i
             # Disabling the item selector for now, since we need PE items resources.
-#             if evt.num_clicks > 1:
-#                 selectButtonAction()
+
+        #             if evt.num_clicks > 1:
+        #                 selectButtonAction()
 
         def changeValue(data):
             s, i, c, d = data
@@ -1257,7 +1258,6 @@ class CameraViewport(GLViewport):
             chestWidget.id = i
             chestWidget.Count = int(c)
             chestWidget.Damage = int(d)
-
 
         chestItemTable.num_rows = lambda: len(tileEntityTag["Items"])
         chestItemTable.row_data = getRowData
@@ -1281,7 +1281,7 @@ class CameraViewport(GLViewport):
             # * The 'human' IDs: Stone, Glass, Swords...
             # * The MC ones: minecraft:stone, minecraft:air...
             # * The PE ones: 0:0, 1:0...
-#             Button("Select", action=selectButtonAction)
+            #             Button("Select", action=selectButtonAction)
         )
 
         def deleteFromWorld():
@@ -1448,7 +1448,7 @@ class CameraViewport(GLViewport):
         titleLabel = Label("Edit Flower Pot")
         Item = TextFieldWrapped(width=300, text=tileEntity["Item"].value)
         oldItem = Item.value
-        Data = IntField(width=300,text=str(tileEntity["Data"].value))
+        Data = IntField(width=300, text=str(tileEntity["Data"].value))
         oldData = Data.value
 
         class FlowerPotEditOperation(Operation):
@@ -1698,7 +1698,7 @@ class CameraViewport(GLViewport):
                 #    event.get(MOUSEMOTION)
                 #    self.oldMousePosition = (self.startingMousePosition)
 
-        #if config.settings.showCommands.get():
+        # if config.settings.showCommands.get():
 
     def activeevent(self, evt):
         if evt.state & 0x2 and evt.gain != 0:
@@ -1706,7 +1706,7 @@ class CameraViewport(GLViewport):
 
     @property
     def tooltipText(self):
-        #if self.hoveringCommandBlock[0] and (self.editor.currentTool is self.editor.selectionTool and self.editor.selectionTool.infoKey == 0):
+        # if self.hoveringCommandBlock[0] and (self.editor.currentTool is self.editor.selectionTool and self.editor.selectionTool.infoKey == 0):
         #    return self.hoveringCommandBlock[1] or "[Empty]"
         if self.editor.currentTool is self.editor.selectionTool and self.editor.selectionTool.infoKey == 0 and config.settings.showQuickBlockInfo.get():
             point, face = self.blockFaceUnderCursor
@@ -1723,14 +1723,14 @@ class CameraViewport(GLViewport):
                              (-4000.0, 0.0, 4000.0),
                              (4000.0, 0.0, 4000.0),
                              (4000.0, 0.0, -4000.0),
-                            ), dtype='float32')
+                             ), dtype='float32')
 
     def updateFloorQuad(self):
         floorQuad = ((-4000.0, 0.0, -4000.0),
                      (-4000.0, 0.0, 4000.0),
                      (4000.0, 0.0, 4000.0),
                      (4000.0, 0.0, -4000.0),
-        )
+                     )
 
         floorQuad = numpy.array(floorQuad, dtype='float32')
         if self.editor.renderer.inSpace():
@@ -1748,10 +1748,10 @@ class CameraViewport(GLViewport):
         minz = minx = -256
         maxz = maxx = 256
         append = lines.append
-        for x in xrange(minx, maxx + 1, 16):
+        for x in range(minx, maxx + 1, 16):
             append((x, 0, minz))
             append((x, 0, maxz))
-        for z in xrange(minz, maxz + 1, 16):
+        for z in range(minz, maxz + 1, 16):
             append((minx, 0, z))
             append((maxx, 0, z))
 
@@ -1973,7 +1973,7 @@ class CameraViewport(GLViewport):
 
             x = getattr(getattr(self.editor, 'copyPanel', None), 'width', 0)
             if x:
-                x = x /float( self.editor.mainViewport.width)
+                x = x / float(self.editor.mainViewport.width)
             self._compass.x = x
             self._compass.yawPitch = self.yaw, 0
 
@@ -1986,12 +1986,13 @@ class CameraViewport(GLViewport):
             self._compass = None
 
     _compass = None
-    
+
+
 class BlockInfoParser(object):
     last_level = None
     nbt_ending = "\n\nPress ALT for NBT"
     edit_ending = ", Double-Click to Edit"
-    
+
     @classmethod
     def get_parsers(cls, editor):
         cls.last_level = editor.level
@@ -2008,22 +2009,22 @@ class BlockInfoParser(object):
                 for block in blocks:
                     parser_map[block] = instance.parse_info
         return parser_map
-    
+
     def getBlocks(self):
         raise NotImplementedError()
-    
+
     def parse_info(self, pos):
         raise NotImplementedError()
 
 
 class SpawnerInfoParser(BlockInfoParser):
-    
+
     def __init__(self, level):
         self.level = level
-        
+
     def getBlocks(self):
         return self.level.materials["minecraft:mob_spawner"].ID
-    
+
     def parse_info(self, pos):
         tile_entity = self.level.tileEntityAt(*pos)
         if tile_entity:
@@ -2038,44 +2039,45 @@ class SpawnerInfoParser(BlockInfoParser):
                     value = id.value
                 return "{} Spawner{}{}".format(value, self.nbt_ending, self.edit_ending)
         return "[Empty]{}{}".format(self.nbt_ending, self.edit_ending)
-    
+
+
 class JukeboxInfoParser(BlockInfoParser):
     id_records = {
-               2256: "13",
-               2257: "Cat",
-               2258: "Blocks",
-               2259: "Chirp",
-               2260: "Far",
-               2261: "Mall",
-               2262: "Mellohi",
-               2263: "Stal",
-               2264: "Strad",
-               2265: "Ward",
-               2266: "11",
-               2267: "Wait"
+        2256: "13",
+        2257: "Cat",
+        2258: "Blocks",
+        2259: "Chirp",
+        2260: "Far",
+        2261: "Mall",
+        2262: "Mellohi",
+        2263: "Stal",
+        2264: "Strad",
+        2265: "Ward",
+        2266: "11",
+        2267: "Wait"
     }
-    
+
     name_records = {
-                "minecraft:record_13": "13",
-                "minecraft:record_cat": "Cat",
-                "minecraft:record_blocks": "Blocks",
-                "minecraft:record_chirp": "Chirp",
-                "minecraft:record_far": "Far",
-                "minecraft:record_mall": "Mall",
-                "minecraft:record_mellohi": "Mellohi",
-                "minecraft:record_stal": "Stal",
-                "minecraft:record_strad": "Strad",
-                "minecraft:record_ward": "Ward",
-                "minecraft:record_11": "11",
-                "minecraft:record_wait": "Wait"
+        "minecraft:record_13": "13",
+        "minecraft:record_cat": "Cat",
+        "minecraft:record_blocks": "Blocks",
+        "minecraft:record_chirp": "Chirp",
+        "minecraft:record_far": "Far",
+        "minecraft:record_mall": "Mall",
+        "minecraft:record_mellohi": "Mellohi",
+        "minecraft:record_stal": "Stal",
+        "minecraft:record_strad": "Strad",
+        "minecraft:record_ward": "Ward",
+        "minecraft:record_11": "11",
+        "minecraft:record_wait": "Wait"
     }
-    
+
     def __init__(self, level):
         self.level = level
-        
+
     def getBlocks(self):
         return self.level.materials["minecraft:jukebox"].ID
-    
+
     def parse_info(self, pos):
         tile_entity = self.level.tileEntityAt(*pos)
         if tile_entity:
@@ -2088,19 +2090,20 @@ class JukeboxInfoParser(BlockInfoParser):
                 if value in self.name_records:
                     return "{} Record{}{}".format(self.name_records[value], self.nbt_ending, self.edit_ending)
         return "[No Record]{}{}".format(self.nbt_ending, self.edit_ending)
-    
+
+
 class CommandBlockInfoParser(BlockInfoParser):
-    
+
     def __init__(self, level):
         self.level = level
-        
+
     def getBlocks(self):
         return [
-                self.level.materials["minecraft:command_block"].ID,
-                self.level.materials["minecraft:repeating_command_block"].ID,
-                self.level.materials["minecraft:chain_command_block"].ID
-                ]
-    
+            self.level.materials["minecraft:command_block"].ID,
+            self.level.materials["minecraft:repeating_command_block"].ID,
+            self.level.materials["minecraft:chain_command_block"].ID
+        ]
+
     def parse_info(self, pos):
         tile_entity = self.level.tileEntityAt(*pos)
         if tile_entity:
@@ -2113,29 +2116,31 @@ class CommandBlockInfoParser(BlockInfoParser):
                 except:
                     return u"[Command Block Parsing Failed]"
         return u"[Empty Command Block]{}{}".format(self.nbt_ending, self.edit_ending)
-    
+
+
 class ContainerInfoParser(BlockInfoParser):
-    
+
     def __init__(self, level):
         self.level = level
-        
+
     def getBlocks(self):
         return [
-                self.level.materials["minecraft:dispenser"].ID,
-                self.level.materials["minecraft:chest"].ID,
-                self.level.materials["minecraft:furnace"].ID,
-                self.level.materials["minecraft:lit_furnace"].ID,
-                self.level.materials["minecraft:trapped_chest"].ID,
-                self.level.materials["minecraft:hopper"].ID,
-                self.level.materials["minecraft:dropper"].ID,
-                self.level.materials["minecraft:brewing_stand"].ID
-                ]
-        
+            self.level.materials["minecraft:dispenser"].ID,
+            self.level.materials["minecraft:chest"].ID,
+            self.level.materials["minecraft:furnace"].ID,
+            self.level.materials["minecraft:lit_furnace"].ID,
+            self.level.materials["minecraft:trapped_chest"].ID,
+            self.level.materials["minecraft:hopper"].ID,
+            self.level.materials["minecraft:dropper"].ID,
+            self.level.materials["minecraft:brewing_stand"].ID
+        ]
+
     def parse_info(self, pos):
         tile_entity = self.level.tileEntityAt(*pos)
         if tile_entity:
             return "Contains {} Items {}{}".format(len(tile_entity.get("Items", [])), self.nbt_ending, self.edit_ending)
         return "[Empty Container]{}{}".format(self.nbt_ending, self.edit_ending)
+
 
 def unproject(x, y, z):
     try:

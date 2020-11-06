@@ -170,21 +170,23 @@ def fillBlocks(self, box, blockType, blockData = 0):
 Copyright 2010 David Rio Vierra
 """
 
-from indev import MCIndevLevel
-from infiniteworld import MCInfdevOldLevel
-from javalevel import MCJavaLevel
-from logging import getLogger
 import logging
-from directories import minecraftSaveFileDir
-import nbt
-from numpy import fromstring
 import os
-from pocket import PocketWorld
-from leveldbpocket import PocketLeveldbWorld
-from pymclevel import leveldbpocket
-from schematic import INVEditChest, MCSchematic, ZipSchematic
 import sys
 import traceback
+from logging import getLogger
+
+from numpy import fromstring
+
+import pymclevel.nbt as nbt
+from directories import minecraftSaveFileDir
+from pymclevel import leveldbpocket
+from pymclevel.indev import MCIndevLevel
+from pymclevel.infiniteworld import MCInfdevOldLevel
+from pymclevel.javalevel import MCJavaLevel
+from pymclevel.leveldbpocket import PocketLeveldbWorld
+from pymclevel.pocket import PocketWorld
+from pymclevel.schematic import INVEditChest, MCSchematic, ZipSchematic
 
 log = getLogger(__name__)
 
@@ -230,7 +232,7 @@ def fromFile(filename, loadInfinite=True, readonly=False):
     if os.path.isdir(filename):
         logging.exception("World load failed, trying to open a directory instead of a file")
 
-    f = file(filename, 'rb')
+    f = open(filename, 'rb')
     rawdata = f.read()
     f.close()
     if len(rawdata) < 4:
@@ -257,7 +259,7 @@ def fromFile(filename, loadInfinite=True, readonly=False):
             compressed = False
             unzippedData = rawdata
 
-    #data =
+    # data =
     data = unzippedData
     if MCJavaLevel._isDataLevel(data):
         log.info(u"Detected compressed Java-style level")

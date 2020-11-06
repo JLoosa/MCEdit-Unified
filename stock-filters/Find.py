@@ -1,13 +1,14 @@
 # written by texelelf
-#-# Adding a result pages, and NBT edit stuff
+# -# Adding a result pages, and NBT edit stuff
+import ast
+
+from albow import alert, ask
+from directories import getDocumentsFolder
+# Let import the stuff to save files.
+from mcplatform import askSaveFile
 from pymclevel import TAG_Byte, TAG_Short, TAG_Int, TAG_Compound, TAG_List, TAG_String, TAG_Double, TAG_Float, TAG_Long, \
     TAG_Byte_Array, TAG_Int_Array
 from pymclevel.box import BoundingBox
-from albow import alert, ask
-import ast
-# Let import the stuff to save files.
-from mcplatform import askSaveFile
-from directories import getDocumentsFolder
 
 # The RECODR_UNDO is not yet usable...
 # RECORD_UNDO = False
@@ -33,9 +34,9 @@ inputs = [(("Match by:", ("TileEntity", "Entity", "Block")),
            ("Operation:", ("Start New Search", "Dump Found Coordinates")),
            ("Options", "title")),
 
-           (("Results", "title"), ("", ["NBTTree", {}, 0, False])), # [str name_of_widget_type, dict default_data, int page_to_goback, bool show_load_button]
+          (("Results", "title"), ("", ["NBTTree", {}, 0, False])),  # [str name_of_widget_type, dict default_data, int page_to_goback, bool show_load_button]
 
-           (("Documentation", "title"),
+          (("Documentation", "title"),
            ("This filter is designed to search for NBT in either Entities or TileEntities.\n"
             "It can also be used to search for blocks.\n\"Match by\" determines which type of object "
             "is prioritized during the search.\nEntites and TileEntities will search relatively quickly, "
@@ -47,16 +48,18 @@ inputs = [(("Match by:", ("TileEntity", "Entity", "Block")),
             "matching can also optionally match block data, e.g. matching all torches, or only torches facing "
             "a specific direction.\n\"Start New Search\" will re-search through the selected volume, while \"Find Next\" "
             "will iterate through the search results of the previous search.", "label"))
-]
+          ]
 
-tree = None # the tree widget
-chunks = None # the chunks used to perform the search
-bbox = None # the bouding box to search in
-by = None # what is searched: Entities, TileEntities or blocs
+tree = None  # the tree widget
+chunks = None  # the chunks used to perform the search
+bbox = None  # the bouding box to search in
+by = None  # what is searched: Entities, TileEntities or blocs
+
 
 def set_tree(t):
     global tree
     tree = t
+
 
 # Use this method to overwrite the NBT tree default behaviour on mouse clicks
 def nbttree_mouse_down(e):
@@ -71,14 +74,18 @@ def nbttree_mouse_down(e):
             editor.selectionTool.setSelection(newBox)
     tree.treeRow.__class__.mouse_down(tree.treeRow, e)
 
+
 def get_chunks():
     return chunks
+
 
 def get_box():
     return bbox
 
+
 def get_by():
     return by
+
 
 # Use this method to overwrite the NBT tree 'OK' button default behaviour
 def nbt_ok_action():
@@ -102,6 +109,7 @@ def nbt_ok_action():
             if (x, y, z) in box:
                 chunk.dirty = True
 
+
 try:
     search
 except NameError:
@@ -113,7 +121,8 @@ def FindTagS(nbtData, name, value, tagtype):
         if name in nbtData.name or name == "":
             if value == "":
                 if type(nbtData) is tagtype or tagtype == 11:
-                    print "found in pre-area"
+                    print
+                    "found in pre-area"
                     return True
         if type(nbtData) is TAG_List:
             list = True
@@ -131,7 +140,8 @@ def FindTagS(nbtData, name, value, tagtype):
                 if name in nbtData[tag].name or name == "":
                     if value in unicode(nbtData[tag].value):
                         if type(nbtData[tag]) is tagtype or tagtype == 11:
-                            print "found in list/compound"
+                            print
+                            "found in list/compound"
                             return True
         else:
             return False
@@ -139,14 +149,15 @@ def FindTagS(nbtData, name, value, tagtype):
         if name in nbtData.name or name == "":
             if value in unicode(nbtData.value):
                 if type(nbtData[tag]) is tagtype or tagtype == 11:
-                    print "found outside"
+                    print
+                    "found outside"
                     return True
     return False
 
 
 def FindTagI(nbtData, name, value, tagtype):
     if type(nbtData) is TAG_List or type(nbtData) is TAG_Compound:
-        if name in (u"%s"%nbtData.name).upper() or name == "":
+        if name in (u"%s" % nbtData.name).upper() or name == "":
             if value == "":
                 if type(nbtData) is tagtype or tagtype == 11:
                     return True
@@ -163,14 +174,14 @@ def FindTagI(nbtData, name, value, tagtype):
                 if FindTagI(nbtData[tag], name, value, tagtype):
                     return True
             else:
-                if name in (u"%s"%nbtData[tag].name).upper() or name == "":
+                if name in (u"%s" % nbtData[tag].name).upper() or name == "":
                     if value in unicode(nbtData[tag].value).upper():
                         if type(nbtData[tag]) is tagtype or tagtype == 11:
                             return True
         else:
             return False
     else:
-        if name in (u"%s"%nbtData.name).upper() or name == "":
+        if name in (u"%s" % nbtData.name).upper() or name == "":
             if value in unicode(nbtData.value).upper():
                 if type(nbtData[tag]) is tagtype or tagtype == 11:
                     return True
@@ -279,17 +290,18 @@ def perform(level, box, options):
             if answer == "Save":
                 fName = askSaveFile(getDocumentsFolder(), "Save to file...", "find.txt", 'TXT\0*.txt\0\0', 'txt')
                 if fName:
-                    fData = "# MCEdit find output\n# Search options:\n# Match by: %s\n# Match block type: %s\n# Match block: %s\n# Match block data: %s\n# Match tile entities: %s\n# Match Tag Name:%s\n# Match Tag Value: %s\n# Case insensitive: %s\n# Match Tag Type: %s\n\n%s"%(by, matchtype, matchblock, matchdata, matchtile, matchname, matchval, caseSensitive, matchtagtype, result)
+                    fData = "# MCEdit find output\n# Search options:\n# Match by: %s\n# Match block type: %s\n# Match block: %s\n# Match block data: %s\n# Match tile entities: %s\n# Match Tag Name:%s\n# Match Tag Value: %s\n# Case insensitive: %s\n# Match Tag Type: %s\n\n%s" % (
+                    by, matchtype, matchblock, matchdata, matchtile, matchname, matchval, caseSensitive, matchtagtype, result)
                     open(fName, 'w').write(fData)
         else:
             treeData = {}
             # To set tooltip text to the items the need it, use a dict: {"value": <item to be added to the tree>, "tooltipText": "Some text"}
             for i in range(len(search)):
                 if by == trn._('Block'):
-                    treeData[u"%s"%(search[i],)] = {"value": datas[i], "tooltipText": "Double-click to go to this item."}
+                    treeData[u"%s" % (search[i],)] = {"value": datas[i], "tooltipText": "Double-click to go to this item."}
                 elif by == trn._('Entity'):
-                    treeData[u"%s"%((datas[i]['Pos'][0].value, datas[i]['Pos'][1].value, datas[i]['Pos'][2].value),)] = {"value": datas[i], "tooltipText": "Double-click to go to this item."}
+                    treeData[u"%s" % ((datas[i]['Pos'][0].value, datas[i]['Pos'][1].value, datas[i]['Pos'][2].value),)] = {"value": datas[i], "tooltipText": "Double-click to go to this item."}
                 else:
-                    treeData[u"%s"%((datas[i]['x'].value, datas[i]['y'].value, datas[i]['z'].value),)] = {"value": datas[i], "tooltipText": "Double-click to go to this item."}
+                    treeData[u"%s" % ((datas[i]['x'].value, datas[i]['y'].value, datas[i]['z'].value),)] = {"value": datas[i], "tooltipText": "Double-click to go to this item."}
             inputs[1][1][1][1] = {'Data': treeData}
             options[""](inputs[1])

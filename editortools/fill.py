@@ -11,25 +11,26 @@ ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
 WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE."""
-#-# Modified by D.C.-G. for translation purpose
-from OpenGL import GL
 import numpy
-from albow import Label, Button, Column, alert, AttrRef, showProgress, CheckBoxLabel
+# -# Modified by D.C.-G. for translation purpose
+from OpenGL import GL
+
+import pymclevel
+from albow import Label, Button, Column, alert, AttrRef
+from albow.extended_widgets import showProgress, CheckBoxLabel
+from albow.root import get_root
 from albow.translate import _
+from config import config
 from depths import DepthOffset
 from editortools.blockpicker import BlockPicker
 from editortools.blockview import BlockButton
 from editortools.editortool import EditorTool
+from editortools.operation import Operation
 from editortools.tooloptions import ToolOptions
 from glbackground import Panel
 from glutils import Texture
 from mceutils import alertException, setWindowCaption
-from operation import Operation
 from pymclevel.blockrotation import Roll, RotateLeft, FlipVertical, FlipEastWest, FlipNorthSouth
-
-from config import config
-from albow.root import get_root
-import pymclevel
 
 
 class BlockFillOperation(Operation):
@@ -89,7 +90,7 @@ class FillToolPanel(Panel):
         replaceLabel.tooltipText = _("Shortcut: {0}").format(_(rollkey))
         replaceLabel.align = "c"
         self.noDataCheckBox = CheckBoxLabel("Keep Data Intact", ref=AttrRef(self.tool, "noData"))
-        
+
         col = (self.fillWithLabel,
                self.blockButton,
                # swapRow,
@@ -153,8 +154,8 @@ class FillToolOptions(ToolOptions):
         ToolOptions.__init__(self, name='Panel.FillToolOptions')
         self.tool = tool
         self.autoChooseCheckBoxFill = CheckBoxLabel("Open Block Picker for Fill",
-                                                ref=config.fill.chooseBlockImmediately,
-                                                tooltipText="When the fill tool is chosen, prompt for a block type.")
+                                                    ref=config.fill.chooseBlockImmediately,
+                                                    tooltipText="When the fill tool is chosen, prompt for a block type.")
         self.autoChooseCheckBoxReplace = CheckBoxLabel("Open Block Picker for Replace",
                                                        ref=config.fill.chooseBlockImmediatelyReplace,
                                                        tooltipText="When the replace tool is chosen, prompt for a block type.")
@@ -176,9 +177,8 @@ class FillTool(EditorTool):
         self.optionsPanel = FillToolOptions(self)
         self.pickBlockKey = 0
         self.root = get_root()
-        
-    noData = False
 
+    noData = False
 
     @property
     def blockInfo(self):
@@ -251,9 +251,9 @@ class FillTool(EditorTool):
             if self.replacing:
                 self.replaceBlockInfo = self.panel.replaceBlockButton.blockInfo
                 if self.blockInfo.wildcard:
-                    print "Wildcard replace"
+                    print("Wildcard replace")
                     blocksToReplace = []
-                    for i in xrange(16):
+                    for i in range(16):
                         blocksToReplace.append(self.editor.level.materials.blockWithID(self.blockInfo.ID, i))
                 else:
                     blocksToReplace = [self.blockInfo]
@@ -276,7 +276,7 @@ class FillTool(EditorTool):
         if blocksOnly:
             bid = [self._blockInfo.ID]
             data = [self._blockInfo.blockData]
-            Roll(bid,data)
+            Roll(bid, data)
             self.blockInfo = self.editor.level.materials[(bid[0], data[0])]
         else:
             self.toggleReplacing()
@@ -287,23 +287,23 @@ class FillTool(EditorTool):
             data = [self._blockInfo.blockData]
             yaw = int(self.editor.mainViewport.yaw) % 360
             if (45 <= yaw < 135) or (225 < yaw <= 315):
-                FlipEastWest(bid,data)
+                FlipEastWest(bid, data)
             else:
-                FlipNorthSouth(bid,data)
+                FlipNorthSouth(bid, data)
             self.blockInfo = self.editor.level.materials[(bid[0], data[0])]
 
     def flip(self, amount=1, blocksOnly=False):
         if blocksOnly:
             bid = [self._blockInfo.ID]
             data = [self._blockInfo.blockData]
-            FlipVertical(bid,data)
+            FlipVertical(bid, data)
             self.blockInfo = self.editor.level.materials[(bid[0], data[0])]
 
     def rotate(self, amount=1, blocksOnly=False):
         if blocksOnly:
             bid = [self._blockInfo.ID]
             data = [self._blockInfo.blockData]
-            RotateLeft(bid,data)
+            RotateLeft(bid, data)
             self.blockInfo = self.editor.level.materials[(bid[0], data[0])]
 
     def toggleReplacing(self):

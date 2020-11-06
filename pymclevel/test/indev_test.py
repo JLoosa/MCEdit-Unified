@@ -1,9 +1,8 @@
 import unittest
-from templevel import TempLevel
 
 from pymclevel.box import BoundingBox
 from pymclevel.entity import Entity, TileEntity
-
+from pymclevel.test.templevel import TempLevel
 
 __author__ = 'Rio'
 

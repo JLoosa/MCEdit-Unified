@@ -1,20 +1,20 @@
 import logging
-import materials
+
+import pymclevel.materials as materials
 
 log = logging.getLogger(__name__)
 
 import numpy
 
-from mclevelbase import exhaust
-import blockrotation
-from box import BoundingBox
-from entity import TileEntity
+from pymclevel.mclevelbase import exhaust
+from pymclevel.box import BoundingBox
+from pymclevel.entity import TileEntity
 
 
 def blockReplaceTable(blocksToReplace):
     blocktable = numpy.zeros((materials.id_limit, 16), dtype='bool')
     for b in blocksToReplace:
-            blocktable[b.ID, b.blockData] = True
+        blocktable[b.ID, b.blockData] = True
     return blocktable
 
 
@@ -123,7 +123,7 @@ def fillBlocksIter(level, box, blockInfo, blocksToReplace=(), noData=False):
         for tileEntityObject in tileEntitiesToEdit:
             chunk.addTileEntity(tileEntityObject)
             blocksList.remove(tileEntityObject)
-        
+
         chunk.chunkChanged(needsLighting)
 
     if len(blocksToReplace):

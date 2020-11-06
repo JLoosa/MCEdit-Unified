@@ -2,38 +2,34 @@
 #
 #   Albow - Root widget
 #
-#---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 
+# -#
+import os
 import sys
+import time
 import traceback
+from datetime import datetime, timedelta
 
 import pygame
-
+from OpenGL import GL
 from pygame import key
-from pygame.locals import *
 from pygame.event import Event
+from pygame.locals import *
 
-from glbackground import *
-import widget
-from widget import Widget
-
-from datetime import datetime, timedelta
+import albow.widget as widget
+import directories
+from albow.dialogs import Dialog, Label, Button, Row, Column
 from albow.dialogs import wrapped_label
 from albow.translate import _
-
-from pymclevel.box import Vector
-
+from albow.widget import Widget
 # -# This need to be changed. We need albow.translate in the config module.
 # -# he solution can be a set of functions wich let us define the needed MCEdit 'config' data
 # -# without importing it.
 # -# It can be a 'config' module built only for albow.
 from config import config
-# -#
-import os
-import directories
-import time
-from dialogs import Dialog, Label, Button, Row, Column
-from OpenGL import GL
+from glbackground import *
+from pymclevel.box import Vector
 
 start_time = datetime.now()
 
@@ -66,14 +62,15 @@ root_widget = None  # Root of the containment hierarchy
 top_widget = None  # Initial dispatch target
 clicked_widget = None  # Target of mouse_drag and mouse_up events
 
-#---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
 
 
 class Cancel(Exception):
     pass
 
 
-#---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 
 
 def set_modifier(modifier_key, value):
@@ -100,7 +97,7 @@ def get_focus():
     return top_widget.get_focus()
 
 
-#---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 
 
 class RootWidget(Widget):
@@ -207,7 +204,7 @@ class RootWidget(Widget):
         global top_widget, clicked_widget
         is_modal = modal_widget is not None
         modal_widget = modal_widget or self
-        #from OpenGL import GL
+        # from OpenGL import GL
 
         try:
             old_top_widget = top_widget
@@ -435,7 +432,7 @@ class RootWidget(Widget):
         if evt.shift and keyname != "Shift":
             newKeyname += "Shift-"
         if (evt.ctrl or evt.cmd) and keyname != "Ctrl":
-             newKeyname += "Ctrl-"
+            newKeyname += "Ctrl-"
         if evt.alt and keyname != "Alt":
             newKeyname += "Alt-"
 
@@ -506,7 +503,7 @@ class RootWidget(Widget):
             if widget:
                 widget.idleevent()
             else:
-                print "Idle ref died!"
+                print("Idle ref died!")
             return bool(widget)
 
         self.idle_handlers = filter(call, self.idle_handlers)
@@ -603,8 +600,8 @@ class RootWidget(Widget):
         return event
 
     def gl_clear(self):
-        #from OpenGL import GL
-        
+        # from OpenGL import GL
+
         bg = self.bg_color
         if bg:
             r = bg[0] / 255.0
@@ -615,16 +612,18 @@ class RootWidget(Widget):
 
     @staticmethod
     def music_end():
-        import music
+        import albow.music as music
 
         music.music_end()
 
     # -# Used for debugging the resize stuff.
+
+
 #    def resized(self, *args, **kwargs):
 #        Widget.resized(self, *args, **kwargs)
 #        print self.size
 
-#---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 
 from bisect import insort
 

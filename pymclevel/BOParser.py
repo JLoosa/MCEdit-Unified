@@ -1,32 +1,35 @@
-import ConfigParser
-from pymclevel import schematic, materials
-from entity import TileEntity
-import nbt
 import logging
-import re
 import os
+import re
 from random import randint
-from directories import getDataDir, getDataFile
+
+import ConfigParser
+
+import pymclevel.nbt as nbt
+from directories import getDataFile
+from pymclevel import schematic, materials
+from pymclevel.entity import TileEntity
 
 log = logging.getLogger(__name__)
 
 # Load the bo3.def file (internal BO3 block names).
 bo3_blocks = {}
-#if not os.path.exists(os.path.join(getDataDir(), 'bo3.def')):
+# if not os.path.exists(os.path.join(getDataDir(), 'bo3.def')):
 if not os.path.exists(getDataFile('bo3.def')):
-    log.warning('The `bo3.def` file is missing in `%s`. The BO3 support will not be complete...'%getDataFile())
+    log.warning('The `bo3.def` file is missing in `%s`. The BO3 support will not be complete...' % getDataFile())
 else:
-    #bo3_blocks.update([(a, int(b)) for a, b in re.findall(r'^([A-Z0-9_]+)\(([0-9]*).*\)', open(os.path.join(getDataDir(), 'bo3.def')).read(), re.M)])
+    # bo3_blocks.update([(a, int(b)) for a, b in re.findall(r'^([A-Z0-9_]+)\(([0-9]*).*\)', open(os.path.join(getDataDir(), 'bo3.def')).read(), re.M)])
     bo3_blocks.update([(a, int(b)) for a, b in re.findall(r'^([A-Z0-9_]+)\(([0-9]*).*\)', open(getDataFile('bo3.def')).read(), re.M)])
-    log.debug('BO3 block definitions loaded. %s entries found'%len(bo3_blocks.keys()))
+    log.debug('BO3 block definitions loaded. %s entries found' % len(bo3_blocks.keys()))
 
 # find another way for this.
 # keys are block ids in uppercase, values are tuples for ranges, lists for exact states
-corrected_states = {'CHEST':(2,6)}
+corrected_states = {'CHEST': (2, 6)}
+
 
 class BO3:
     def __init__(self, filename=''):
-        if isinstance(filename, (str, unicode)):
+        if isinstance(filename, (str, bytes)):
             self.delta_x, self.delta_y, self.delta_z = 0, 0, 0
             self.size_x, self.size_y, self.size_z = 0, 0, 0
             map_block = {}
@@ -49,8 +52,9 @@ class BO3:
                 if z + self.delta_z >= self.size_z:
                     self.size_z = z + self.delta_z + 1
                 if debug:
-                    output_str = '; '.join(('get_delta: %s, %s %s'%(x, y, z), 'deltas: %s, %s, %s'%(self.delta_x, self.delta_y, self.delta_z), 'size: %s, %s %s'%(self.size_x, self.size_y, self.size_z)))
-                    print output_str
+                    output_str = '; '.join(
+                        ('get_delta: %s, %s %s' % (x, y, z), 'deltas: %s, %s, %s' % (self.delta_x, self.delta_y, self.delta_z), 'size: %s, %s %s' % (self.size_x, self.size_y, self.size_z)))
+                    print(output_str)
                     if f_obj != None:
                         f_obj.write(output_str)
 
@@ -71,8 +75,8 @@ class BO3:
                     if os.path.exists(f_name):
                         nbt_data = nbt.load(f_name)
                     else:
-                        print 'Could not find %s'%args[4]
-                        print '  Canonical path: %s'%f_name
+                        print('Could not find %s' % args[4])
+                        print('  Canonical path: %s' % f_name)
                 x = int(x) + self.delta_x
                 y = int(y) + self.delta_y
                 z = int(z) + self.delta_z
@@ -111,7 +115,7 @@ class BO3:
                             break
                         obj = []
                         bit_id, bit_path, bit_chance = False, False, False
-                #print 'Selected random object: %s (%s, %s, %s) from %s'%(obj, x, y, z, args[3:])
+                # print 'Selected random object: %s (%s, %s, %s) from %s'%(obj, x, y, z, args[3:])
                 # Fallback for chances < 100%
                 if not obj:
                     obj = [None, None]
@@ -130,11 +134,11 @@ class BO3:
 
             for line in lines:
                 if line.startswith('Block') or line.startswith('RandomBlock'):
-                    #print 'Parsing', line
+                    # print 'Parsing', line
                     if line.startswith('Block'):
-                        x, y, z, b_id, b_state, nbt_data = get_block_data(line.replace("Block(", "").replace(")","").strip().split(","))
+                        x, y, z, b_id, b_state, nbt_data = get_block_data(line.replace("Block(", "").replace(")", "").strip().split(","))
                     else:
-                        x, y, z, b_id, b_state, nbt_data = get_randomblock_data(line.replace("RandomBlock(", "").replace(")","").strip().split(","))
+                        x, y, z, b_id, b_state, nbt_data = get_randomblock_data(line.replace("RandomBlock(", "").replace(")", "").strip().split(","))
 
                     b_idn = map_block.get(b_id.lower(), bo3_blocks.get(b_id, None))
                     if b_idn:
@@ -150,17 +154,17 @@ class BO3:
                         try:
                             self.__schem.Blocks[x, z, y] = b_idn
                             self.__schem.Data[x, z, y] = verify_state(b_id, b_state)
-                        except Exception, e:
-                            print 'Error while building BO3 data:'
-                            print e
-                            print 'size', self.size_x, self.size_y, self.size_z
-                            print line
+                        except Exception as e:
+                            print('Error while building BO3 data:')
+                            print(e)
+                            print('size', self.size_x, self.size_y, self.size_z)
+                            print(line)
                             [get_delta(*b, debug=True) for b in [eval(','.join(a.split('(')[1].split(')')[0].split(',', 3)[:3])) for a in lines]]
                     elif b_id:
-                        print 'BO3 Block not found: %s'%b_id
+                        print('BO3 Block not found: %s' % b_id)
 
         else:
-            log.error('Wrong type for \'filename\': got %s'%type(filename))
+            log.error('Wrong type for \'filename\': got %s' % type(filename))
 
     def getSchematic(self):
         return self.__schem
@@ -168,71 +172,69 @@ class BO3:
 
 class BO2:
     _parser = ConfigParser.RawConfigParser()
-    
+
     def __init__(self, filename=''):
         self.__meta = {}
         self.__blocks = {}
         # [0] is lowest point, [1] is highest point, [2] is the amount to shift by
-        self._vertical_tracker = [0,0,0]
-        self._horizontal_tracker_1 = [0,0,0]
-        self._horizontal_tracker_2 = [0,0,0]
+        self._vertical_tracker = [0, 0, 0]
+        self._horizontal_tracker_1 = [0, 0, 0]
+        self._horizontal_tracker_2 = [0, 0, 0]
         if filename:
             self._parser.read(filename)
             self.__version = self._parser.get('META', 'version')
             for item in self._parser.items("META"):
                 self.__meta[item[0]] = item[1]
-                
+
             for block in self._parser.items("DATA"):
-                
+
                 if int(block[0].split(",")[2]) < self._vertical_tracker[0]:
                     self._vertical_tracker[0] = int(block[0].split(",")[2])
                 if int(block[0].split(",")[2]) > self._vertical_tracker[1]:
                     self._vertical_tracker[1] = int(block[0].split(",")[2])
-                    
-                    
+
                 if int(block[0].split(",")[0]) < self._horizontal_tracker_1[0]:
                     self._horizontal_tracker_1[0] = int(block[0].split(",")[0])
                 if int(block[0].split(",")[0]) > self._horizontal_tracker_1[1]:
                     self._horizontal_tracker_1[1] = int(block[0].split(",")[0])
-                    
-                    
+
                 if int(block[0].split(",")[1]) < self._horizontal_tracker_2[0]:
                     self._horizontal_tracker_2[0] = int(block[0].split(",")[1])
                 if int(block[0].split(",")[1]) > self._horizontal_tracker_2[1]:
                     self._horizontal_tracker_2[1] = int(block[0].split(",")[1])
-                    
+
             if self._vertical_tracker[0] < 0:
                 self._vertical_tracker[2] = abs(self._vertical_tracker[0])
                 self._vertical_tracker[1] += abs(self._vertical_tracker[0])
-                
+
             if self._horizontal_tracker_1[0] < 0:
                 self._horizontal_tracker_1[2] = abs(self._horizontal_tracker_1[0])
                 self._horizontal_tracker_1[1] += abs(self._horizontal_tracker_1[0])
-                
+
             if self._horizontal_tracker_2[0] < 0:
                 self._horizontal_tracker_2[2] = abs(self._horizontal_tracker_2[0])
                 self._horizontal_tracker_2[1] += abs(self._horizontal_tracker_2[0])
-                
-            self.__schem = schematic.MCSchematic(shape=(self._horizontal_tracker_2[1]+1, self._vertical_tracker[1]+1, self._horizontal_tracker_1[1]+1))
+
+            self.__schem = schematic.MCSchematic(shape=(self._horizontal_tracker_2[1] + 1, self._vertical_tracker[1] + 1, self._horizontal_tracker_1[1] + 1))
             for block in self._parser.items("DATA"):
                 coords = block[0].split(",")
-                x = int(coords[1])+self._horizontal_tracker_2[2]
-                y = int(coords[0])+self._horizontal_tracker_1[2]
-                z = int(coords[2])+self._vertical_tracker[2]
+                x = int(coords[1]) + self._horizontal_tracker_2[2]
+                y = int(coords[0]) + self._horizontal_tracker_1[2]
+                z = int(coords[2]) + self._vertical_tracker[2]
                 if '.' in block[1]:
                     b, s = block[1].split('.')
                 else:
                     b, s = block[1], 0
-                self.__schem.Blocks[x,y,z] = b
+                self.__schem.Blocks[x, y, z] = b
                 self.__schem.Data[x, y, z] = s
-            
+
     def getSchematic(self):
         return self.__schem
-    
+
     @property
     def meta(self):
         return self.__meta
-    
+
     @property
     def blocks(self):
         return self.__blocks

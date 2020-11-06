@@ -24,7 +24,8 @@ The gtk module is not available for Python 3, and this module does not work with
 
 __version__ = '1.5.6'
 
-import platform, os
+import os
+import platform
 from subprocess import call, Popen, PIPE
 
 
@@ -41,9 +42,9 @@ def _pasteWindows():
 def _copyWindows(text):
     GMEM_DDESHARE = 0x2000
     CF_UNICODETEXT = 13
-    d = ctypes.windll # cdll expects 4 more bytes in user32.OpenClipboard(None)
+    d = ctypes.windll  # cdll expects 4 more bytes in user32.OpenClipboard(None)
     try:  # Python 2
-        if not isinstance(text, unicode):
+        if not isinstance(text, str):
             text = text.decode('mbcs')
     except NameError:
         if not isinstance(text, str):
@@ -73,7 +74,7 @@ def _copyCygwin(text):
     CF_UNICODETEXT = 13
     d = ctypes.cdll
     try:  # Python 2
-        if not isinstance(text, unicode):
+        if not isinstance(text, bytes):
             text = text.decode('mbcs')
     except NameError:
         if not isinstance(text, str):
@@ -143,34 +144,36 @@ def _pasteXsel():
     return bytes.decode(stdout)
 
 
-
 # Determine the OS/platform and set the copy() and paste() functions accordingly.
 if 'cygwin' in platform.system().lower():
-    _functions = 'Cygwin' # for debugging
+    _functions = 'Cygwin'  # for debugging
     import ctypes
+
     paste = _pasteCygwin
     copy = _copyCygwin
 elif os.name == 'nt' or platform.system() == 'Windows':
-    _functions = 'Windows' # for debugging
+    _functions = 'Windows'  # for debugging
     import ctypes  # @Reimport
+
     paste = _pasteWindows
     copy = _copyWindows
 elif os.name == 'mac' or platform.system() == 'Darwin':
-    _functions = 'OS X pbcopy/pbpaste' # for debugging
+    _functions = 'OS X pbcopy/pbpaste'  # for debugging
     paste = _pasteOSX
     copy = _copyOSX
 elif os.name == 'posix' or platform.system() == 'Linux':
     # Determine which command/module is installed, if any.
     xclipExists = call(['which', 'xclip'],
-                stdout=PIPE, stderr=PIPE) == 0
+                       stdout=PIPE, stderr=PIPE) == 0
 
     xselExists = call(['which', 'xsel'],
-            stdout=PIPE, stderr=PIPE) == 0
+                      stdout=PIPE, stderr=PIPE) == 0
 
     gtkInstalled = False
     try:
         # Check it gtk is installed.
         import gtk
+
         gtkInstalled = True
     except ImportError:
         pass
@@ -180,17 +183,17 @@ elif os.name == 'posix' or platform.system() == 'Linux':
 
     # Set one of the copy & paste functions.
     if xclipExists:
-        _functions = 'xclip command' # for debugging
+        _functions = 'xclip command'  # for debugging
         paste = _pasteXclip
         copy = _copyXclip
     elif gtkInstalled:
-        _functions = 'gtk module' # for debugging
+        _functions = 'gtk module'  # for debugging
         paste = _pasteGtk
         copy = _copyGtk
 
     elif xselExists:
         # TODO: xsel doesn't seem to work on Raspberry Pi (my test Linux environment). Putting this as the last method tried.
-        _functions = 'xsel command' # for debugging
+        _functions = 'xsel command'  # for debugging
         paste = _pasteXsel
         copy = _copyXsel
     else:

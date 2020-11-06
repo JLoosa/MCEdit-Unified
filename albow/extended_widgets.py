@@ -1,21 +1,22 @@
 # -*- coding: UTF-8 -*-
 # extended_widgets.py
 # Moved albow related stuff from mceutils.
-from controls import ValueDisplay
-from dialogs import Dialog
-from controls import Button, Label, ValueButton, CheckBox, AttrRef
-from widget import Widget
-from layout import Column, Row
-from translate import _
-from menu import Menu
-from fields import FloatField, IntField, TextFieldWrapped, TextField
 from datetime import timedelta, datetime
+
+from albow.controls import Button, Label, ValueButton, CheckBox, AttrRef
+from albow.controls import ValueDisplay
+from albow.dialogs import Dialog
+from albow.fields import FloatField, IntField, TextFieldWrapped, TextField
+from albow.layout import Column, Row
+from albow.menu import Menu
+from albow.translate import _
+from albow.widget import Widget
 
 
 class HotkeyColumn(Widget):
     is_gl_container = True
 
-#-# Translation live update preparation
+    # -# Translation live update preparation
     def __init__(self, items, keysColumn=None, buttonsColumn=None, item_spacing=None, translateButtons=True):
         """:items iterable containing iterables composed with the hotkey, the label of the button and the binding
         :keysColumn iterable
@@ -65,7 +66,7 @@ class HotkeyColumn(Widget):
                 tooltipText = None
             else:
                 (hotkey, title, action, tooltipText) = t
-            if isinstance(title, (str, unicode)):
+            if isinstance(title, (str, bytes)):
                 button = Button(title, action=action, doNotTranslate=trn)
             else:
                 button = ValueButton(ref=title, action=action, width=200, doNotTranslate=trn)
@@ -86,14 +87,14 @@ class HotkeyColumn(Widget):
 
         self.buttons = list(buttonsColumn)
 
-        #.#
+        # .#
         if item_spacing == None:
             buttonsColumn = Column(buttonsColumn)
         else:
             buttonsColumn = Column(buttonsColumn, spacing=item_spacing)
-        #.#
+        # .#
         buttonsColumn.anchor = self.anchor
-        #.#
+        # .#
         if item_spacing == None:
             keysColumn = Column(keysColumn)
         else:
@@ -104,14 +105,16 @@ class HotkeyColumn(Widget):
         self.add(commandRow)
         self.shrink_wrap()
         self.invalidate()
-#-#
+
+
+# -#
 
 
 class MenuButton(Button):
     def __init__(self, title, choices, **kw):
         Button.__init__(self, title, **kw)
         self.choices = choices
-#         self.menu = Menu(title, ((c, c) for c in choices))
+        #         self.menu = Menu(title, ((c, c) for c in choices))
         self.menu = Menu(title, ((c, None) for c in choices))
 
     def action(self):
@@ -136,18 +139,18 @@ class ChoiceButton(ValueButton):
 
         self.doNotTranslate = kw.get('doNotTranslate', False)
 
-        #-# Translation live update preparation
+        # -# Translation live update preparation
         self.scrolling = scrolling
         self.scroll_items = scroll_items
         self.choices = choices or ["[UNDEFINED]"]
 
         ValueButton.__init__(self, action=self.showMenu, **kw)
         self.calc_width()
-        #-#
+        # -#
 
         self.choiceIndex = 0
 
-    #-# Translation live update preparation
+    # -# Translation live update preparation
     def set_update_ui(self, v):
         ValueButton.set_update_ui(self, v)
         self.menu.set_update_ui(v)
@@ -160,7 +163,8 @@ class ChoiceButton(ValueButton):
     def calc_size(self):
         ValueButton.calc_size(self)
         self.calc_width()
-    #-#
+
+    # -#
 
     def showMenu(self):
         choiceIndex = self.menu.present(self, (0, 0))
@@ -244,7 +248,7 @@ def IntInputRow(title, *args, **kw):
 def TextInputRow(title, *args, **kw):
     return Row((Label(title, tooltipText=kw.get('tooltipText')), TextFieldWrapped(*args, **kw)))
 
-  
+
 def BasicTextInputRow(title, *args, **kw):
     return Row((Label(title, tooltipText=kw.get('tooltipText')), TextField(*args, **kw)))
 
@@ -295,7 +299,7 @@ def showProgress(progressText, progressIterator, cancel=False):
                 if amount is None:
                     self.progressBar.width = maxwidth
                     self.progressBar.bg_color = (255, 255, 25, 255)
-                elif isinstance(amount, basestring):
+                elif isinstance(amount, (str, bytes)):
                     self.statusText = amount
                 else:
                     self.progressAmount = amount
@@ -360,5 +364,3 @@ def showProgress(progressText, progressIterator, cancel=False):
         return widget.progressAmount
     else:
         return "Canceled"
-
-

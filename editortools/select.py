@@ -12,35 +12,38 @@ WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE."""
 from __future__ import unicode_literals
-# -# Modified by D.C.-G. for translation purpose
-# .# Marks the layout modifications. -- D.C.-G.
 
+import logging
 import os
-import sys
 import subprocess
-from OpenGL import GL
+import sys
+import tempfile
 
 import numpy
 import pygame
-from albow import Row, Label, Button, AttrRef, Column, ask, alert, ChoiceButton, CheckBoxLabel, IntInputRow, \
+from OpenGL import GL
+
+import pymclevel
+from albow import Row, Label, Button, AttrRef, Column, ask, alert
+from albow.extended_widgets import ChoiceButton, CheckBoxLabel, IntInputRow, \
     showProgress, TextInputRow
+from albow.root import get_root
 from albow.translate import _
 from config import config
 from depths import DepthOffset
 from editortools.editortool import EditorTool
+from editortools.fill import BlockFillOperation
 from editortools.nudgebutton import NudgeButton
+from editortools.operation import Operation
 from editortools.tooloptions import ToolOptions
+from fileEdits import fileEdit, GetSort
 from glbackground import Panel
 from mceutils import alertException, drawCube, drawFace, drawTerrainCuttingWire, setWindowCaption
-from operation import Operation
-import pymclevel
-from pymclevel.box import Vector, BoundingBox, FloatBox
-from fill import BlockFillOperation
-import tempfile
 from pymclevel import nbt
-import logging
-from albow.root import get_root
-from fileEdits import fileEdit, GetSort
+from pymclevel.box import Vector, BoundingBox, FloatBox
+
+# -# Modified by D.C.-G. for translation purpose
+# .# Marks the layout modifications. -- D.C.-G.
 
 log = logging.getLogger(__name__)
 
@@ -325,7 +328,7 @@ class SelectionTool(EditorTool):
                 del t["Items"]
 
             text += str(t)
-            
+
         return text
 
     @property
@@ -625,7 +628,7 @@ class SelectionTool(EditorTool):
                     first = self.topRightPoint
                     isFirst = False
                 second = []
-                for i in xrange(3):
+                for i in range(3):
                     if o[i] == first[i]:
                         second.append(m[i])
                     else:
@@ -894,7 +897,7 @@ class SelectionTool(EditorTool):
                             size = [s - off * 2 for s, off in zip(box.size, offs)]
 
                             cv = self.editor.mainViewport.cameraVector
-                            for i in xrange(3):
+                            for i in range(3):
                                 if cv[i] > 0:
                                     origin[i] -= offs[i]
                                     size[i] += offs[i]
@@ -1187,7 +1190,7 @@ class SelectionTool(EditorTool):
 
         self.editor.mouseLookOff()
 
-        print "Clipping: ", shape
+        print("Clipping: ", shape)
 
         fileFormat = "schematic"
         if box.volume > self.maxBlocks:
@@ -1223,7 +1226,7 @@ class SelectionTool(EditorTool):
     @alertException
     def exportSelection(self):
         schematic = self._copySelection()
-        
+
         if schematic:
             self.editor.exportSchematic(schematic)
 
@@ -1238,7 +1241,7 @@ class SelectionTool(EditorTool):
         edit = fileEdit(filename, os.path.getmtime(filename), self.editor.selectionBox(), self.editor,
                         self.editor.level)
         platform = self.editor.level.gamePlatform
-        repeatID, chainID = {'PE':(188,189),'Java':(210,211)}.get(platform, (210,211))
+        repeatID, chainID = {'PE': (188, 189), 'Java': (210, 211)}.get(platform, (210, 211))
 
         order = []
         if sorting == "chain":

@@ -2,35 +2,35 @@
 # please give credit to SethBling.
 # http://youtube.com/SethBling
 
-from pymclevel import TAG_List
 from pymclevel import TAG_Byte
-from pymclevel import TAG_Int
 from pymclevel import TAG_Compound
+from pymclevel import TAG_Int
+from pymclevel import TAG_List
 
 displayName = "Add Potion Effect to Mobs"
 
 Effects = {
-"Speed": 1,
-"Slowness": 2,
-"Strength": 5,
-"Jump Boost": 8,
-"Regeneration": 10,
-"Resistance": 11,
-"Fire Resistance": 12,
-"Water Breathing": 13,
-"Invisibility": 14,
-"Weakness": 18,
-"Poison": 19,
-"Wither": 20,
-"Health Boost": 21,
-"Absorption": 22,
-"Haste (no mob effect)": 3,
-"Mining Fatigue (no mob effect)": 4,
-"Nausea (no mob effect)": 9,
-"Blindness (no mob effect)": 15,
-"Hunger (no mob effect)": 17,
-"Night Vision (no mob effect)": 16,
-"Saturation (no mob effect)": 23,
+    "Speed": 1,
+    "Slowness": 2,
+    "Strength": 5,
+    "Jump Boost": 8,
+    "Regeneration": 10,
+    "Resistance": 11,
+    "Fire Resistance": 12,
+    "Water Breathing": 13,
+    "Invisibility": 14,
+    "Weakness": 18,
+    "Poison": 19,
+    "Wither": 20,
+    "Health Boost": 21,
+    "Absorption": 22,
+    "Haste (no mob effect)": 3,
+    "Mining Fatigue (no mob effect)": 4,
+    "Nausea (no mob effect)": 9,
+    "Blindness (no mob effect)": 15,
+    "Hunger (no mob effect)": 17,
+    "Night Vision (no mob effect)": 16,
+    "Saturation (no mob effect)": 23,
 }
 
 EffectKeys = ()
@@ -38,9 +38,9 @@ for key in Effects.keys():
     EffectKeys = EffectKeys + (key,)
 
 inputs = (
-("Effect", EffectKeys),
-("Level", 1),
-("Duration (Seconds)", 60),
+    ("Effect", EffectKeys),
+    ("Level", 1),
+    ("Duration (Seconds)", 60),
 )
 
 

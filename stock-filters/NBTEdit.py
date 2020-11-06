@@ -1,4 +1,5 @@
 import ast
+
 from pymclevel.box import BoundingBox
 
 inputs = [(("Entities", True),
@@ -13,11 +14,13 @@ tree = None
 chunks = None
 boundingBox = None
 
-#displayName = ""
+
+# displayName = ""
 
 def set_tree(t):
     global tree
     tree = t
+
 
 def nbttree_mouse_down(e):
     if e.num_clicks > 1:
@@ -26,11 +29,12 @@ def nbttree_mouse_down(e):
             editor.mainViewport.cameraPosition = (s[0] + 0.5, s[1] + 2, s[2] - 1)
             editor.mainViewport.yaw = 0.0
             editor.mainViewport.pitch = 45.0
-            
+
             newBox = BoundingBox(s, (1, 1, 1))
             editor.selectionTool.setSelection(newBox)
     tree.treeRow.__class__.mouse_down(tree.treeRow, e)
-    
+
+
 def nbt_ok_action():
     if chunks:
         for chunk in chunks:
@@ -38,6 +42,7 @@ def nbt_ok_action():
         editor.removeUnsavedEdit()
         editor.addUnsavedEdit()
         editor.invalidateBox(boundingBox)
+
 
 def perform(level, box, options):
     global chunks
@@ -77,12 +82,14 @@ def perform(level, box, options):
     treeData = {"Entities": {}, "TileEntities": {}, "TileTicks": {}}
     # To set tooltip text to the items the need it, use a dict: {"value": <item to be added to the tree>, "tooltipText": "Some text"}
     for i in range(len(data["Entities"])):
-        treeData["Entities"][u"%s"%((data["Entities"][i]["Pos"][0].value, data["Entities"][i]["Pos"][1].value, data["Entities"][i]["Pos"][2].value),)] = {"value": data["Entities"][i], "tooltipText": "Double-click to go to this item."}
+        treeData["Entities"][u"%s" % ((data["Entities"][i]["Pos"][0].value, data["Entities"][i]["Pos"][1].value, data["Entities"][i]["Pos"][2].value),)] = {"value": data["Entities"][i],
+                                                                                                                                                            "tooltipText": "Double-click to go to this item."}
     for i in range(len(data["TileEntities"])):
-        treeData["TileEntities"][u"%s"%((data["TileEntities"][i]["x"].value, data["TileEntities"][i]["y"].value, data["TileEntities"][i]["z"].value),)] = {"value": data["TileEntities"][i], "tooltipText": "Double-click to go to this item."}
+        treeData["TileEntities"][u"%s" % ((data["TileEntities"][i]["x"].value, data["TileEntities"][i]["y"].value, data["TileEntities"][i]["z"].value),)] = {"value": data["TileEntities"][i],
+                                                                                                                                                             "tooltipText": "Double-click to go to this item."}
     for i in range(len(data["TileTicks"])):
-        treeData["TileTicks"][u"%s"%((data["TileTicks"][i]["x"].value, data["TileTicks"][i]["y"].value, data["TileTicks"][i]["z"].value),)] = {"value": data["TileTicks"][i], "tooltipText": "Double-click to go to this item."}
-        
-    
+        treeData["TileTicks"][u"%s" % ((data["TileTicks"][i]["x"].value, data["TileTicks"][i]["y"].value, data["TileTicks"][i]["z"].value),)] = {"value": data["TileTicks"][i],
+                                                                                                                                                 "tooltipText": "Double-click to go to this item."}
+
     inputs[1][1][1][1] = {'Data': treeData}
     options[""](inputs[1])

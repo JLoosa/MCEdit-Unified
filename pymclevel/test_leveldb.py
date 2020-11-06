@@ -21,18 +21,19 @@
 # SOFTWARE.
 #
 
-import os
-import sys
-import time
-import shutil
-import random
-import leveldb
 import argparse
+import os
+import random
+import shutil
+import sys
 import tempfile
+import time
 import unittest
 
+from pymclevel import leveldb
 
-class LevelDBTestCasesMixIn(object):
+
+class LevelDBTestCasesMixIn(unittest.TestCase):
     db_class = None
 
     def setUp(self):
@@ -94,7 +95,7 @@ class LevelDBTestCasesMixIn(object):
                 for prefix in keys(alphabet, length - 1):
                     yield prefix + char
 
-        for val, key in enumerate(keys(map(chr, xrange(ord('a'), ord('f'))))):
+        for val, key in enumerate(keys(map(chr, range(ord('a'), ord('f'))))):
             db.Put(leveldb.WriteOptions(), key, str(val))
 
         self.assertEquals([row.key for row in db.range("bbbb", "bbcb")],
@@ -389,13 +390,13 @@ class LevelDBTestCases(LevelDBTestCasesMixIn, unittest.TestCase):
 
     def testPutSync(self, size=100):
         db = self.db_class(leveldb.Options(), self.db_path, create_if_missing=True)
-        for i in xrange(size):
+        for i in range(size):
             db.Put(leveldb.WriteOptions(), str(i), str(i + 1))
         start_sync_time = time.time()
-        for i in xrange(size):
+        for i in range(size):
             db.Put(leveldb.WriteOptions(), str(i), str(i + 1), sync=True)
         start_unsync_time = time.time()
-        for i in xrange(size):
+        for i in range(size):
             db.Put(leveldb.WriteOptions(), str(i), str(i + 1))
         end_time = time.time()
         sync_time = start_unsync_time - start_sync_time
@@ -405,16 +406,16 @@ class LevelDBTestCases(LevelDBTestCasesMixIn, unittest.TestCase):
 
     def testDeleteSync(self, size=100):
         db = self.db_class(leveldb.Options(), self.db_path, create_if_missing=True)
-        for i in xrange(size):
+        for i in range(size):
             db.Put(leveldb.WriteOptions(), str(i), str(i + 1))
         start_sync_time = time.time()
-        for i in xrange(size):
+        for i in range(size):
             db.delete(str(i), sync=True)
         end_sync_time = time.time()
-        for i in xrange(size):
+        for i in range(size):
             db.Put(leveldb.WriteOptions(), str(i), str(i + 1))
         start_unsync_time = time.time()
-        for i in xrange(size):
+        for i in range(size):
             db.delete(str(i))
         end_unsync_time = time.time()
         sync_time = end_sync_time - start_sync_time
@@ -433,7 +434,7 @@ class LevelDBTestCases(LevelDBTestCasesMixIn, unittest.TestCase):
             paths.append(path)
             db = self.db_class(leveldb.Options(), path, create_if_missing=True)
             batch = leveldb.WriteBatch()
-            for x in xrange(10000):
+            for x in range(10000):
                 batch.Put(str(x), str(x))
             db.write(leveldb.WriteOptions(), batch)
             dbs.append(db)
@@ -447,7 +448,7 @@ class LevelDBTestCases(LevelDBTestCasesMixIn, unittest.TestCase):
         while time.time() - start_time < short_time:
             db = self.db_class(leveldb.Options(), path, create_if_missing=True)
             batch = leveldb.WriteBatch()
-            for x in xrange(10000):
+            for x in range(10000):
                 batch.Put(str(x), str(x))
             db.write(leveldb.WriteOptions(), batch)
             db.close()
@@ -459,7 +460,7 @@ class LevelDBTestCases(LevelDBTestCasesMixIn, unittest.TestCase):
         db = self.db_class(leveldb.Options(), path, create_if_missing=True)
         while time.time() - start_time < short_time:
             batch = leveldb.WriteBatch()
-            for x in xrange(10000):
+            for x in range(10000):
                 batch.Put(str(x), str(x))
             db.write(leveldb.WriteOptions(), batch)
         db.close()
@@ -486,7 +487,7 @@ class MemLevelDBTestCases(LevelDBTestCasesMixIn, unittest.TestCase):
     db_class = staticmethod(leveldb.MemoryDB)
 
 
-class LevelDBIteratorTestMixIn(object):
+class LevelDBIteratorTestMixIn(unittest.TestCase):
     db_class = None
 
     def setUp(self):
@@ -500,8 +501,8 @@ class LevelDBIteratorTestMixIn(object):
         db.Put(leveldb.WriteOptions(), 'a', 'b')
         db.Put(leveldb.WriteOptions(), 'c', 'd')
         iterator = iter(db)
-        self.assertEqual(iterator.next(), ('a', 'b'))
-        self.assertEqual(iterator.next(), ('c', 'd'))
+        self.assertEqual(next(iterator), ('a', 'b'))
+        self.assertEqual(next(iterator), ('c', 'd'))
         self.assertRaises(StopIteration, iterator.next)
         db.close()
 
@@ -510,8 +511,8 @@ class LevelDBIteratorTestMixIn(object):
         db.Put(leveldb.WriteOptions(), 'a', 'b')
         db.Put(leveldb.WriteOptions(), 'c', 'd')
         iterator = db.NewIterator(keys_only=True).SeekToFirst()
-        self.assertEqual(iterator.next(), 'a')
-        self.assertEqual(iterator.next(), 'c')
+        self.assertEqual(next(iterator), 'a')
+        self.assertEqual(next(iterator), 'c')
         self.assertRaises(StopIteration, iterator.next)
         db.close()
 
@@ -544,11 +545,11 @@ class LevelDBIteratorTestMixIn(object):
         db.Put(leveldb.WriteOptions(), 'cb', 'b')
         db.Put(leveldb.WriteOptions(), 'd', 'd')
         iterator = iter(db).seek("c")
-        self.assertEqual(iterator.next(), ('ca', 'a'))
-        self.assertEqual(iterator.next(), ('cb', 'b'))
+        self.assertEqual(next(iterator), ('ca', 'a'))
+        self.assertEqual(next(iterator), ('cb', 'b'))
         # seek backwards
         iterator.seek('a')
-        self.assertEqual(iterator.next(), ('a', 'b'))
+        self.assertEqual(next(iterator), ('a', 'b'))
         db.close()
 
     def test_prefix(self):
@@ -566,9 +567,9 @@ class LevelDBIteratorTestMixIn(object):
         db.write(leveldb.WriteOptions(), batch)
         iterator = db.NewIterator(prefix="c")
         iterator.SeekToFirst()
-        self.assertEqual(iterator.next(), ('', 'a'))
-        self.assertEqual(iterator.next(), ('d', 'a'))
-        self.assertEqual(iterator.next(), ('e', 'a'))
+        self.assertEqual(next(iterator), ('', 'a'))
+        self.assertEqual(next(iterator), ('d', 'a'))
+        self.assertEqual(next(iterator), ('e', 'a'))
         self.assertRaises(StopIteration, iterator.next)
         db.close()
 
@@ -596,12 +597,12 @@ class LevelDBIteratorTestMixIn(object):
         db.Put(leveldb.WriteOptions(), 'a', 'b')
         db.Put(leveldb.WriteOptions(), 'b', 'b')
         iterator = iter(db)
-        entry = iterator.next()
+        entry = next(iterator)
         iterator.Prev()
-        self.assertEqual(entry, iterator.next())
+        self.assertEqual(entry, next(iterator))
         # it's ok to call prev when the iterator is at position 0
         iterator.Prev()
-        self.assertEqual(entry, iterator.next())
+        self.assertEqual(entry, next(iterator))
         db.close()
 
     def test_seek_first_last(self):
@@ -610,9 +611,9 @@ class LevelDBIteratorTestMixIn(object):
         db.Put(leveldb.WriteOptions(), 'b', 'b')
         iterator = iter(db)
         iterator.SeekToLast()
-        self.assertEqual(iterator.next(), ('b', 'b'))
+        self.assertEqual(next(iterator), ('b', 'b'))
         iterator.SeekToFirst()
-        self.assertEqual(iterator.next(), ('a', 'b'))
+        self.assertEqual(next(iterator), ('a', 'b'))
         db.close()
 
     def test_scoped_seek_first(self):
@@ -753,7 +754,7 @@ class LevelDBIteratorTest(LevelDBIteratorTestMixIn, unittest.TestCase):
         self.assertEqual([0, 0, 0],
                          db.approximateDiskSizes(("a", "z"), ("0", "9"), ("A", "Z")))
         batch = leveldb.WriteBatch()
-        for i in xrange(100):
+        for i in range(100):
             batch.Put("c%d" % i, os.urandom(4096))
         db.write(leveldb.WriteOptions(), batch, sync=True)
         db.close()
@@ -762,7 +763,7 @@ class LevelDBIteratorTest(LevelDBIteratorTestMixIn, unittest.TestCase):
         self.assertEqual(sizes[0], 0)
         self.assertEqual(sizes[1], 0)
         self.assertTrue(sizes[2] >= 4096 * 100)
-        for i in xrange(10):
+        for i in range(10):
             db.Put(leveldb.WriteOptions(), "3%d" % i, os.urandom(10))
         db.close()
         db = self.db_class(leveldb.Options(), self.db_path)
@@ -782,7 +783,7 @@ def main():
     parser = argparse.ArgumentParser("run tests")
     parser.add_argument("--runs", type=int, default=1)
     args = parser.parse_args()
-    for _ in xrange(args.runs):
+    for _ in range(args.runs):
         unittest.main(argv=sys.argv[:1], exit=False)
 
 

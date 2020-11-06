@@ -2,9 +2,15 @@
 # -*- coding: utf_8 -*-
 # import resource_packs # not the right place, moving it a bit further
 
-#-# Modified by D.C.-G. for translation purpose
-#.# Marks the layout modifications. -- D.C.-G.
+# -# Modified by D.C.-G. for translation purpose
+# .# Marks the layout modifications. -- D.C.-G.
 from __future__ import unicode_literals
+# -# Modified by D.C.-G. for translation purpose
+# .# Marks the layout modifications. -- D.C.-G.
+from __future__ import unicode_literals
+
+import importlib
+
 """
 mcedit.py
 
@@ -32,7 +38,7 @@ logfile = 'mcedit.log'
 if sys.platform == "darwin":
     logfile = os.path.expanduser("~/Library/Logs/mcedit.log")
 else:
-    logfile = os.path.join(os.getcwdu(), logfile)
+    logfile = os.path.join(os.getcwd(), logfile)
 fh = logging.FileHandler(logfile, mode="w")
 fh.setLevel(logging.DEBUG)
 
@@ -66,9 +72,9 @@ import release
 if __name__ == "__main__":
     start_msg = 'Starting MCEdit-Unified v%s' % release.TAG
     logger.info(start_msg)
-    print '[ ****** ] ~~~~~~~~~~ %s' % start_msg
+    print('[ ****** ] ~~~~~~~~~~ %s' % start_msg)
 
-#---------------------------------------------------------------------
+# ---------------------------------------------------------------------
 # NEW FEATURES HANDLING
 #
 # The idea is to be able to implement and test/use new code without stripping off the current one.
@@ -127,14 +133,14 @@ from albow.root import RootWidget
 from config import config
 
 if __name__ == "__main__":
-    #albow.resource.resource_dir = directories.getDataDir()
+    # albow.resource.resource_dir = directories.getDataDir()
     albow.resource.resource_dir = directories.getDataFile()
+
 
 def create_mocked_pyclark():
     import imp
 
     class MockedPyClark(object):
-
         class Clark(object):
 
             def report(self, *args, **kwargs):
@@ -147,6 +153,7 @@ def create_mocked_pyclark():
     sys.modules['pyClark'] = mod
     return mod
 
+
 global pyClark
 pyClark = None
 if getattr(sys, 'frozen', False) or '--report-errors' in sys.argv:
@@ -154,6 +161,7 @@ if getattr(sys, 'frozen', False) or '--report-errors' in sys.argv:
     if config.settings.reportCrashes.get():
         try:
             import pyClark
+
             pyClark.Clark('http://127.0.0.1', inject=True)
             logger.info('Successfully setup pyClark')
         except ImportError:
@@ -162,12 +170,11 @@ if getattr(sys, 'frozen', False) or '--report-errors' in sys.argv:
             pass
     else:
         logger.info('User has opted out of pyClark error reporting')
-        print type(create_mocked_pyclark())
+        print(type(create_mocked_pyclark()))
         pyClark = create_mocked_pyclark()
-        print pyClark
+        print(pyClark)
 else:
     pyClark = create_mocked_pyclark()
-
 
 import panels
 import leveleditor
@@ -200,7 +207,6 @@ if __name__ == "__main__" and "-tt" in sys.argv:
     logging.warning('Setting en_US as language for this session.')
     config.settings.langCode.set('en_US')
 
-import mceutils
 import mcplatform
 
 # The two next switches '--debug-wm' and '--no-wm' are used to debug/disable the internal window handler.
@@ -217,15 +223,15 @@ if __name__ == "__main__":
     DEBUG_WM = mcplatform.DEBUG_WM
     USE_WM = mcplatform.USE_WM
 
-    #-# DEBUG
+    # -# DEBUG
     if mcplatform.hasXlibDisplay and DEBUG_WM:
-        print '*** Xlib version', str(mcplatform.Xlib.__version__).replace(' ', '').replace(',', '.')[1:-1], 'found in',
+        print('*** Xlib version', str(mcplatform.Xlib.__version__).replace(' ', '').replace(',', '.')[1:-1], 'found in', )
         if os.path.expanduser('~/.local/lib/python2.7/site-packages') in mcplatform.Xlib.__file__:
-            print 'user\'s',
+            print('user\'s', )
         else:
-            print 'system\'s',
-        print 'libraries.'
-    #-#
+            print('system\'s', )
+        print('libraries.')
+    # -#
 from mcplatform import platform_open
 import numpy
 from pymclevel.minecraft_server import ServerJarStorage
@@ -253,13 +259,13 @@ class MCEdit(GLViewport):
 
     def __init__(self, displayContext, *args):
         if DEBUG_WM:
-            print "############################ __INIT__ ###########################"
+            print("############################ __INIT__ ###########################")
         self.resizeAlert = config.settings.showWindowSizeWarning.get()
         self.maximized = config.settings.windowMaximized.get()
         self.saved_pos = config.settings.windowX.get(), config.settings.windowY.get()
         if displayContext.win and DEBUG_WM:
-            print "* self.displayContext.win.state", displayContext.win.get_state()
-            print "* self.displayContext.win.position", displayContext.win.get_position()
+            print("* self.displayContext.win.state", displayContext.win.get_state())
+            print("* self.displayContext.win.position", displayContext.win.get_position())
             self.dis = None
             self.win = None
             self.wParent = None
@@ -284,31 +290,31 @@ class MCEdit(GLViewport):
                 self.wGrandParent = wGrandParent
                 root = dis.screen().root
                 windowID = root.get_full_property(dis.intern_atom('_NET_ACTIVE_WINDOW'), mcplatform.Xlib.X.AnyPropertyType).value[0]
-                print "###\nwindowID", windowID
+                print("###\nwindowID", windowID)
                 window = dis.create_resource_object('window', windowID)
-                print "###\nwindow.get_geometry()", window.get_geometry()
-                print "###\nself.win", self.win.get_geometry()
-                print "###\nself.wParent.get_geometry()", self.wParent.get_geometry()
-                print "###\nself.wGrandParent.get_geometry()", self.wGrandParent.get_geometry()
+                print("###\nwindow.get_geometry()", window.get_geometry())
+                print("###\nself.win", self.win.get_geometry())
+                print("###\nself.wParent.get_geometry()", self.wParent.get_geometry())
+                print("###\nself.wGrandParent.get_geometry()", self.wGrandParent.get_geometry())
                 try:
-                    print "###\nself.wGrandParent.query_tree().parent.get_geometry()", self.wGrandParent.query_tree().parent.get_geometry()
+                    print("###\nself.wGrandParent.query_tree().parent.get_geometry()", self.wGrandParent.query_tree().parent.get_geometry())
                 except:
                     pass
-                print "###\nself.maximizeHandler.get_geometry()", self.maximizeHandler.get_geometry()
-                print "###\nself.geomReciever.get_geometry()", self.geomReciever.get_geometry()
-                print "###\nself.geomSender.get_geometry()", self.geomSender.get_geometry()
-                print "###\nself.win", self.win
-                print "###\nself.wParent", self.wParent
-                print "###\nself.wGrandParent", self.wGrandParent
-                print "###\nself.maximizeHandler", self.maximizeHandler
-                print "###\nself.geomReciever", self.geomReciever
-                print "###\nself.geomSender", self.geomSender
+                print("###\nself.maximizeHandler.get_geometry()", self.maximizeHandler.get_geometry())
+                print("###\nself.geomReciever.get_geometry()", self.geomReciever.get_geometry())
+                print("###\nself.geomSender.get_geometry()", self.geomSender.get_geometry())
+                print("###\nself.win", self.win)
+                print("###\nself.wParent", self.wParent)
+                print("###\nself.wGrandParent", self.wGrandParent)
+                print("###\nself.maximizeHandler", self.maximizeHandler)
+                print("###\nself.geomReciever", self.geomReciever)
+                print("###\nself.geomSender", self.geomSender)
 
         ws = displayContext.getWindowSize()
         r = rect.Rect(0, 0, ws[0], ws[1])
         GLViewport.__init__(self, r)
         if DEBUG_WM:
-            print "self.size", self.size, "ws", ws
+            print("self.size", self.size, "ws", ws)
         if displayContext.win and self.maximized:
             # Send a maximize event now
             displayContext.win.set_state(mcplatform.MAXIMIZED)
@@ -335,9 +341,9 @@ class MCEdit(GLViewport):
         self.optionsPanel.initComponents()
         self.graphicsPanel = panels.GraphicsPanel(self)
 
-        #.#
+        # .#
         self.keyConfigPanel = keys.KeyConfigPanel(self)
-        #.#
+        # .#
 
         self.droppedLevel = None
 
@@ -364,17 +370,17 @@ class MCEdit(GLViewport):
 
         self.fileOpener.focus()
 
-    #-# Translation live updtate preparation
+    # -# Translation live updtate preparation
     def set_update_ui(self, v):
         GLViewport.set_update_ui(self, v)
         if v:
-            #&# Prototype for blocks/items names
+            # &# Prototype for blocks/items names
             if self.editor.level:
-                if self.editor.level.gamePlatform == "Java": # added this so the original functionality of this function does not change
+                if self.editor.level.gamePlatform == "Java":  # added this so the original functionality of this function does not change
                     mclangres.buildResources(self.editor.level.gameVersionNumber, albow.translate.getLang())
                 else:
                     mclangres.buildResources(self.editor.level.gamePlatform, albow.translate.getLang())
-            #&#
+            # &#
             self.keyConfigPanel = keys.KeyConfigPanel(self)
             self.graphicsPanel = panels.GraphicsPanel(self)
             if self.fileOpener in self.subwidgets:
@@ -385,12 +391,12 @@ class MCEdit(GLViewport):
                     self.add(self.fileOpener)
                 self.fileOpener.focus()
 
-    #-#
+    # -#
 
     editor = None
 
     def reloadEditor(self):
-        reload(leveleditor)
+        importlib.reload(leveleditor)
         level = None
 
         pos = None
@@ -443,7 +449,7 @@ class MCEdit(GLViewport):
 
     def recentWorlds(self):
         worlds = []
-        for i in xrange(self.numRecentWorlds):
+        for i in range(self.numRecentWorlds):
             if config.config.has_option("Recent Worlds", str(i)):
                 try:
                     filename = (config.config.get("Recent Worlds", str(i)).decode('utf-8'))
@@ -468,7 +474,7 @@ class MCEdit(GLViewport):
 
     def makeSideColumn1(self):
         def showLicense():
-            #platform_open(os.path.join(directories.getDataDir(), "LICENSE.txt"))
+            # platform_open(os.path.join(directories.getDataDir(), "LICENSE.txt"))
             platform_open(directories.getDataFile('LICENSE.txt'))
 
         def refresh():
@@ -503,7 +509,7 @@ class MCEdit(GLViewport):
                     ("",
                      "License",
                      showLicense,
-                     #os.path.join(directories.getDataDir(), "LICENSE.txt")),
+                     # os.path.join(directories.getDataDir(), "LICENSE.txt")),
                      directories.getDataFile('LICENSE.txt')),
                     ("",
                      "Refresh Player Names",
@@ -551,24 +557,24 @@ class MCEdit(GLViewport):
         Handle window resizing events.
         """
         if DEBUG_WM:
-            print "############################ RESIZED ############################"
+            print("############################ RESIZED ############################")
 
         (w, h) = self.size
         config_w, config_h = config.settings.windowWidth.get(), config.settings.windowHeight.get()
         win = self.displayContext.win
 
         if DEBUG_WM and win:
-            print "dw", dw, "dh", dh
-            print "self.size (w, h) 1", self.size, "win.get_size", win.get_size()
-            print "size 1", config_w, config_h
+            print("dw", dw, "dh", dh)
+            print("self.size (w, h) 1", self.size, "win.get_size", win.get_size())
+            print("size 1", config_w, config_h)
         elif DEBUG_WM and not win:
-            print "win is None, unable to print debug messages"
+            print("win is None, unable to print debug messages")
 
         if win:
             x, y = win.get_position()
             if DEBUG_WM:
-                print "position", x, y
-                print "config pos", (config.settings.windowX.get(), config.settings.windowY.get())
+                print("position", x, y)
+                print("config pos", (config.settings.windowX.get(), config.settings.windowY.get()))
 
         if w == 0 and h == 0:
             # The window has been minimized, no need to draw anything.
@@ -664,12 +670,12 @@ class MCEdit(GLViewport):
             sz = map(max, win.get_size(), (w, h))
 
             if DEBUG_WM:
-                print "sz", sz
-                print "maximized", maximized, "self.maximized", self.maximized
+                print("sz", sz)
+                print("maximized", maximized, "self.maximized", self.maximized)
 
             if maximized:
                 if DEBUG_WM:
-                    print "maximize, saving maximized size"
+                    print("maximize, saving maximized size")
                 config.settings.windowMaximizedWidth.set(sz[0])
                 config.settings.windowMaximizedHeight.set(sz[1])
                 config.save()
@@ -679,20 +685,20 @@ class MCEdit(GLViewport):
                 win.set_mode(sz, self.displayContext.displayMode())
             else:
                 if DEBUG_WM:
-                    print "size 2", config.settings.windowWidth.get(), config.settings.windowHeight.get()
-                    print "config_w", config_w, "config_h", config_h
-                    print "pos", config.settings.windowX.get(), config.settings.windowY.get()
+                    print("size 2", config.settings.windowWidth.get(), config.settings.windowHeight.get())
+                    print("config_w", config_w, "config_h", config_h)
+                    print("pos", config.settings.windowX.get(), config.settings.windowY.get())
                 if self.maximized != maximized:
                     if DEBUG_WM:
-                        print "restoring window pos and size"
-                        print "(config.settings.windowX.get(), config.settings.windowY.get())", (
-                        config.settings.windowX.get(), config.settings.windowY.get())
+                        print("restoring window pos and size")
+                        print("(config.settings.windowX.get(), config.settings.windowY.get())", (
+                            config.settings.windowX.get(), config.settings.windowY.get()))
                     (w, h) = (config_w, config_h)
                     win.set_state(1, (w, h), self.saved_pos)
                 else:
                     if DEBUG_WM:
-                        print "window resized"
-                        print "setting size to", (w, h), "and pos to", (x, y)
+                        print("window resized")
+                        print("setting size to", (w, h), "and pos to", (x, y))
                     win.set_mode((w, h), self.displayContext.displayMode())
                     win.set_position((x, y))
                 config.settings.windowMaximizedWidth.set(0)
@@ -701,14 +707,14 @@ class MCEdit(GLViewport):
             self.maximized = maximized
 
         if DEBUG_WM:
-            print "self.size (w, h) 2", self.size, (w, h)
+            print("self.size (w, h) 2", self.size, (w, h))
             surf = pygame.display.get_surface()
-            print "display surf rect", surf.get_rect()
+            print("display surf rect", surf.get_rect())
             if win:
                 if hasattr(win.base_handler, 'get_geometry'):
-                    print "win.base_handler geometry", win.base_handler.get_geometry()
-                    print "win.base_handler.parent geometry", win.base_handler.query_tree().parent.get_geometry()
-                    print "win.base_handler.parent.parent geometry", win.base_handler.query_tree().parent.query_tree().parent.get_geometry()
+                    print("win.base_handler geometry", win.base_handler.get_geometry())
+                    print("win.base_handler.parent geometry", win.base_handler.query_tree().parent.get_geometry())
+                    print("win.base_handler.parent.parent geometry", win.base_handler.query_tree().parent.query_tree().parent.get_geometry())
 
         if save_geom:
             config.settings.windowWidth.set(w)
@@ -771,10 +777,10 @@ class MCEdit(GLViewport):
         self.focus_switch = self.fileOpener
 
     def confirm_quit(self):
-        #-# saving language template
+        # -# saving language template
         if hasattr(albow.translate, "saveTemplate"):
             albow.translate.saveTemplate()
-        #-#
+        # -#
         self.saveWindowPosition()
         config.save()
         if self.editor.unsavedEdits:
@@ -827,7 +833,7 @@ class MCEdit(GLViewport):
     def main(cls):
         PlayerCache().load()
         displayContext = GLDisplayContext(splash.splash, caption=(
-        ('MCEdit ~ ' + release.get_version() % _("for")).encode('utf-8'), 'MCEdit'))
+            ('MCEdit ~ ' + release.get_version() % _("for")).encode('utf-8'), 'MCEdit'))
 
         os.environ['SDL_VIDEO_CENTERED'] = '0'
 
@@ -867,8 +873,6 @@ class MCEdit(GLViewport):
             config.settings.reportCrashes.set(answer == 'Allow')
             config.settings.reportCrashesAsked.set(True)
 
-
-
         config.save()
         if "update" in config.version.version.get():
             answer = albow.ask(
@@ -886,12 +890,12 @@ class MCEdit(GLViewport):
             try:
                 rootwidget.run()
             except (SystemExit, KeyboardInterrupt):
-                print "Shutting down..."
+                print("Shutting down...")
                 exc_txt = traceback.format_exc()
                 if mcedit.editor.level:
                     if config.settings.savePositionOnClose.get():
-                        mcedit.editor.waypointManager.saveLastPosition(mcedit.editor.mainViewport,
-                                                                       mcedit.editor.level.dimNo)
+                        mcedit.editor.waypointManager.save_last_position(mcedit.editor.mainViewport,
+                                                                         mcedit.editor.level.dimNo)
                     mcedit.editor.waypointManager.save()
                 # The following Windows specific code won't be executed if we're using '--debug-wm' switch.
                 if not USE_WM and sys.platform == "win32" and config.settings.setWindowPlacement.get():
@@ -899,7 +903,7 @@ class MCEdit(GLViewport):
                         display.get_wm_info()['window'])
                     X, Y, r, b = rect
                     if (showCmd == mcplatform.win32con.SW_MINIMIZE or
-                                showCmd == mcplatform.win32con.SW_SHOWMINIMIZED):
+                            showCmd == mcplatform.win32con.SW_SHOWMINIMIZED):
                         showCmd = mcplatform.win32con.SW_SHOWNORMAL
 
                     config.settings.windowX.set(X)
@@ -931,7 +935,7 @@ class MCEdit(GLViewport):
     def saveWindowPosition(self):
         """Save the window position in the configuration handler."""
         if DEBUG_WM:
-            print "############################ EXITING ############################"
+            print("############################ EXITING ############################")
         win = self.displayContext.win
         # The following Windows specific code will not be executed if we're using '--debug-wm' switch.
         if not USE_WM and sys.platform == "win32" and config.settings.setWindowPlacement.get():
@@ -939,7 +943,7 @@ class MCEdit(GLViewport):
                 display.get_wm_info()['window'])
             X, Y, r, b = rect
             if (showCmd == mcplatform.win32con.SW_MINIMIZE or
-                        showCmd == mcplatform.win32con.SW_SHOWMINIMIZED):
+                    showCmd == mcplatform.win32con.SW_SHOWMINIMIZED):
                 showCmd = mcplatform.win32con.SW_SHOWNORMAL
 
             config.settings.windowX.set(X)
@@ -952,7 +956,7 @@ class MCEdit(GLViewport):
             else:
                 x, y = self.saved_pos
             if DEBUG_WM:
-                print "x", x, "y", y
+                print("x", x, "y", y)
             config.settings.windowX.set(x)
             config.settings.windowY.set(y)
 
@@ -990,7 +994,7 @@ def main(argv):
     try:
         if not os.path.exists(directories.schematicsDir):
             shutil.copytree(
-                #os.path.join(directories.getDataDir(), u'stock-schematics'),
+                # os.path.join(directories.getDataDir(), u'stock-schematics'),
                 directories.getDataFile('stock-schematics'),
                 directories.schematicsDir
             )
@@ -1009,13 +1013,13 @@ def main(argv):
     try:
         MCEdit.main()
     except Exception as e:
-        print "mcedit.main MCEdit exited with errors."
+        print("mcedit.main MCEdit exited with errors.")
         logging.error("MCEdit version %s", release.get_version())
         display.quit()
         if hasattr(sys, 'frozen') and sys.platform == 'win32':
             logging.exception("%s", e)
-            print "Press RETURN or close this window to dismiss."
-            raw_input()
+            print("Press RETURN or close this window to dismiss.")
+            input()
 
         raise
 
@@ -1031,10 +1035,10 @@ def getSelectedMinecraftVersion():
 
 
 def getLatestMinecraftVersion(snapshots=False):
-    import urllib2
+    import urllib.request
     import json
     versioninfo = json.loads(
-        urllib2.urlopen("http://s3.amazonaws.com/Minecraft.Download/versions/versions.json ").read())
+        urllib.request.urlopen("http://s3.amazonaws.com/Minecraft.Download/versions/versions.json ").read())
     if snapshots:
         return versioninfo['latest']['snapshot']
     else:
@@ -1086,9 +1090,9 @@ if __name__ == "__main__":
     except:
         mcworld_support.close_all_temp_dirs()
         traceback.print_exc()
-        print ""
-        print "=================================="
-        print "\t\t\t  MCEdit has crashed"
-        print "=================================="
-        raw_input("Press the Enter key to close this window")
+        print("")
+        print("==================================")
+        print("\t\t\t  MCEdit has crashed")
+        print("==================================")
+        input("Press the Enter key to close this window")
         pass

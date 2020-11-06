@@ -1,6 +1,6 @@
-from pymclevel.materials import Block
-from editortools.brush import createBrushMask, createTileEntities
 import numpy
+
+from editortools.brush import createBrushMask, createTileEntities
 
 displayName = 'Fill'
 mainBlock = 'Block'
@@ -8,12 +8,12 @@ mainBlock = 'Block'
 
 def createInputs(self):
     self.inputs = (
-    {'Hollow': False},
-    {'Noise': 100},
-    {'W': (3, 1, 4096), 'H': (3, 1, 4096), 'L': (3, 1, 4096)},
-    {'Block': materials.blockWithID(1, 0)},
-    {'Fill Air': True},
-    {'Minimum Spacing': 1}
+        {'Hollow': False},
+        {'Noise': 100},
+        {'W': (3, 1, 4096), 'H': (3, 1, 4096), 'L': (3, 1, 4096)},
+        {'Block': materials.blockWithID(1, 0)},
+        {'Fill Air': True},
+        {'Minimum Spacing': 1}
     )
 
 

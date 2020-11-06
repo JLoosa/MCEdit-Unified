@@ -1,17 +1,21 @@
 from __future__ import unicode_literals
-import albow
-from albow.dialogs import Dialog
-from config import config
-import pygame
-from albow.translate import _, buildTemplate
-import sys
-import os
+
 import logging
+import os
+import sys
 import traceback
+
+import pygame
+
+import albow
 import directories
+from albow.dialogs import Dialog
+from albow.translate import _
+from config import config
 
 old_lang = None
 old_fprop = None
+
 
 class OptionsPanel(Dialog):
     anchor = 'wh'
@@ -27,29 +31,29 @@ class OptionsPanel(Dialog):
         self.saveOldPortable = self.portableVar.get()
 
         self.saveOldConfig = {
-            config.controls.autobrake:                        config.controls.autobrake.get(),
-            config.controls.swapAxes:                         config.controls.swapAxes.get(),
-            config.controls.cameraAccel:                      config.controls.cameraAccel.get(),
-            config.controls.cameraDrag:                       config.controls.cameraDrag.get(),
-            config.controls.cameraMaxSpeed:                   config.controls.cameraMaxSpeed.get(),
-            config.controls.cameraBrakingSpeed:               config.controls.cameraBrakingSpeed.get(),
-            config.controls.mouseSpeed:                       config.controls.mouseSpeed.get(),
-            config.settings.undoLimit:                        config.settings.undoLimit.get(),
-            config.settings.maxCopies:                        config.settings.maxCopies.get(),
-            config.controls.invertMousePitch:                 config.controls.invertMousePitch.get(),
-            config.settings.spaceHeight:                      config.settings.spaceHeight.get(),
-            albow.AttrRef(self, 'blockBuffer'):               albow.AttrRef(self, 'blockBuffer').get(),
-            config.settings.setWindowPlacement:               config.settings.setWindowPlacement.get(),
-            config.settings.rotateBlockBrush:                 config.settings.rotateBlockBrush.get(),
-            config.settings.shouldResizeAlert:                config.settings.shouldResizeAlert.get(),
-            config.settings.superSecretSettings:              config.settings.superSecretSettings.get(),
-            config.settings.longDistanceMode:                 config.settings.longDistanceMode.get(),
-            config.settings.flyMode:                          config.settings.flyMode.get(),
-            config.settings.langCode:                         config.settings.langCode.get(),
-            config.settings.compassToggle:                    config.settings.compassToggle.get(),
-            config.settings.compassSize:                      config.settings.compassSize.get(),
-            config.settings.fontProportion:                   config.settings.fontProportion.get(),
-            config.settings.fogIntensity:                     config.settings.fogIntensity.get(),
+            config.controls.autobrake: config.controls.autobrake.get(),
+            config.controls.swapAxes: config.controls.swapAxes.get(),
+            config.controls.cameraAccel: config.controls.cameraAccel.get(),
+            config.controls.cameraDrag: config.controls.cameraDrag.get(),
+            config.controls.cameraMaxSpeed: config.controls.cameraMaxSpeed.get(),
+            config.controls.cameraBrakingSpeed: config.controls.cameraBrakingSpeed.get(),
+            config.controls.mouseSpeed: config.controls.mouseSpeed.get(),
+            config.settings.undoLimit: config.settings.undoLimit.get(),
+            config.settings.maxCopies: config.settings.maxCopies.get(),
+            config.controls.invertMousePitch: config.controls.invertMousePitch.get(),
+            config.settings.spaceHeight: config.settings.spaceHeight.get(),
+            albow.AttrRef(self, 'blockBuffer'): albow.AttrRef(self, 'blockBuffer').get(),
+            config.settings.setWindowPlacement: config.settings.setWindowPlacement.get(),
+            config.settings.rotateBlockBrush: config.settings.rotateBlockBrush.get(),
+            config.settings.shouldResizeAlert: config.settings.shouldResizeAlert.get(),
+            config.settings.superSecretSettings: config.settings.superSecretSettings.get(),
+            config.settings.longDistanceMode: config.settings.longDistanceMode.get(),
+            config.settings.flyMode: config.settings.flyMode.get(),
+            config.settings.langCode: config.settings.langCode.get(),
+            config.settings.compassToggle: config.settings.compassToggle.get(),
+            config.settings.compassSize: config.settings.compassSize.get(),
+            config.settings.fontProportion: config.settings.fontProportion.get(),
+            config.settings.fogIntensity: config.settings.fogIntensity.get(),
             config.schematicCopying.cancelCommandBlockOffset: config.schematicCopying.cancelCommandBlockOffset.get()
         }
         global old_lang
@@ -62,87 +66,87 @@ class OptionsPanel(Dialog):
     def initComponents(self):
         """Initilize the window components. Call this after translation hs been loaded."""
         autoBrakeRow = albow.CheckBoxLabel("Autobrake",
-                                              ref=config.controls.autobrake,
-                                              tooltipText="Apply brake when not pressing movement keys")
+                                           ref=config.controls.autobrake,
+                                           tooltipText="Apply brake when not pressing movement keys")
 
         swapAxesRow = albow.CheckBoxLabel("Swap Axes Looking Down",
-                                             ref=config.controls.swapAxes,
-                                             tooltipText="Change the direction of the Forward and Backward keys when looking down")
+                                          ref=config.controls.swapAxes,
+                                          tooltipText="Change the direction of the Forward and Backward keys when looking down")
 
         cameraAccelRow = albow.FloatInputRow("Camera Acceleration: ",
-                                                ref=config.controls.cameraAccel, width=100, min=5.0)
+                                             ref=config.controls.cameraAccel, width=100, min=5.0)
 
         cameraDragRow = albow.FloatInputRow("Camera Drag: ",
-                                               ref=config.controls.cameraDrag, width=100, min=1.0)
+                                            ref=config.controls.cameraDrag, width=100, min=1.0)
 
         cameraMaxSpeedRow = albow.FloatInputRow("Camera Max Speed: ",
-                                                   ref=config.controls.cameraMaxSpeed, width=100, min=1.0)
+                                                ref=config.controls.cameraMaxSpeed, width=100, min=1.0)
 
         cameraBrakeSpeedRow = albow.FloatInputRow("Camera Braking Speed: ",
-                                                     ref=config.controls.cameraBrakingSpeed, width=100,
-                                                     min=1.0)
+                                                  ref=config.controls.cameraBrakingSpeed, width=100,
+                                                  min=1.0)
 
         mouseSpeedRow = albow.FloatInputRow("Mouse Speed: ",
-                                               ref=config.controls.mouseSpeed, width=100, min=0.1,
-                                               max=20.0)
+                                            ref=config.controls.mouseSpeed, width=100, min=0.1,
+                                            max=20.0)
 
         undoLimitRow = albow.IntInputRow("Undo Limit: ",
-                                            ref=config.settings.undoLimit, width=100, min=0)
+                                         ref=config.settings.undoLimit, width=100, min=0)
 
         maxCopiesRow = albow.IntInputRow("Copy Stack Size: ",
-                                            ref=config.settings.maxCopies, width=100, min=0,
-                                            tooltipText="Maximum number of copied objects.")
+                                         ref=config.settings.maxCopies, width=100, min=0,
+                                         tooltipText="Maximum number of copied objects.")
 
         compassSizeRow = albow.IntInputRow("Compass Size (%): ",
-                                            ref=config.settings.compassSize, width=100, min=0, max=100)
+                                           ref=config.settings.compassSize, width=100, min=0, max=100)
 
         fontProportion = albow.IntInputRow("Fonts Proportion (%): ",
-                                            ref=config.settings.fontProportion, width=100, min=0,
-                                            tooltipText="Fonts sizing proportion. The number is a percentage.\nRestart needed!")
+                                           ref=config.settings.fontProportion, width=100, min=0,
+                                           tooltipText="Fonts sizing proportion. The number is a percentage.\nRestart needed!")
         albow.resource.font_proportion = config.settings.fontProportion.get()
 
         fogIntensityRow = albow.IntInputRow("Fog Intensity (%): ",
                                             ref=config.settings.fogIntensity, width=100, min=0, max=100)
 
         invertRow = albow.CheckBoxLabel("Invert Mouse",
-                                           ref=config.controls.invertMousePitch,
-                                           tooltipText="Reverse the up and down motion of the mouse.")
+                                        ref=config.controls.invertMousePitch,
+                                        tooltipText="Reverse the up and down motion of the mouse.")
 
         spaceHeightRow = albow.IntInputRow("Low Detail Height",
-                                              ref=config.settings.spaceHeight,
-                                              tooltipText="When you are this far above the top of the world, move fast and use low-detail mode.")
+                                           ref=config.settings.spaceHeight,
+                                           tooltipText="When you are this far above the top of the world, move fast and use low-detail mode.")
 
         blockBufferRow = albow.IntInputRow("Block Buffer (MB):",
-                                              ref=albow.AttrRef(self, 'blockBuffer'), min=1,
-                                              tooltipText="Amount of memory used for temporary storage.  When more than this is needed, the disk is used instead.")
+                                           ref=albow.AttrRef(self, 'blockBuffer'), min=1,
+                                           tooltipText="Amount of memory used for temporary storage.  When more than this is needed, the disk is used instead.")
 
         setWindowPlacementRow = albow.CheckBoxLabel("Set Window Placement",
-                                                       ref=config.settings.setWindowPlacement,
-                                                       tooltipText="Try to save and restore the window position.")
+                                                    ref=config.settings.setWindowPlacement,
+                                                    tooltipText="Try to save and restore the window position.")
 
         rotateBlockBrushRow = albow.CheckBoxLabel("Rotate block with brush",
-                                                        ref=config.settings.rotateBlockBrush,
-                                                        tooltipText="When rotating your brush, also rotate the orientation of the block your brushing with")
+                                                  ref=config.settings.rotateBlockBrush,
+                                                  tooltipText="When rotating your brush, also rotate the orientation of the block your brushing with")
 
-        compassToggleRow =albow.CheckBoxLabel("Toggle compass",
-                                                        ref=config.settings.compassToggle)
+        compassToggleRow = albow.CheckBoxLabel("Toggle compass",
+                                               ref=config.settings.compassToggle)
 
         windowSizeRow = albow.CheckBoxLabel("Window Resize Alert",
-                                               ref=config.settings.shouldResizeAlert,
-                                               tooltipText="Reminds you that the cursor won't work correctly after resizing the window.")
+                                            ref=config.settings.shouldResizeAlert,
+                                            tooltipText="Reminds you that the cursor won't work correctly after resizing the window.")
 
         superSecretSettingsRow = albow.CheckBoxLabel("Super Secret Settings",
-                                                ref=config.settings.superSecretSettings,
-                                                tooltipText="Weird stuff happen!")
+                                                     ref=config.settings.superSecretSettings,
+                                                     tooltipText="Weird stuff happen!")
 
         longDistanceRow = albow.CheckBoxLabel("Long-Distance Mode",
-                                                 ref=config.settings.longDistanceMode,
-                                                 tooltipText="Always target the farthest block under the cursor, even in mouselook mode.")
+                                              ref=config.settings.longDistanceMode,
+                                              tooltipText="Always target the farthest block under the cursor, even in mouselook mode.")
 
         flyModeRow = albow.CheckBoxLabel("Fly Mode",
-                                            ref=config.settings.flyMode,
-                                            tooltipText="Moving forward and Backward will not change your altitude in Fly Mode.")
-        
+                                         ref=config.settings.flyMode,
+                                         tooltipText="Moving forward and Backward will not change your altitude in Fly Mode.")
+
         showCommandsRow = albow.CheckBoxLabel("Show Block Info when hovering",
                                               ref=config.settings.showQuickBlockInfo,
                                               tooltipText="Shows summarized info of some Blocks when hovering over it.")
@@ -170,10 +174,10 @@ class OptionsPanel(Dialog):
         goPortableButton.tooltipText = self.portableButtonTooltip()
         goPortableRow = albow.Row((albow.Label("Install Mode"), goPortableButton))
 
-# Disabled Crash Reporting Option
-#       reportRow = albow.CheckBoxLabel("Report Errors",
-#                                          ref=config.settings.reportCrashes,
-#                                          tooltipText="Automatically report errors to the developer.")
+        # Disabled Crash Reporting Option
+        #       reportRow = albow.CheckBoxLabel("Report Errors",
+        #                                          ref=config.settings.reportCrashes,
+        #                                          tooltipText="Automatically report errors to the developer.")
 
         self.inputs = (
             spaceHeightRow,
@@ -191,24 +195,24 @@ class OptionsPanel(Dialog):
         )
 
         options = (
-                    longDistanceRow,
-                    flyModeRow,
-                    autoBrakeRow,
-                    swapAxesRow,
-                    invertRow,
-                    superSecretSettingsRow,
-                    rotateBlockBrushRow,
-                    compassToggleRow,
-                    showCommandsRow,
-                    cancelCommandBlockOffset,
-                    langButtonRow,
-                    ) + (
-                        ((sys.platform == "win32" and pygame.version.vernum == (1, 9, 1)) and (windowSizeRow,) or ())
-                    ) + (
-                        (sys.platform == "win32") and (setWindowPlacementRow,) or ()
-                    ) + (
-                        (not sys.platform == "darwin") and (goPortableRow,) or ()
-                    )
+                      longDistanceRow,
+                      flyModeRow,
+                      autoBrakeRow,
+                      swapAxesRow,
+                      invertRow,
+                      superSecretSettingsRow,
+                      rotateBlockBrushRow,
+                      compassToggleRow,
+                      showCommandsRow,
+                      cancelCommandBlockOffset,
+                      langButtonRow,
+                  ) + (
+                      ((sys.platform == "win32" and pygame.version.vernum == (1, 9, 1)) and (windowSizeRow,) or ())
+                  ) + (
+                          (sys.platform == "win32") and (setWindowPlacementRow,) or ()
+                  ) + (
+                          (not sys.platform == "darwin") and (goPortableRow,) or ()
+                  )
 
         rightcol = albow.Column(options, align='r')
         leftcol = albow.Column(self.inputs, align='r')
@@ -251,7 +255,7 @@ class OptionsPanel(Dialog):
             sgnal["en_US"] = u"English (US)"
         self.langs = langs
         self.sgnal = sgnal
-        logging.debug("Detected languages: %s"%self.langs)
+        logging.debug("Detected languages: %s" % self.langs)
         return langs
 
     def changeLanguage(self):
@@ -264,25 +268,25 @@ class OptionsPanel(Dialog):
         else:
             lng = self.langs[langName]
         config.settings.langCode.set(lng)
-        #-# Translation live update preparation
+        # -# Translation live update preparation
         logging.debug('*** Language change detected.')
-        logging.debug('    Former language: %s.'%albow.translate.getLang())
-        logging.debug('    New language: %s.'%lng)
-        #albow.translate.langPath = os.sep.join((directories.getDataDir(), "lang"))
+        logging.debug('    Former language: %s.' % albow.translate.getLang())
+        logging.debug('    New language: %s.' % lng)
+        # albow.translate.langPath = os.sep.join((directories.getDataDir(), "lang"))
         albow.translate.langPath = directories.getDataFile('lang')
         update = albow.translate.setLang(lng)[2]
-        logging.debug('    Update done? %s (Magic %s)'%(update, update or lng == 'en_US'))
+        logging.debug('    Update done? %s (Magic %s)' % (update, update or lng == 'en_US'))
         self.mcedit.root.set_update_ui(update or lng == 'en_US')
         self.mcedit.root.set_update_ui(False)
         self.mcedit.editor.set_update_ui(update or lng == 'en_US')
         self.mcedit.editor.set_update_ui(False)
-        #-#
+        # -#
 
     @staticmethod
     def portableButtonTooltip():
         return (
-        "Click to make your MCEdit install self-contained by moving the settings and schematics into the program folder",
-        "Click to make your MCEdit install persistent by moving the settings and schematics into your Documents folder")[
+            "Click to make your MCEdit install self-contained by moving the settings and schematics into the program folder",
+            "Click to make your MCEdit install persistent by moving the settings and schematics into your Documents folder")[
             directories.portable]
 
     @property
@@ -306,7 +310,7 @@ class OptionsPanel(Dialog):
         alertText = textChoices[directories.portable]
         if albow.ask(alertText) == "OK":
             if [directories.hasPreviousPortableInstallation, directories.hasPreviousFixedInstallation][directories.portable]():
-                asked = albow.ask("Found a previous %s installation"%["portable", "fixed"][directories.portable], responses=["Use", "Overwrite", "Cancel"])
+                asked = albow.ask("Found a previous %s installation" % ["portable", "fixed"][directories.portable], responses=["Use", "Overwrite", "Cancel"])
                 if asked == "Use":
                     useExisting = True
                 elif asked == "Overwrite":

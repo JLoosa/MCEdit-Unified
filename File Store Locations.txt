@@ -24,20 +24,20 @@
 Portable
   usercache.json
     Documents\MCEdit\ (CSIDL_MYDOCUMENTS)
-  ServerJarStorage\
-    Documents\MCEdit\ServerJarStorage\ (CSIDL_MYDOCUMENTS)
-  Filters\
-    Documents\MCEdit\Filters\ (CSIDL_MYDOCUMENTS)
-  Schematics\
-    Documents\MCEdit\Schematics\ (CSIDL_MYDOCUMENTS)
+  ServerJarStorage
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     Documents\MCEdit\ServerJarStorage\ (CSIDL_MYDOCUMENTS)
+  Filters
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          Documents\MCEdit\Filters\ (CSIDL_MYDOCUMENTS)
+  Schematics
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  Documents\MCEdit\Schematics\ (CSIDL_MYDOCUMENTS)
 Fixed
   usercache.json
-    ..\ServerJarStorage\
-  ServerJarStorage\
-    ..\ServerJarStorage\
-  Filters\
-    ..\Filters\
-  Schematics\
-    ..\Schematics\
-    
+    ..\ServerJarStorage
+ServerJarStorage
+..\ServerJarStorage
+Filters
+..\Filters
+Schematics
+..\Schematics
+
 ======Linux "linux"=======

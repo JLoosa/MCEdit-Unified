@@ -2,23 +2,21 @@
 # please give credit to SethBling.
 # http://youtube.com/SethBling
 
-from pymclevel import TAG_List
 from pymclevel import TAG_Byte
-from pymclevel import TAG_Int
-from pymclevel import TAG_Float
-from pymclevel import TAG_Short
 from pymclevel import TAG_Double
-from pymclevel import TAG_String
+from pymclevel import TAG_Float
+from pymclevel import TAG_Int
+from pymclevel import TAG_Short
 
 displayName = "Change Mob Properties"
 
 Professions = {
-"Farmer (brown)": 0,
-"Librarian (white)": 1,
-"Priest (purple)": 2,
-"Blacksmith (black apron)": 3,
-"Butcher (white apron)": 4,
-"Villager (green)": 5,
+    "Farmer (brown)": 0,
+    "Librarian (white)": 1,
+    "Priest (purple)": 2,
+    "Blacksmith (black apron)": 3,
+    "Butcher (white apron)": 4,
+    "Villager (green)": 5,
 }
 
 ProfessionKeys = ("N/A",)
@@ -28,22 +26,22 @@ for key in Professions.keys():
 noop = -1337
 
 inputs = (
-("Health", noop),
-("VelocityX", noop),
-("VelocityY", noop),
-("VelocityZ", noop),
-("Fire", noop),
-("FallDistance", noop),
-("Air", noop),
-("AttackTime", noop),
-("HurtTime", noop),
-("Lightning Creeper", ("N/A", "Lightning", "No Lightning")),
-("Enderman Block Id", noop),
-("Enderman Block Data", noop),
-("Villager Profession", ProfessionKeys),
-("Slime Size", noop),
-("Breeding Mode Ticks", noop),
-("Child/Adult Age", noop),
+    ("Health", noop),
+    ("VelocityX", noop),
+    ("VelocityY", noop),
+    ("VelocityZ", noop),
+    ("Fire", noop),
+    ("FallDistance", noop),
+    ("Air", noop),
+    ("AttackTime", noop),
+    ("HurtTime", noop),
+    ("Lightning Creeper", ("N/A", "Lightning", "No Lightning")),
+    ("Enderman Block Id", noop),
+    ("Enderman Block Data", noop),
+    ("Villager Profession", ProfessionKeys),
+    ("Slime Size", noop),
+    ("Breeding Mode Ticks", noop),
+    ("Child/Adult Age", noop),
 )
 
 
@@ -106,7 +104,7 @@ def perform(level, box, options):
 
                     if blockId != noop and (e["id"].value == "Enderman" or MCEDIT_IDS.get(e["id"].value) == "DEF_ENTITIES_ENDERMAN"):
                         e["carried"] = TAG_Short(blockId)
-                    if blockData != noop and (e["id"].value == "Enderman"  or MCEDIT_IDS.get(e["id"].value) == "DEF_ENTITIES_ENDERMAN"):
+                    if blockData != noop and (e["id"].value == "Enderman" or MCEDIT_IDS.get(e["id"].value) == "DEF_ENTITIES_ENDERMAN"):
                         e["carriedData"] = TAG_Short(blockData)
 
                     if profession != "N/A" and (e["id"].value == "Villager" or MCEDIT_IDS.get(e["id"].value) == "DEF_ENTITIES_VILLAGER"):

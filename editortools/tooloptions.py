@@ -8,4 +8,3 @@ class ToolOptions(Panel):
 
     def escape_action(self, *args, **kwargs):
         self.dismiss()
-

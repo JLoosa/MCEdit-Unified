@@ -1,26 +1,26 @@
-dimension = '' #overworld
+dimension = ''  # overworld
 # dimension = '\x01\x00\x00\x00' #nether
 # dimension = '\x02\x00\x00\x00' #end
 
 import itertools
-import time
-from math import floor, ceil, log
-from level import FakeChunk, MCLevel
 import logging
-from materials import pocketMaterials
-
 import os
-
-from mclevelbase import ChunkNotPresent, ChunkMalformed
-import nbt
-import numpy
-import struct
-from infiniteworld import ChunkedLevelMixin, SessionLockLost, AnvilChunkData, AnvilWorldFolder, unpackNibbleArray, packNibbleArray
-from level import LightedChunk
-from contextlib import contextmanager
-from pymclevel import entity, BoundingBox, Entity, TileEntity
-import traceback
 import shutil
+import struct
+import time
+import traceback
+from contextlib import contextmanager
+from math import floor, ceil, log
+
+import numpy
+
+import pymclevel.nbt as nbt
+from pymclevel import entity, BoundingBox, Entity, TileEntity
+from pymclevel.infiniteworld import ChunkedLevelMixin, SessionLockLost, AnvilChunkData, AnvilWorldFolder, unpackNibbleArray
+from pymclevel.level import FakeChunk, MCLevel
+from pymclevel.level import LightedChunk
+from pymclevel.materials import pocketMaterials
+from pymclevel.mclevelbase import ChunkNotPresent, ChunkMalformed
 
 logger = logging.getLogger(__name__)
 
@@ -29,11 +29,11 @@ leveldb_available = True
 leveldb_mcpe = None
 
 try:
-    import leveldb as leveldb_mcpe
+    import pymclevel.leveldb as leveldb_mcpe
 except Exception as e:
     trace_msg = traceback.format_exc().splitlines()
-    logger.warn("Error while trying to import leveldb:")
-    [logger.warn(a) for a in trace_msg]
+    logger.warning("Error while trying to import leveldb:")
+    [logger.warning(a) for a in trace_msg]
 
 try:
     if leveldb_mcpe is None:
@@ -42,12 +42,12 @@ try:
 except Exception as e:
     logger.info("Error while trying to import leveldb_mcpe ({0})".format(e))
 
-
-#---------------------------------------------------------------------
+# ---------------------------------------------------------------------
 # TRACKING ERRORS
 #
 # Some debug messages will be displayed in the console, and a file will be used to put more information.
 import sys
+
 DEBUG_PE = False
 dump_fName = 'dump_pe.txt'
 longest_complist_len = 0
@@ -91,6 +91,7 @@ def loadNBTCompoundList(data, littleEndian=True, partNBT=False, count=None):
     :param partNBT: bool. If part of the data is NBT (begins with NBT), the function will return the list of compounds with the rest of the data that was not NBT
     :return: list of TAG_Compounds
     """
+
     def load(_data, _partNBT, _count):
         compound_list = []
         idx = 0
@@ -119,10 +120,10 @@ def loadNBTCompoundList(data, littleEndian=True, partNBT=False, count=None):
                     try:
                         dump_line = len(open(dump_fName).read().splitlines()) + 1
                         dump_msg = "**********\n{m1}\n{e}\n{m2}\n{d}\n{m3} {l}".format(m1=msg1,
-                                   e=e, m2=msg2, d=repr(_data[idx:]), m3=msg3, l=len(data))
+                                                                                       e=e, m2=msg2, d=repr(_data[idx:]), m3=msg3, l=len(data))
                         msg_len = len(dump_msg.splitlines())
                         write_dump(dump_msg)
-                        logger.warn("Error info and data dumped to %s at line %s (%s lines long)", dump_fName, dump_line, msg_len)
+                        logger.warning("Error info and data dumped to %s at line %s (%s lines long)", dump_fName, dump_line, msg_len)
                     except Exception as _e:
                         logger.error("Could not dump PE debug info:")
                         logger.error(_e)
@@ -150,6 +151,7 @@ def TagProperty(tagName, tagType, default_or_func=None):
     :param default_or_func: function or default value. If function, function should return the default.
     :return: property
     """
+
     def getter(self):
         root_tag = self.root_tag["Data"]
         if tagName not in root_tag:
@@ -193,7 +195,7 @@ def get_blocks_storage_from_blocks_and_data(blocks, data):
         if block_nbt not in palette:
             palette.append(block_nbt)
         position = palette.index(block_nbt)
-        numpy_blocks[(blocksCombined[0]==blockID) & (blocksCombined[1]==blockData)] = position
+        numpy_blocks[(blocksCombined[0] == blockID) & (blocksCombined[1] == blockData)] = position
     max_bits = len('{0:b}'.format(numpy_blocks.max()))
     possible_bits_per_blocks = [1, 2, 3, 4, 5, 6, 8, 16]
     bits_per_block = possible_bits_per_blocks[numpy.searchsorted(possible_bits_per_blocks, max_bits, side='left')]
@@ -273,15 +275,14 @@ class PocketLeveldbDatabase(object):
         :return: None
         """
         if not world_version:
-            raise TypeError("Wrong world version sent: %s"%world_version)
+            raise TypeError("Wrong world version sent: %s" % world_version)
         self.world_version = world_version
         self.dat_world_version = dat_world_version
         self.path = path
         if not os.path.exists(path):
-            file(path, 'w').close()
+            open(path, 'w').close()
         self.level = level
         self.compressors = compressors
-
 
         self.options = leveldb_mcpe.Options()
         self.writeOptions = leveldb_mcpe.WriteOptions()
@@ -290,7 +291,7 @@ class PocketLeveldbDatabase(object):
 
         if create:
             # Rework this, because leveldb.Options() is a function...
-            #self.options.create_if_missing = True  # The database will be created once needed first.
+            # self.options.create_if_missing = True  # The database will be created once needed first.
             return
 
         needsRepair = False
@@ -320,15 +321,15 @@ class PocketLeveldbDatabase(object):
                             raise
 
         except RuntimeError as err:
-            logger.error("Error while opening world database from %s (%s)"%(path, err))
+            logger.error("Error while opening world database from %s (%s)" % (path, err))
             needsRepair = True
 
         if needsRepair:
-            logger.info("Trying to repair world %s"%path)
+            logger.info("Trying to repair world %s" % path)
             try:
                 self.ldb.RepairWrapper(os.path.join(path, 'db'))
             except RuntimeError as err:
-                logger.error("Error while repairing world %s %s"%(path, err))
+                logger.error("Error while repairing world %s %s" % (path, err))
 
     def close(self):
         """
@@ -384,7 +385,7 @@ class PocketLeveldbDatabase(object):
             Automatically calculated from cx and cz if the default 'None' value is used.
         """
         if key is None:
-            key = struct.pack('<i', cx) + struct.pack('<i', cz)+dimension
+            key = struct.pack('<i', cx) + struct.pack('<i', cz) + dimension
         with self.world_db() as db:
             rop = self.readOptions if readOptions is None else readOptions
             c = chr(y)
@@ -426,7 +427,7 @@ class PocketLeveldbDatabase(object):
         # Let check which version of the chunk we have before doing anything else.
         with self.world_db() as db:
             rop = self.readOptions if readOptions is None else readOptions
-            key = struct.pack('<i', cx) + struct.pack('<i', cz)+dimension
+            key = struct.pack('<i', cx) + struct.pack('<i', cz) + dimension
             raise_err = False
             try:
                 chunk_version = db.Get(rop, key + chr(118))
@@ -437,7 +438,8 @@ class PocketLeveldbDatabase(object):
             if raise_err:
                 raise ChunkNotPresent((cx, cz, self))
             if DEBUG_PE:
-                write_dump("** Loading chunk ({x}, {z}) for PE {vs} ({v}).\n".format(x=cx, z=cz, vs={"\x02": "pre 1.0", "\x03": "1.0", "\x04": "1.1"}.get(chunk_version, 'Unknown'), v=repr(chunk_version)))
+                write_dump(
+                    "** Loading chunk ({x}, {z}) for PE {vs} ({v}).\n".format(x=cx, z=cz, vs={"\x02": "pre 1.0", "\x03": "1.0", "\x04": "1.1"}.get(chunk_version, 'Unknown'), v=repr(chunk_version)))
 
             if chunk_version == "\x02":
                 # We have a pre 1.0 chunk
@@ -500,7 +502,7 @@ class PocketLeveldbDatabase(object):
         """
         cx, cz = chunk.chunkPosition
         data = chunk.savedData()
-        key = struct.pack('<i', cx) + struct.pack('<i', cz)+dimension
+        key = struct.pack('<i', cx) + struct.pack('<i', cz) + dimension
 
         if batch is None:
             with self.world_db() as db:
@@ -549,7 +551,7 @@ class PocketLeveldbDatabase(object):
                         v = ent["id"].value
                         ent_data = defs_get(ids_get(v, v), {'id': -1})
                         id = ent_data['id']
-                        ent['id'] = nbt.TAG_Int(id + mcedit_defs['entity_types'].get(ent_data.get('type', None),0))
+                        ent['id'] = nbt.TAG_Int(id + mcedit_defs['entity_types'].get(ent_data.get('type', None), 0))
                         entityData += ent.save(compressed=False)
                         # We have to re-invert after saving otherwise the next save will fail.
                         ent["id"] = nbt.TAG_String(v)
@@ -566,7 +568,7 @@ class PocketLeveldbDatabase(object):
         chunk._extra_blocks_data.subchunks = chunk._Blocks.subchunks
         chunk._extra_blocks.update_subchunks()
         chunk._extra_blocks_data.update_subchunks()
-        data_2d = getattr(chunk, 'data_2d', '\x00'*768)
+        data_2d = getattr(chunk, 'data_2d', '\x00' * 768)
         if hasattr(chunk, 'Biomes') and data_2d:
             data_2d = data_2d[:512] + chunk.Biomes.tostring()
         if chunk.chunk_version == "\x03":
@@ -648,7 +650,7 @@ class PocketLeveldbDatabase(object):
         elif ord(ver) >= 3:
             self._saveChunk_1plus(chunk, batch, writeOptions)
         else:
-            raise AttributeError("Unknown version %s for chunk %s"%(ver, chunk.chunkPosition()))
+            raise AttributeError("Unknown version %s for chunk %s" % (ver, chunk.chunkPosition()))
 
     def loadChunk(self, cx, cz, world):
         """
@@ -667,8 +669,8 @@ class PocketLeveldbDatabase(object):
         else:
             keys = []
             keys_append = keys.append
-            coords_str = struct.pack('<i', cx) + struct.pack('<i', cz)+dimension
-            for i in xrange(16):
+            coords_str = struct.pack('<i', cx) + struct.pack('<i', cz) + dimension
+            for i in range(16):
                 keys_append(coords_str + "\x2f" + chr(i))
             for k in ("\x2d", "\x2e", "\x30", "\x31", "\x32", "\x33", "\x34",
                       "\x35", "\x36", "\x76"):
@@ -715,7 +717,7 @@ class PocketLeveldbDatabase(object):
                         if world_version == 'pre1.0':
                             val = db.Get(rop, key[:8] + '\x30')
                         elif world_version == '1.plus':
-                            val = db.Get(rop, key[:8]+dimension+'\x76')
+                            val = db.Get(rop, key[:8] + dimension + '\x76')
                         # if the above key exists it is a valid chunk so add it
                         if val is not None:
                             allChunks.add(struct.unpack('<2i', key[:8]))
@@ -769,11 +771,10 @@ class PocketLeveldbDatabase(object):
 
 # =====================================================================
 class PocketLeveldbWorld(ChunkedLevelMixin, MCLevel):
-
     # Methods are missing and prvent some parts of MCEdit to work properly.
     # brush.py need copyChunkFrom()
 
-#     Height = 128 # Let that being defined by the world version
+    #     Height = 128 # Let that being defined by the world version
     Width = 0
     Length = 0
 
@@ -791,7 +792,7 @@ class PocketLeveldbWorld(ChunkedLevelMixin, MCLevel):
 
     entityClass = entity.PocketEntity
 
-    world_version = None # to be set to 'pre1.0' or '1.plus'
+    world_version = None  # to be set to 'pre1.0' or '1.plus'
     # It may happen that 1+ world has a an internale .dat version set to pre 1 (0x04).
     # Let store this internal .dat version to be able to deal with mixed pre 1 and 1+ chunks.
     dat_world_version = None
@@ -916,14 +917,14 @@ class PocketLeveldbWorld(ChunkedLevelMixin, MCLevel):
             root_tag["Data"]["SpawnZ"] = nbt.TAG_Int(0)
 
             if last_played is None:
-                last_played = long(time.time() * 100)
+                last_played = int(time.time() * 100)
             if random_seed is None:
-                random_seed = long(numpy.random.random() * 0xffffffffffffffffL) - 0x8000000000000000L
+                random_seed = int(numpy.random.random() * 0xffffffffffffffff) - 0x8000000000000000
 
             self.root_tag = root_tag
 
-            self.LastPlayed = long(last_played)
-            self.RandomSeed = long(random_seed)
+            self.LastPlayed = int(last_played)
+            self.RandomSeed = int(random_seed)
             self.SizeOnDisk = 0
             self.Time = 1
             self.LevelName = os.path.basename(self.worldFile.path)
@@ -936,6 +937,7 @@ class PocketLeveldbWorld(ChunkedLevelMixin, MCLevel):
         :param last_played: long
         :return: None
         """
+
         def _loadLevelDat(filename):
             root_tag_buf = open(filename, 'rb').read()
             magic, length, root_tag_buf = root_tag_buf[:4], root_tag_buf[4:8], root_tag_buf[8:]
@@ -952,7 +954,7 @@ class PocketLeveldbWorld(ChunkedLevelMixin, MCLevel):
                 self.root_tag["Data"] = nbt.load(buf=root_tag_buf)
 
         if create:
-            print "Creating PE level.dat"
+            print("Creating PE level.dat")
             self._createLevelDat(random_seed, last_played)
             return
         try:
@@ -976,7 +978,7 @@ class PocketLeveldbWorld(ChunkedLevelMixin, MCLevel):
 
     # TODO PE worlds have a different day length, this has to be changed to that.
     Time = TagProperty('Time', nbt.TAG_Long, 0)
-    LastPlayed = TagProperty('LastPlayed', nbt.TAG_Long, lambda self: long(time.time() * 1000))
+    LastPlayed = TagProperty('LastPlayed', nbt.TAG_Long, lambda self: int(time.time() * 1000))
 
     GeneratorName = TagProperty('Generator', nbt.TAG_String, 'Infinite')
 
@@ -999,7 +1001,7 @@ class PocketLeveldbWorld(ChunkedLevelMixin, MCLevel):
         :return: PocketLeveldbChunk
         """
         if DEBUG_PE:
-            write_dump("*** Getting chunk %s,%s\n"%(cx, cz))
+            write_dump("*** Getting chunk %s,%s\n" % (cx, cz))
         c = self._loadedChunks.get((cx, cz))
         if c is None:
             if DEBUG_PE:
@@ -1058,7 +1060,7 @@ class PocketLeveldbWorld(ChunkedLevelMixin, MCLevel):
         i = 0
         ret = []
         batch = leveldb_mcpe.WriteBatch()
-        for cx, cz in itertools.product(xrange(box.mincx, box.maxcx), xrange(box.mincz, box.maxcz)):
+        for cx, cz in itertools.product(range(box.mincx, box.maxcx), range(box.mincz, box.maxcz)):
             i += 1
             if self.containsChunk(cx, cz):
                 self.deleteChunk(cx, cz, batch=batch)
@@ -1159,13 +1161,13 @@ class PocketLeveldbWorld(ChunkedLevelMixin, MCLevel):
         path = os.path.join(self.worldFile.path, 'level.dat')
         with nbt.littleEndianNBT():
             rootTagData = self.root_tag["Data"].save(compressed=False)
-#             if self.world_version == '1.plus':
-#                 magic = 5
-#             else:
-#                 magic = 4
+            #             if self.world_version == '1.plus':
+            #                 magic = 5
+            #             else:
+            #                 magic = 4
 
             magic = self.dat_world_version
-            if isinstance(magic, (str, unicode)):
+            if isinstance(magic, (str, bytes)):
                 magic = ord(magic)
 
             rootTagData = struct.Struct('<i').pack(magic) + struct.Struct('<i').pack(len(rootTagData)) + rootTagData
@@ -1225,7 +1227,7 @@ class PocketLeveldbWorld(ChunkedLevelMixin, MCLevel):
             chunk.dirty = True
             self.worldFile.saveChunk(chunk)
         else:
-            logger.info("Tried to import generated chunk at %s, %s but the chunk already existed."%(cx, cz))
+            logger.info("Tried to import generated chunk at %s, %s but the chunk already existed." % (cx, cz))
 
     @property
     def chunksNeedingLighting(self):
@@ -1419,7 +1421,7 @@ class PocketLeveldbWorld(ChunkedLevelMixin, MCLevel):
         """
         return 0
 
-    def setPlayerPosition(self, (x, y, z), player="Player"):
+    def setPlayerPosition(self, x, y, z, player="Player"):
         """
         Sets the players position to x, y, z
         :param (x, y, z): tuple of the coordinates of the player
@@ -1521,7 +1523,7 @@ class PocketLeveldbWorld(ChunkedLevelMixin, MCLevel):
         Return tile_entity
         """
         fullid = self.defsIds.mcedit_defs.get(self.defsIds.mcedit_ids.get(mob_id, "Unknown"), {}).get("fullid", None)
-#         print fullid
+        #         print fullid
         if fullid is not None:
             # This is mostly a copy of what we have in camera.py.
             # Has to be optimized for PE...
@@ -1547,7 +1549,7 @@ class PocketLeveldbWorld(ChunkedLevelMixin, MCLevel):
                         if "Type" in potential and potential["Type"].value == id:
                             potential["Type"] = nbt.TAG_Int(fullid)
         else:
-            raise AttributeError("Could not find entity data for '%s' in MCEDIT_DEFS"%mob_id)
+            raise AttributeError("Could not find entity data for '%s' in MCEDIT_DEFS" % mob_id)
         return tile_entity
 
 
@@ -1611,10 +1613,10 @@ class PocketLeveldbChunkPre1(LightedChunk):
                         v = 'Unknown'
 
                     id = defs_get(ids_get(v, 'Unknown'),
-                                         {'name': 'Unknown Entity %s' % v,
-                                          'idStr': 'Unknown Entity %s' % v,
-                                          'id': -1}
-                                         )['name']
+                                  {'name': 'Unknown Entity %s' % v,
+                                   'idStr': 'Unknown Entity %s' % v,
+                                   'id': -1}
+                                  )['name']
                     ent["id"] = nbt.TAG_String(id)
                 self.Entities = nbt.TAG_List(Entities, list_type=nbt.TAG_COMPOUND)
 
@@ -1693,14 +1695,14 @@ class PocketLeveldbChunkPre1(LightedChunk):
 
             for ent in self.Entities:
                 v = ent["id"].value
-#                 ent["id"] = nbt.TAG_Int(entity.PocketEntity.entityList[v])
-#                 id = entity.PocketEntity.getNumId(v)
-#                 print v, id, MCEDIT_DEFS.get(MCEDIT_IDS.get(v, v), {'id': -1})['id']
+                #                 ent["id"] = nbt.TAG_Int(entity.PocketEntity.entityList[v])
+                #                 id = entity.PocketEntity.getNumId(v)
+                #                 print v, id, MCEDIT_DEFS.get(MCEDIT_IDS.get(v, v), {'id': -1})['id']
                 id = defs_get(ids_get(v, v), {'id': -1})['id']
                 if id >= 1000:
-                    print id
-                    print type(ent)
-                    print ent
+                    print(id)
+                    print(type(ent))
+                    print(ent)
                 ent['id'] = nbt.TAG_Int(id)
                 entityData += ent.save(compressed=False)
                 # We have to re-invert after saving otherwise the next save will fail.
@@ -1750,6 +1752,7 @@ class PocketLeveldbChunkPre1(LightedChunk):
 # =====================================================================
 class PE1PlusDataContainer:
     """Container for subchunks data for MCPE 1.0+."""
+
     def __init__(self, subdata_length, bin_type, name='none', shape=None, chunk_height=256):
         """subdata_length: int: the length for the underlying numpy objects.
         bin_type: str: the binary data type, like uint8
@@ -1802,12 +1805,12 @@ class PE1PlusDataContainer:
         """
         self.binary_data[y] = data
         if len(data) != self.subdata_length:
-            raise ValueError("%s: Data does not match the required %s bytes length: %s bytes"%(self.name, self.subdata_length, len(data)))
+            raise ValueError("%s: Data does not match the required %s bytes length: %s bytes" % (self.name, self.subdata_length, len(data)))
         try:
             self.binary_data[y].shape = self.shape
         except ValueError as e:
             a = list(e.args)
-            a[0] += '%s %s: Required: %s, got: %s'%(a[0], self.name, self.shape, self.binary_data[y].shape)
+            a[0] += '%s %s: Required: %s, got: %s' % (a[0], self.name, self.shape, self.binary_data[y].shape)
             e.args = tuple(a)
             raise e
         self.destination[:, :, y * 16:16 + (y * 16)] = self.binary_data[y][:, :, :]
@@ -1857,14 +1860,14 @@ class PocketLeveldbChunk1Plus(LightedChunk):
         self.subchunks_versions = {}
 
         possible_dtypes = [2 ** x for x in range(3, 8)]
-        max_blocks_dtype = int(ceil(log(max([i for i,x in enumerate(pocketMaterials.idStr) if x]), 2)))
+        max_blocks_dtype = int(ceil(log(max([i for i, x in enumerate(pocketMaterials.idStr) if x]), 2)))
         max_blocks_dtype = next(possible_dtype for possible_dtype in possible_dtypes if possible_dtype >= max_blocks_dtype)
         max_data_dtype = int(ceil(log(max([x[1] for x in pocketMaterials.blocksByID.keys()]), 2)))
         max_data_dtype = next(possible_dtype for possible_dtype in possible_dtypes if possible_dtype >= max_data_dtype)
 
-        self._Blocks = PE1PlusDataContainer(4096, 'uint'+str(max_blocks_dtype), name='Blocks', chunk_height=self.Height)
+        self._Blocks = PE1PlusDataContainer(4096, 'uint' + str(max_blocks_dtype), name='Blocks', chunk_height=self.Height)
         self.Blocks = self._Blocks.destination
-        self._Data = PE1PlusDataContainer(4096, 'uint'+str(max_data_dtype), name='Data')
+        self._Data = PE1PlusDataContainer(4096, 'uint' + str(max_data_dtype), name='Data')
         self.Data = self._Data.destination
         self._SkyLight = PE1PlusDataContainer(4096, 'uint8', name='SkyLight')
         self.SkyLight = self._SkyLight.destination
@@ -1892,7 +1895,7 @@ class PocketLeveldbChunk1Plus(LightedChunk):
         bin_arr = numpy.unpackbits(numpy.frombuffer(bytearray(raw_blocks), dtype='uint8')).astype(bool)
 
         # cut redundant bits
-        word_arr = bin_arr.reshape(-1, word_size/8, 8)
+        word_arr = bin_arr.reshape(-1, word_size / 8, 8)
         word_arr = word_arr[:, ::-1, :]
         word_arr = word_arr.reshape(-1, word_size)
         redundant_bits = word_size % bits_per_block
@@ -1902,8 +1905,8 @@ class PocketLeveldbChunk1Plus(LightedChunk):
         clean_word_arr = clean_word_arr.reshape(-1, word_size / bits_per_block, bits_per_block)[:, ::-1]
         block_arr = clean_word_arr.reshape(-1, bits_per_block)
         block_size = max(bits_per_block, 8)
-        blocks_before_palette = block_arr.dot(2**numpy.arange(block_arr.shape[1]-1, -1, -1))[:4096]
-        blocks_before_palette = blocks_before_palette.astype("uint"+str(block_size))
+        blocks_before_palette = block_arr.dot(2 ** numpy.arange(block_arr.shape[1] - 1, -1, -1))[:4096]
+        blocks_before_palette = blocks_before_palette.astype("uint" + str(block_size))
 
         # This might be varint and not just 4 bytes, need to make sure
         palette_size, palette = struct.unpack("<i", storage[:4])[0], storage[4:]
@@ -1913,7 +1916,7 @@ class PocketLeveldbChunk1Plus(LightedChunk):
         ids = []
         data = []
         for item in palette_nbt:
-            idStr = item["name"].value.split(':',1)[-1]
+            idStr = item["name"].value.split(':', 1)[-1]
             if idStr == '':
                 idStr = 'air'
                 item["val"] = nbt.TAG_Short(0)
@@ -1938,7 +1941,7 @@ class PocketLeveldbChunk1Plus(LightedChunk):
         subchunk: int: subchunk 'height'; generaly 0 to 15 number.
         """
         if type(subchunk) != int:
-            raise TypeError("Bad subchunk type. Must be an int, got %s (%s)"%(type(subchunk), subchunk))
+            raise TypeError("Bad subchunk type. Must be an int, got %s (%s)" % (type(subchunk), subchunk))
         if terrain:
             self.subchunks.append(subchunk)
 
@@ -1985,9 +1988,9 @@ class PocketLeveldbChunk1Plus(LightedChunk):
 
             self.subchunks_versions[subchunk] = subchunk_version
 
-#             if DEBUG_PE:
-#                 write_dump("--- sub-chunk (%s, %s, %s) version: %s\n" % (self.chunkPosition[0], self.chunkPosition[1], subchunk, version))
-#                 write_dump("--- sub-chunk (%s, %s, %s) blocks: %s\n    length: %s\n" % (self.chunkPosition[0], self.chunkPosition[1], subchunk, repr(blocks), len(blocks)))
+        #             if DEBUG_PE:
+        #                 write_dump("--- sub-chunk (%s, %s, %s) version: %s\n" % (self.chunkPosition[0], self.chunkPosition[1], subchunk, version))
+        #                 write_dump("--- sub-chunk (%s, %s, %s) blocks: %s\n    length: %s\n" % (self.chunkPosition[0], self.chunkPosition[1], subchunk, repr(blocks), len(blocks)))
 
         else:
             if subchunk == 0 and DEBUG_PE:
@@ -2014,7 +2017,7 @@ class PocketLeveldbChunk1Plus(LightedChunk):
 
             # PE saves entities with their int ID instead of string name. We swap them to make it work in mcedit.
             # Whenever we save an entity, we need to make sure to swap back.
-#             invertEntities = {v: k for k, v in entity.PocketEntity.entityList.items()}
+            #             invertEntities = {v: k for k, v in entity.PocketEntity.entityList.items()}
             for ent in Entities:
                 if 'identifier' in ent:
                     ent["id"] = nbt.TAG_String('see "identifier"')
@@ -2030,39 +2033,39 @@ class PocketLeveldbChunk1Plus(LightedChunk):
                         logger.warning("Default 'Unknown' ID is used...")
                         v = 'Unknown'
                     # !
-    #                 id = invertEntities.get(v, "Entity %s"%v)
+                    #                 id = invertEntities.get(v, "Entity %s"%v)
                     # Add the built one to the entities
-    #                 if id not in entity.PocketEntity.entityList.keys():
-    #                     logger.warning("Found unknown entity '%s'"%v)
-    #                     entity.PocketEntity.entityList[id] = v
+                    #                 if id not in entity.PocketEntity.entityList.keys():
+                    #                     logger.warning("Found unknown entity '%s'"%v)
+                    #                     entity.PocketEntity.entityList[id] = v
 
                     try:
                         id = defs_get(ids_get(v, 'Unknown'),
-                                             {'name': 'Unknown Entity %s' % v,
-                                              'idStr': 'Unknown Entity %s' % v,
-                                              'id': -1,
-                                              'type': 'Unknown'}
-                                             )['name']
+                                      {'name': 'Unknown Entity %s' % v,
+                                       'idStr': 'Unknown Entity %s' % v,
+                                       'id': -1,
+                                       'type': 'Unknown'}
+                                      )['name']
                     except:
                         continue
                     if DEBUG_PE:
                         ent_def = defs_get(ids_get(v, 'Unknown'),
-                                         {'name': 'Unknown Entity %s' % v,
-                                          'idStr': 'Unknown Entity %s' % v,
-                                          'id': -1,
-                                          'type': 'Unknown'}
-                                         )
+                                           {'name': 'Unknown Entity %s' % v,
+                                            'idStr': 'Unknown Entity %s' % v,
+                                            'id': -1,
+                                            'type': 'Unknown'}
+                                           )
                         _tn = ent_def.get('type', 'Unknown')
                         _tv = mcedit_defs['entity_types'].get(_tn, 'Unknown')
                         write_dump("* Internal ID: {id}, raw ID: {_v}, filtered ID: {_fid}, filter: {_f1} ({_f2}), type name {_tn}, type value: {_tv}\n".format(
-                                                        id=id,
-                                                        _v=_v,
-                                                        _fid= _v & 0xff,
-                                                        _f1= _v & 0xff00,
-                                                        _f2= _v - (_v & 0xff),
-                                                        _tn=_tn,
-                                                        _tv=_tv)
-                                                    )
+                            id=id,
+                            _v=_v,
+                            _fid=_v & 0xff,
+                            _f1=_v & 0xff00,
+                            _f2=_v - (_v & 0xff),
+                            _tn=_tn,
+                            _tv=_tv)
+                        )
 
                     ent["id"] = nbt.TAG_String(id)
 

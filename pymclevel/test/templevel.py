@@ -1,8 +1,9 @@
 import atexit
 import os
-from os.path import join
 import shutil
 import tempfile
+from os.path import join
+
 from pymclevel import mclevel
 
 __author__ = 'Rio'

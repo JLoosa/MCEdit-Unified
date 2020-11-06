@@ -1,5 +1,4 @@
 from numpy import zeros, array
-import itertools
 
 # naturally occuring materials
 from pymclevel.level import extractHeights
@@ -7,7 +6,7 @@ from pymclevel.level import extractHeights
 blocktypes = [1, 2, 3, 7, 12, 13, 14, 15, 16, 56, 73, 74, 87, 88, 89]
 blockmask = zeros((256,), dtype='bool')
 
-#compute a truth table that we can index to find out whether a block
+# compute a truth table that we can index to find out whether a block
 # is naturally occuring and should be considered in a heightmap
 blockmask[blocktypes] = True
 
@@ -19,7 +18,7 @@ inputs = (
 
 
 def perform(level, box, options):
-    #iterate through the slices of each chunk in the selection box
+    # iterate through the slices of each chunk in the selection box
     for chunk, slices, point in level.getChunkSlices(box):
         # slicing the block array is straightforward. blocks will contain only
         # the area of interest in this chunk.

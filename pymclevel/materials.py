@@ -1,14 +1,16 @@
-from logging import getLogger
-from numpy import zeros, rollaxis, indices
-import traceback
-from os.path import join
-from collections import defaultdict
-from pprint import pformat
-import mclangres
 import json
+import operator
 import os
+import traceback
+from collections import defaultdict
+from logging import getLogger
+from os.path import join
+from pprint import pformat
+
 import pkg_resources
-import id_definitions
+from numpy import zeros, rollaxis, indices
+
+import pymclevel.id_definitions as id_definitions
 
 NOTEX = (496, 496)
 
@@ -18,9 +20,11 @@ try:
     pkg_resources.resource_exists(__name__, 'minecraft.json')
 except:
     import sys
+
     if getattr(sys, '_MEIPASS', None):
         base = getattr(sys, '_MEIPASS')
-        pkg_resources.resource_exists = lambda n,f: os.path.join(base, 'pymclevel', f)
+        pkg_resources.resource_exists = lambda n, f: os.path.join(base, 'pymclevel', f)
+
 
 class Block(object):
     """
@@ -40,7 +44,7 @@ class Block(object):
         if not isinstance(other, Block):
             return -1
         key = lambda a: a and (a.ID, a.blockData)
-        return cmp(key(self), key(other))
+        return operator.eq(key(self), key(other))
 
     def __hash__(self):
         return hash((self.ID, self.blockData))
@@ -114,14 +118,14 @@ class BlockstateAPI(object):
         """
         if bid not in self.block_map:
             return "<Unknown>", {}
-        
+
         name = self.block_map[bid].replace("minecraft:", "")
 
         if name not in self.blockstates["minecraft"]:
             return "<Unknown>", {}
-        
+
         properties = {}
-        for prop in self.blockstates["minecraft"][name]["properties"]: # TODO: Change this if MCEdit's mod support ever improves
+        for prop in self.blockstates["minecraft"][name]["properties"]:  # TODO: Change this if MCEdit's mod support ever improves
             if prop["<data>"] == data:
                 for field in prop.keys():
                     if field == "<data>":
@@ -129,7 +133,7 @@ class BlockstateAPI(object):
                     properties[field] = prop[field]
                 return name, properties
         return name, properties
-    
+
     def blockstateToID(self, name, properties):
         """
         Converts from a BlockState to a numerical ID/Data pair
@@ -141,17 +145,17 @@ class BlockstateAPI(object):
         :return: A tuple containing the numerical ID/Data pair (<id>, <data>)
         :rtype: tuple
         """
-        
+
         if ":" in name:
             prefix, name = name.split(":")
         else:
             prefix = "minecraft"
-            
+
         if prefix not in self.blockstates:
             return -1, -1
         elif name not in self.blockstates[prefix]:
             return -1, -1
-        
+
         bid = self.blockstates[prefix][name]["id"]
         for prop in self.blockstates[prefix][name]["properties"]:
             correct = True
@@ -161,7 +165,7 @@ class BlockstateAPI(object):
             if correct:
                 return bid, prop["<data>"]
         return bid, 0
-    
+
     @staticmethod
     def stringifyBlockstate(name, properties):
         """
@@ -175,14 +179,14 @@ class BlockstateAPI(object):
         :rtype: str
         """
         if not name.startswith("minecraft:"):
-            name = "minecraft:" + name # This should be changed as soon as possible
+            name = "minecraft:" + name  # This should be changed as soon as possible
         result = name + "["
         for (key, value) in properties.iteritems():
             result += "{}={},".format(key, value)
         if result.endswith("["):
             return result[:-1]
         return result[:-1] + "]"
-    
+
     @staticmethod
     def deStringifyBlockstate(blockstate):
         """
@@ -194,19 +198,19 @@ class BlockstateAPI(object):
         :rtype: tuple 
         """
         seperated = blockstate.split("[")
-        
+
         if len(seperated) == 1:
             if not seperated[0].startswith("minecraft:"):
-                seperated[0] = "minecraft:" + seperated[0] 
+                seperated[0] = "minecraft:" + seperated[0]
             return seperated[0], {}
-        
+
         name, props = seperated
-        
+
         if not name.startswith("minecraft:"):
             name = "minecraft:" + name
-            
+
         properties = {}
-    
+
         props = props[:-1]
         props = props.split(",")
         for prop in props:
@@ -231,9 +235,9 @@ class MCMaterials(object):
         self.blockTextures = zeros((id_limit, 16, 6, 2), dtype='uint16')
         # Sets the array size for terrain.png
         self.blockTextures[:] = self.defaultTexture
-        self.names = [[defaultName] * 16 for _ in xrange(id_limit)]
-        self.aka = [[""] * 16 for _ in xrange(id_limit)]
-        self.search = [[""] * 16 for _ in xrange(id_limit)]
+        self.names = [[defaultName] * 16 for _ in range(id_limit)]
+        self.aka = [[""] * 16 for _ in range(id_limit)]
+        self.search = [[""] * 16 for _ in range(id_limit)]
 
         self.type = [["NORMAL"] * 16] * id_limit
         self.blocksByType = defaultdict(list)
@@ -260,7 +264,7 @@ class MCMaterials(object):
                                  name="Air",
                                  texture=(0, 336),
                                  opacity=0,
-        )
+                                 )
 
     def __repr__(self):
         return "<MCMaterials ({0})>".format(self.name)
@@ -296,7 +300,7 @@ class MCMaterials(object):
                 level.materials["Lapis Lazuli Block"]  # in Classic
 
            """
-        if isinstance(key, basestring):
+        if isinstance(key, (str, bytes)):
             key = key.replace("minecraft:", "")
             key = key.lower()
             lowest_block = None
@@ -309,7 +313,7 @@ class MCMaterials(object):
                     elif not lowest_block:
                         lowest_block = b
                     elif lowest_block.blockData > b.blockData:
-                            lowest_block = b
+                        lowest_block = b
             if lowest_block:
                 return lowest_block
 
@@ -357,7 +361,7 @@ class MCMaterials(object):
         else:
             bl = Block(self, block_id, blockData=data)
             return bl
-        
+
     def setup_blockstates(self, blockstate_definition_file):
         self.blockstate_api = BlockstateAPI(self, blockstate_definition_file)
 
@@ -372,13 +376,13 @@ class MCMaterials(object):
 
             log.debug("Failed to read %s using pkg_resources. Trying %s instead." % (filename, path))
 
-            f = file(path)
+            f = open(path)
         try:
             log.info(u"Loading block info from %s", f)
             blockyaml = json.load(f)
 
         except Exception as e:
-            log.warn(u"Exception while loading block info from %s: %s", f, e)
+            log.warning(u"Exception while loading block info from %s: %s", f, e)
             traceback.print_exc()
 
         if blockyaml:
@@ -388,7 +392,7 @@ class MCMaterials(object):
         # Load first the versionned stuff
         # Fallback to the old .json file
         log.debug("Loading block definitions from versionned file")
-        print "Game Version: {} : {}".format(gamePlatform, gameVersionNumber)
+        print("Game Version: {} : {}".format(gamePlatform, gameVersionNumber))
         gameVersionNumber = gameVersionNumber.replace('java ', '')
         blockyaml = id_definitions.ids_loader(gamePlatform, gameVersionNumber, json_dict=True)
         if gamePlatform == 'PE' or gamePlatform == 'old pocket':
@@ -400,7 +404,7 @@ class MCMaterials(object):
             f_name = 'classic.json'
             meth = build_classic_materials
         elif gamePlatform == 'indev':
-            f_name == 'indev.json'
+            f_name = 'indev.json'
             meth = build_indev_materials
         else:
             f_name = 'minecraft.json'
@@ -411,7 +415,8 @@ class MCMaterials(object):
         else:
             self.addJSONBlocksFromFile(f_name)
         meth()
-#         build_api_material_map()
+
+    #         build_api_material_map()
 
     def addJSONBlocks(self, blockyaml):
         self.yamlDatas.append(blockyaml)
@@ -419,9 +424,9 @@ class MCMaterials(object):
             try:
                 self.addJSONBlock(block)
             except Exception as e:
-                log.warn(u"Exception while parsing block: %s", e)
+                log.warning(u"Exception while parsing block: %s", e)
                 traceback.print_exc()
-                log.warn(u"Block definition: \n%s", pformat(block))
+                log.warning(u"Block definition: \n%s", pformat(block))
 
     def addJSONBlock(self, kw):
         blockID = kw['id']
@@ -429,7 +434,7 @@ class MCMaterials(object):
         # xxx unused_yaml_properties variable unused; needed for
         # documentation purpose of some sort?  -zothar
         # unused_yaml_properties = \
-        #['explored',
+        # ['explored',
         # # 'id',
         # # 'idStr',
         # # 'mapcolor',
@@ -484,7 +489,7 @@ class MCMaterials(object):
                 texture[:] = [texture[r] for r in rot]
 
             for data, direction in tex_direction_data.items():
-                for _i in xrange(texDirMap.get(direction, 0)):
+                for _i in range(texDirMap.get(direction, 0)):
                     rot90cw()
                 self.blockTextures[blockID][int(data)] = texture
 
@@ -493,7 +498,7 @@ class MCMaterials(object):
         try:
             name = kw.pop('name', self.names[blockID][blockData])
         except:
-            print (blockID, blockData)
+            print(blockID, blockData)
         stringName = kw.pop('idStr', '')
 
         self.lightEmission[blockID] = kw.pop('brightness', self.defaultBrightness)
@@ -820,6 +825,7 @@ def build_alpha_materials():
     alphaMaterials.StructureBlock = alphaMaterials[255, 0]
     build_api_material_map(alphaMaterials)
 
+
 # --- Classic static block defs ---
 def build_classic_materials():
     log.info("Building Classic materials.")
@@ -875,6 +881,7 @@ def build_classic_materials():
     classicMaterials.MossStone = classicMaterials[48]
     classicMaterials.Obsidian = classicMaterials[49]
     build_api_material_map(classicMaterials)
+
 
 # --- Indev static block defs ---
 def build_indev_materials():
@@ -945,6 +952,7 @@ def build_indev_materials():
     indevMaterials.Furnace = indevMaterials[61, 0]
     indevMaterials.LitFurnace = indevMaterials[62, 0]
     build_api_material_map(indevMaterials)
+
 
 # --- Pocket static block defs ---
 def build_pocket_materials():
@@ -1173,11 +1181,12 @@ def build_pocket_materials():
 
     build_api_material_map(pocketMaterials)
 
+
 def printStaticDefs(name, file_name=None):
     # printStaticDefs('alphaMaterials')
     # file_name: file to write the output to
     mats = eval(name)
-    msg = "MCEdit static definitions for '%s'\n\n"%name
+    msg = "MCEdit static definitions for '%s'\n\n" % name
     mats_ids = []
     for b in sorted(mats.allBlocks):
         msg += "{name}.{0} = {name}[{1},{2}]\n".format(
@@ -1187,20 +1196,20 @@ def printStaticDefs(name, file_name=None):
         )
         if b.ID not in mats_ids:
             mats_ids.append(b.ID)
-    print msg
+    print(msg)
     if file_name:
         msg += "\nNumber of materials: %s\n%s" % (len(mats_ids), mats_ids)
         id_min = min(mats_ids)
         id_max = max(mats_ids)
         msg += "\n\nLowest ID: %s\nHighest ID: %s\n" % (id_min, id_max)
         missing_ids = []
-        for i in xrange(id_min, id_max + 1):
+        for i in range(id_min, id_max + 1):
             if i not in mats_ids:
                 missing_ids.append(i)
         if missing_ids:
-                msg += "\nIDs not in the list:\n%s\n(%s IDs)\n" % (missing_ids, len(missing_ids))
+            msg += "\nIDs not in the list:\n%s\n(%s IDs)\n" % (missing_ids, len(missing_ids))
         open(file_name, 'w').write(msg)
-        print "Written to '%s'" % file_name
+        print("Written to '%s'" % file_name)
 
 
 _indices = rollaxis(indices((id_limit, 16)), 0, 3)
@@ -1318,10 +1327,11 @@ def convertBlocks(destMats, sourceMats, blocks, blockData):
 
 namedMaterials = dict((i.name, i) for i in allMaterials)
 
+
 def build_api_material_map(mats=alphaMaterials):
     _mats = BlockstateAPI.material_map.get(mats)
     if not _mats:
-        raise RuntimeError("BlockstateAPI.material_map[%s] not ready."%mats)
+        raise RuntimeError("BlockstateAPI.material_map[%s] not ready." % mats)
     global block_map
     block_map = _mats.block_map
     blockstates = _mats.blockstates
@@ -1342,11 +1352,11 @@ def build_api_material_map(mats=alphaMaterials):
                 continue
             setattr(block, "Blockstate", BlockstateAPI.material_map[mat].idToBlockstate(block.ID, block.blockData))
 
+
 # alphaMaterials has to be 'preloaded' for now...
-alphaMaterials.addJSONBlocksFromVersion('Unknown','Unknown')
+alphaMaterials.addJSONBlocksFromVersion('Unknown', 'Unknown')
 
 __all__ = "indevMaterials, pocketMaterials, alphaMaterials, classicMaterials, namedMaterials, MCMaterials, BlockstateAPI".split(", ")
-
 
 if '--dump-mats' in os.sys.argv:
     os.sys.argv.remove('--dump-mats')
@@ -1375,9 +1385,9 @@ if '--find-blockstates' in os.sys.argv:
             passed.append(block)
         else:
             failed.append(block)
-    print '{} failed block check'.format(len(failed))
+    print('{} failed block check'.format(len(failed)))
     for block in failed:
-        print '!{}!'.format(block)
+        print('!{}!'.format(block))
     for block in passed:
         if block.stringID not in pe_blockstates["minecraft"]:
             pe_blockstates["minecraft"][block.stringID] = {}

@@ -4,6 +4,7 @@
 
 from pymclevel import TAG_Long
 
+
 # This mimics some of the functionality from the Java Random class.
 # Java Random source code can be found here: http://developer.classpath.org/doc/java/util/Random-source.html
 
@@ -50,7 +51,7 @@ def goodSeed(box, seed):
 
 
 inputs = (
-("Max Seed", 100000),
+    ("Max Seed", 100000),
 )
 
 
@@ -58,7 +59,9 @@ def perform(level, box, options):
     for seed in xrange(options["Max Seed"]):
         if goodSeed(box, long(seed)):
             level.root_tag["Data"]["RandomSeed"] = TAG_Long(seed)
-            print "Found good seed: " + str(seed)
+            print
+            "Found good seed: " + str(seed)
             return
 
-    print "Didn't find good seed."
+    print
+    "Didn't find good seed."

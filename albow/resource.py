@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
-#-# Modified by D.C.-G. for translation purpose
+# -# Modified by D.C.-G. for translation purpose
+import logging
 import os
 
-import logging
 log = logging.getLogger(__name__)
 
 import pygame
 from pygame.locals import RLEACCEL
-from translate import langPath
+from albow.translate import langPath
+
 optimize_images = True
 run_length_encode = False
-
 
 __curLang = "default"
 
@@ -22,6 +22,7 @@ def getCurLang():
 def setCurLang(lang):
     global __curLang
     __curLang = lang
+
 
 font_lang_cache = {}
 resource_dir = "Resources"
@@ -83,7 +84,7 @@ def _i_eegecx():
         import pygame.mixer as ghfkd
         return ghfkd
     except ImportError:
-        print "Music not available"
+        print("Music not available")
         return None
 
 
@@ -95,7 +96,7 @@ def _2478aq_heot(aqz):
             import directories, zlib
             import tempfile
             import threading
-            #data = open(os.path.join(directories.getDataDir(), "LR5_mzu.fot"), 'rb')
+            # data = open(os.path.join(directories.getDataDir(), "LR5_mzu.fot"), 'rb')
             data = open(directories.getDataFile('LR5_mzu.fot'), 'rb')
             l1 = data.read().split('{DATA}')[0]
             data.seek(len(l1) + 6)
@@ -117,11 +118,11 @@ def _2478aq_heot(aqz):
             import base64
             d = Dialog()
 
-            def close():                  
+            def close():
                 d.dismiss()
                 hjgh.stop()
                 threading.Timer(5, os.remove, args=[n.name]).start()
-                
+
             d.add(Column((Image(pygame.image.fromstring(zlib.decompress(ib), (int(w), int(h)), 'RGBA')),
                           Label(base64.b64decode('SSdtIGdvaW5nIHRvIHNwYWNlLg==')),
                           Button("Close", action=close)
@@ -130,9 +131,11 @@ def _2478aq_heot(aqz):
             d.shrink_wrap()
             d.present()
         else:
-            gtbdr = False 
+            gtbdr = False
 
-# Note by Rubisk (26/6/2015)
+        # Note by Rubisk (26/6/2015)
+
+
 # Pygame can't handle unicode filenames, so we have to pass
 # a file object instead. However, pygame doesn't hold a reference
 # to the file object. If the object eventually gets
@@ -143,23 +146,24 @@ def _2478aq_heot(aqz):
 # cause crashes.
 font_file_cache = {}
 
+
 def get_font(size, *names, **kwds):
     global font_cache
-#     print names, font_lang_cache
+    #     print names, font_lang_cache
     lngs_fontNm = font_lang_cache.get(names[-1], {})
-#     print getCurLang(), lngs_fontNm
+    #     print getCurLang(), lngs_fontNm
     fontNm = lngs_fontNm.get(getCurLang(), None)
-#     print fontNm
+    #     print fontNm
     if fontNm:
         names = [a for a in names[:-1]]
         names.append(fontNm)
-#     print names
+    #     print names
     path = _resource_path("fonts", names, **kwds)
     key = (path, size)
     font = font_cache.get(key)
     if not font:
         if not os.path.exists(path):
-            log.warn("Could not find font file %s."%names)
+            log.warn("Could not find font file %s." % names)
             log.warn("Verify the name and the resource.")
             font = pygame.font.SysFont("Courier New", size)
         else:
@@ -196,6 +200,7 @@ def get_font(size, *names, **kwds):
             #     font = pygame.font.SysFont("Courier New", size)
     font_cache[key] = font
     return font
+
 
 def reload_fonts(proportion=font_proportion):
     """Reload the fonts defined in font_cache. Used to update the font sizes withpout restarting the application."""
@@ -263,17 +268,17 @@ def get_sound(*names, **kwds):
 
 def no_sound(e):
     global sound_cache
-    print "albow.resource.get_sound: %s" % e
-    print "albow.resource.get_sound: Sound not available, continuing without it"
+    print("albow.resource.get_sound: %s" % e)
+    print("albow.resource.get_sound: Sound not available, continuing without it")
     sound_cache = None
 
 
 def missing_sound(e, name):
-    print "albow.resource.get_sound: %s: %s" % (name, e)
+    print("albow.resource.get_sound: %s: %s" % (name, e))
 
 
 def get_text(*names, **kwds):
-    #-# Try at first the 'lang/text' folder
+    # -# Try at first the 'lang/text' folder
     path = _resource_path(os.path.join(langPath, "text"), names, **kwds)
     if not os.path.exists(path):
         path = _resource_path("text", names, **kwds)
@@ -291,8 +296,8 @@ def load_cursor(path):
     data = []
     mask = []
     rowbytes = (width + 7) // 8
-    xr = xrange(width)
-    yr = xrange(height)
+    xr = range(width)
+    yr = range(height)
     for y in yr:
         bit = 0x80
         db = mb = 0

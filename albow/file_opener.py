@@ -1,14 +1,14 @@
-#-# This is not an albow component.
-#-# It should be moved back to MCEdit root folder, since it does not defines GUI base widgets.
-import os
+# -# This is not an albow component.
+# -# It should be moved back to MCEdit root folder, since it does not defines GUI base widgets.
 import logging
+import os
 
-import panels
-import pymclevel
 import albow
 import mcplatform
-from config import config
+import panels
+import pymclevel
 from albow.translate import _
+from config import config
 
 
 class FileOpener(albow.Widget):
@@ -21,7 +21,7 @@ class FileOpener(albow.Widget):
         self.mcedit = mcedit
         self.root = self.get_root()
 
-    #-# Translation live update
+        # -# Translation live update
         self.buildWidgets()
 
     def buildWidgets(self):
@@ -105,13 +105,15 @@ class FileOpener(albow.Widget):
         self.contentRow = contentRow
         self.add(contentRow)
         self.invalidate()
-#        self.shrink_wrap()
+
+    #        self.shrink_wrap()
 
     def set_update_ui(self, v):
         albow.Widget.set_update_ui(self, v)
         if v:
             self.buildWidgets()
-    #-#
+
+    # -#
 
     def gl_draw_self(self, root, offset):
         self.mcedit.editor.drawStars()
@@ -137,13 +139,14 @@ class FileOpener(albow.Widget):
         self.root.fix_sticky_ctrl()
 
     def promptOpenAndLoad(self):
-#!# Bad! But used to test the file chooser.
-#        try:
-            filename = mcplatform.askOpenFile(schematics=True)
-            if filename:
-                self.mcedit.loadFile(filename)
-#        except Exception, e:
-#            logging.error('Error during proptOpenAndLoad: {0!r}'.format(e))
+        # !# Bad! But used to test the file chooser.
+        #        try:
+        filename = mcplatform.askOpenFile(schematics=True)
+        if filename:
+            self.mcedit.loadFile(filename)
+
+    #        except Exception, e:
+    #            logging.error('Error during proptOpenAndLoad: {0!r}'.format(e))
 
     def createNewWorld(self):
         self.parent.createNewWorld()

@@ -1,12 +1,13 @@
-import sys
+import distutils.file_util
 import os
 import platform
-import distutils.file_util
-from setuptools import setup
-from Cython.Build import cythonize
+import sys
 
 # Output annotated .html
 import Cython.Compiler.Options
+from Cython.Build import cythonize
+from setuptools import setup
+
 Cython.Compiler.Options.annotate = True
 
 modules_map = {
@@ -14,7 +15,7 @@ modules_map = {
             "description": "Build the accelerator to work with PNG images."},
     "nbt": {"source": "pymclevel/_nbt.pyx",
             "description": "Build the accelerator to work with NBT data."}
-    }
+}
 
 __help__ = """setup.py
 Build Cython extensions for MCEdit-Unified.
@@ -37,7 +38,7 @@ dash ('--'), you can expect unwanted behaviour, because the 'build_ext' and
 # If no argument is given on the command line, display help message.
 # If a wrong argument is given, break.
 if len(sys.argv) == 1:
-    print __help__
+    print(__help__)
     sys.exit(0)
 else:
     ext_modules = []
@@ -46,19 +47,19 @@ else:
     ext_list = []
     for arg in args:
         # Let send setuptools argument be on the command line.
-        print arg
+        print(arg)
         if arg == '--':
             sys.argv.remove(arg)
             break
         if not arg.startswith('-'):
             if arg == 'help':
-                print __help__
+                print(__help__)
                 sys.exit(0)
             elif arg == 'all':
                 ext_list = list(modules_map.keys())
                 ext_modules = [v["source"] for v in modules_map.values()]
             elif arg not in modules_map.keys():
-                print "'%s' is not a valid argument. Use 'help' one for information." % arg
+                print("'%s' is not a valid argument. Use 'help' one for information." % arg)
                 sys.exit(1)
             else:
                 src = modules_map[arg]["source"]
@@ -66,7 +67,7 @@ else:
                     ext_list.append(arg)
                     ext_modules.append(src)
             sys.argv.remove(arg)
-    print msg % ", ".join(ext_list)
+    print(msg % ", ".join(ext_list))
 
 sys.argv.insert(1, '--inplace')
 sys.argv.insert(1, 'build_ext')
@@ -82,4 +83,3 @@ if platform.system() == "Linux":
         if os.path.isfile(nbt_dest):
             os.remove(nbt_dest)
         distutils.file_util.move_file("_nbt.so", nbt_dest)
-

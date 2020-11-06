@@ -1,5 +1,6 @@
 from pygame import Rect
-from widget import Widget
+
+from albow.widget import Widget
 
 
 class GridView(Widget):
@@ -22,8 +23,8 @@ class GridView(Widget):
         self.cell_size = cell_size
 
     def draw(self, surface):
-        for row in xrange(self.num_rows()):
-            for col in xrange(self.num_cols()):
+        for row in range(self.num_rows()):
+            for col in range(self.num_cols()):
                 r = self.cell_rect(row, col)
                 self.draw_cell(surface, row, col, r)
 

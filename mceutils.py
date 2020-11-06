@@ -18,33 +18,36 @@ mceutils.py
 
 Exception catching, some basic box drawing, texture pack loading, oddball UI elements
 """
-# Modified by D.C.-G. for translation purpose
-#.# Marks the layout modifications. -- D.C.-G.
-#!#
-#!# The stuff in there related to albow should be in albow module.
-#!# This stuff will then be available for components base classes in this GUI module.
-#!# And make albow/widgets more coherent to use.
-#!#
-from resource_packs import ResourcePackHandler
-from albow.controls import ValueDisplay
-from albow import alert, ask, Button, Column, Label, root, Row, ValueButton, Widget
-from albow.translate import _
+import logging
 from datetime import datetime
-import directories
+
 import numpy
 from OpenGL import GL
-import os
-import png
 from pygame import display
+
+import directories
+import png
 import pymclevel
+from albow import alert, ask, Button, Column, Label, root, Row, ValueButton, Widget
+from albow.controls import ValueDisplay
+from albow.translate import _
+# Modified by D.C.-G. for translation purpose
+# .# Marks the layout modifications. -- D.C.-G.
+# !#
+# !# The stuff in there related to albow should be in albow module.
+# !# This stuff will then be available for components base classes in this GUI module.
+# !# And make albow/widgets more coherent to use.
+# !#
+from resource_packs import ResourcePackHandler
 
-import logging
 
-#!# Used to track the ALBOW stuff imported from here
+# !# Used to track the ALBOW stuff imported from here
 def warn(obj):
     name = getattr(obj, '__name__', getattr(getattr(obj, '__class__', obj), '__name__', obj))
     logging.getLogger().warn('%s.%s is deprecated and will be removed. Use albow.%s instead.' % (obj.__module__, name, name))
-#!#
+
+
+# !#
 
 
 def alertException(func):
@@ -58,6 +61,7 @@ def alertException(func):
         except Exception as e:
             logging.exception("Exception:")
             ask(_("Error during {0}: {1!r}").format(func, e)[:1000], ["OK"], cancel=0)
+
     return _alertException
 
 
@@ -72,7 +76,7 @@ def drawFace(box, face, type=GL.GL_QUADS):
              x, y2, z,
              x, y, z,
              x, y, z2,
-            ), dtype='f4')
+             ), dtype='f4')
 
     elif face == pymclevel.faces.FaceXIncreasing:
 
@@ -81,7 +85,7 @@ def drawFace(box, face, type=GL.GL_QUADS):
              x2, y, z,
              x2, y2, z,
              x2, y2, z2,
-            ), dtype='f4')
+             ), dtype='f4')
 
     elif face == pymclevel.faces.FaceYDecreasing:
         faceVertices = numpy.array(
@@ -89,7 +93,7 @@ def drawFace(box, face, type=GL.GL_QUADS):
              x, y, z2,
              x, y, z,
              x2, y, z,
-            ), dtype='f4')
+             ), dtype='f4')
 
     elif face == pymclevel.faces.FaceYIncreasing:
         faceVertices = numpy.array(
@@ -97,7 +101,7 @@ def drawFace(box, face, type=GL.GL_QUADS):
              x, y2, z,
              x, y2, z2,
              x2, y2, z2,
-            ), dtype='f4')
+             ), dtype='f4')
 
     elif face == pymclevel.faces.FaceZDecreasing:
         faceVertices = numpy.array(
@@ -105,7 +109,7 @@ def drawFace(box, face, type=GL.GL_QUADS):
              x, y2, z,
              x2, y2, z,
              x2, y, z,
-            ), dtype='f4')
+             ), dtype='f4')
 
     elif face == pymclevel.faces.FaceZIncreasing:
         faceVertices = numpy.array(
@@ -113,7 +117,7 @@ def drawFace(box, face, type=GL.GL_QUADS):
              x2, y2, z2,
              x, y2, z2,
              x, y, z2,
-            ), dtype='f4')
+             ), dtype='f4')
 
     faceVertices.shape = (4, 3)
     dim = face >> 1
@@ -267,7 +271,7 @@ def drawTerrainCuttingWire(box,
 
 
 def loadAlphaTerrainTexture():
-    #texW, texH, terraindata = loadPNGFile(os.path.join(directories.getDataDir(),  ResourcePackHandler.Instance().get_selected_resource_pack().terrain_path()))
+    # texW, texH, terraindata = loadPNGFile(os.path.join(directories.getDataDir(),  ResourcePackHandler.Instance().get_selected_resource_pack().terrain_path()))
     texW, texH, terraindata = loadPNGFile(directories.getDataFile(ResourcePackHandler.Instance().get_selected_resource_pack().terrain_path()))
 
     def _loadFunc():
@@ -302,13 +306,14 @@ def loadPNGFile(filename):
 
     return w, h, data
 
+
 def loadTextureFunc(w, h, ndata):
     GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGBA, w, h, 0, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE, ndata)
     return w, h
 
 
 def loadPNGTexture(filename, *a, **kw):
-    #filename = os.path.join(directories.getDataDir(), filename)
+    # filename = os.path.join(directories.getDataDir(), filename)
     filename = directories.getDataFile(filename)
     try:
         w, h, ndata = loadPNGFile(filename)
@@ -317,7 +322,7 @@ def loadPNGTexture(filename, *a, **kw):
         tex.data = ndata
         return tex
     except Exception as e:
-        print "Exception loading ", filename, ": ", repr(e)
+        print("Exception loading ", filename, ": ", repr(e))
         return glutils.Texture()
 
 
@@ -364,7 +369,7 @@ class HotkeyColumn(Widget):
                 tooltipText = None
             else:
                 (hotkey, title, action, tooltipText) = t
-            if isinstance(title, (str, unicode)):
+            if isinstance(title, (str, bytes)):
                 button = Button(title, action=action)
             else:
                 button = ValueButton(ref=title, action=action, width=200)
@@ -385,14 +390,14 @@ class HotkeyColumn(Widget):
 
         self.buttons = list(buttonsColumn)
 
-        #.#
+        # .#
         if not item_spacing:
             buttonsColumn = Column(buttonsColumn)
         else:
             buttonsColumn = Column(buttonsColumn, spacing=item_spacing)
-        #.#
+        # .#
         buttonsColumn.anchor = self.anchor
-        #.#
+        # .#
         if not item_spacing:
             keysColumn = Column(keysColumn)
         else:
@@ -533,7 +538,7 @@ def TextInputRow(title, *args, **kw):
 def setWindowCaption(prefix):
     caption = display.get_caption()[0]
     prefix = _(prefix)
-    if isinstance(prefix, unicode):
+    if isinstance(prefix, bytes):
         prefix = prefix.encode("utf8")
 
     class ctx:
@@ -594,7 +599,7 @@ def showProgress(progressText, progressIterator, cancel=False):
                 if amount is None:
                     self.progressBar.width = maxwidth
                     self.progressBar.bg_color = (255, 255, 25, 255)
-                elif isinstance(amount, basestring):
+                elif isinstance(amount, (str, bytes)):
                     self.statusText = amount
                 else:
                     self.progressAmount = amount
@@ -662,7 +667,5 @@ def showProgress(progressText, progressIterator, cancel=False):
     else:
         return "Canceled"
 
-
-from glutils import DisplayList
 
 import functools

@@ -1,6 +1,8 @@
-from editortools.operation import Operation
 import itertools
+
 from albow import alert
+from editortools.operation import Operation
+
 
 class fileEdit:
     def __init__(self, filename, timeChanged, box, editor, level):
@@ -19,9 +21,9 @@ class fileEdit:
             return
         lines = []
         for line in f.readlines():
-            line = line.replace("\r", "")
+            line = line.replace(b"\r", b"")
             if line != "\n":
-                lines.append(line.replace("\n", ""))
+                lines.append(line.replace(b"\n", b""))
         f.close()
 
         tileEntities = []
@@ -42,7 +44,7 @@ class fileEdit:
         if op.canUndo:
             self.editor.addUnsavedEdit()
 
-    def writeCommandInFile(self, first, space, (x, y, z), fileTemp, skip, chain, done, order):
+    def writeCommandInFile(self, first, space, x, y, z, fileTemp, skip, chain, done, order):
         block = self.editor.level.tileEntityAt(x, y, z)
         if chain:
             if not block or (x, y, z) in done:
@@ -61,24 +63,24 @@ class fileEdit:
         if chain:
             done.append((x, y, z))
             blockData = self.editor.level.blockDataAt(x, y, z)
-            if blockData == 0 and self.level.blockAt(x, y-1, z) in (211, 189):
-                skip.append((x, y-1, z))
-                self.writeCommandInFile(False, space, (x, y-1, z), fileTemp, skip, True, done, order)
-            elif blockData == 1 and self.level.blockAt(x, y+1, z) in (211, 189):
-                skip.append((x, y+1, z))
-                self.writeCommandInFile(False, space, (x, y+1, z), fileTemp, skip, True, done, order)
-            elif blockData == 2 and self.level.blockAt(x, y, z-1) in (211, 189):
-                skip.append((x, y, z-1))
-                self.writeCommandInFile(False, space, (x, y, z-1), fileTemp, skip, True, done, order)
-            elif blockData == 3 and self.level.blockAt(x, y, z+1) in (211, 189):
-                skip.append((x, y, z+1))
-                self.writeCommandInFile(False, space, (x, y, z+1), fileTemp, skip, True, done, order)
-            elif blockData == 4 and self.level.blockAt(x-1, y, z) in (211, 189):
-                skip.append((x-1, y, z))
-                self.writeCommandInFile(False, space, (x-1, y, z), fileTemp, skip, True, done, order)
-            elif blockData == 5 and self.level.blockAt(x+1, y, z) in (211, 189):
-                skip.append((x+1, y, z))
-                self.writeCommandInFile(False, space, (x+1, y, z), fileTemp, skip, True, done, order)
+            if blockData == 0 and self.level.blockAt(x, y - 1, z) in (211, 189):
+                skip.append((x, y - 1, z))
+                self.writeCommandInFile(False, space, (x, y - 1, z), fileTemp, skip, True, done, order)
+            elif blockData == 1 and self.level.blockAt(x, y + 1, z) in (211, 189):
+                skip.append((x, y + 1, z))
+                self.writeCommandInFile(False, space, (x, y + 1, z), fileTemp, skip, True, done, order)
+            elif blockData == 2 and self.level.blockAt(x, y, z - 1) in (211, 189):
+                skip.append((x, y, z - 1))
+                self.writeCommandInFile(False, space, (x, y, z - 1), fileTemp, skip, True, done, order)
+            elif blockData == 3 and self.level.blockAt(x, y, z + 1) in (211, 189):
+                skip.append((x, y, z + 1))
+                self.writeCommandInFile(False, space, (x, y, z + 1), fileTemp, skip, True, done, order)
+            elif blockData == 4 and self.level.blockAt(x - 1, y, z) in (211, 189):
+                skip.append((x - 1, y, z))
+                self.writeCommandInFile(False, space, (x - 1, y, z), fileTemp, skip, True, done, order)
+            elif blockData == 5 and self.level.blockAt(x + 1, y, z) in (211, 189):
+                skip.append((x + 1, y, z))
+                self.writeCommandInFile(False, space, (x + 1, y, z), fileTemp, skip, True, done, order)
 
 
 class FileEditsOperation(Operation):
@@ -118,13 +120,13 @@ class FileEditsOperation(Operation):
 def GetSort(box, sorting):
     if sorting == "xz" or sorting == "chain":
         return itertools.product(
-            xrange(box.minx, box.maxx),
-            xrange(box.miny, box.maxy),
-            xrange(box.minz, box.maxz)
+            range(box.minx, box.maxx),
+            range(box.miny, box.maxy),
+            range(box.minz, box.maxz)
         )
     else:
         return itertools.product(
-            xrange(box.minz, box.maxz),
-            xrange(box.miny, box.maxy),
-            xrange(box.minx, box.maxx)
+            range(box.minz, box.maxz),
+            range(box.miny, box.maxy),
+            range(box.minx, box.maxx)
         )

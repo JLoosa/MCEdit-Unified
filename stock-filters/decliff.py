@@ -4,8 +4,10 @@ DeCliff filter contributed by Minecraft Forums user "DrRomz"
 Originally posted here:
 http://www.minecraftforum.net/topic/13807-mcedit-minecraft-world-editor-compatible-with-mc-beta-18/page__st__3940__p__7648793#entry7648793
 """
-from numpy import zeros, array
 import itertools
+
+from numpy import zeros, array
+
 from pymclevel import alphaMaterials
 
 am = alphaMaterials
@@ -116,7 +118,7 @@ def adjheight(orig, new, slice_no, cliff_pos, dir, adj, can_adj, maxstep, slice_
                     prev = adj - cur_adj
             new[slice_no, cur_pos] = max([0, orig[slice_no, cur_pos] + cur_adj])
             if cur_adj != 0 and \
-                            abs(prev) < abs(int(adj * done_adj / can_adj)):
+                    abs(prev) < abs(int(adj * done_adj / can_adj)):
                 cur_adj += prev - int(adj * done_adj / can_adj)
                 prev = int(adj * done_adj / can_adj)
 
@@ -162,7 +164,7 @@ def perform(level, box, options):
         # determine pos and height of cliff in this slice
         for cur_pos in range(0, slice_width - 1):
             if abs(heightmap[slice_no, cur_pos] -
-                    heightmap[slice_no, cur_pos + 1]) > abs(cliff_height):
+                   heightmap[slice_no, cur_pos + 1]) > abs(cliff_height):
                 cliff_height = \
                     heightmap[slice_no, cur_pos] - \
                     heightmap[slice_no, cur_pos + 1]
@@ -233,10 +235,10 @@ def perform(level, box, options):
         Waterdepth = 0
         # Detect Water on top
         if column[oh + 1:oh + 2] == am.Water.ID or \
-                        column[oh + 1:oh + 2] == am.Ice.ID:
+                column[oh + 1:oh + 2] == am.Ice.ID:
             for cur_pos in range(int(oh) + 1, schema.Height):
                 if column[cur_pos:cur_pos + 1] != am.Water.ID and \
-                                column[cur_pos:cur_pos + 1] != am.Ice.ID:
+                        column[cur_pos:cur_pos + 1] != am.Ice.ID:
                     break
                 Waterdepth += 1
 

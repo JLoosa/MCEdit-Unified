@@ -11,6 +11,7 @@ Based on code from:
 """
 
 import logging
+
 import numpy
 from OpenGL import GL
 
@@ -37,7 +38,7 @@ def viewingMatrix(projection=None, model=None):
         model = GL.glGetDoublev(GL.GL_MODELVIEW_MATRIX)
     # hmm, this will likely fail on 64-bit platforms :(
     if projection is None or model is None:
-        context_log.warn(
+        context_log.warning(
             """A NULL matrix was returned from glGetDoublev: proj=%s modelView=%s""",
             projection, model,
         )
@@ -48,13 +49,13 @@ def viewingMatrix(projection=None, model=None):
         else:
             return numpy.identity(4, 'd')
     if numpy.allclose(projection, -1.79769313e+308):
-        context_log.warn(
+        context_log.warning(
             """Attempt to retrieve projection matrix when uninitialised %s, model=%s""",
             projection, model,
         )
         return model
     if numpy.allclose(model, -1.79769313e+308):
-        context_log.warn(
+        context_log.warning(
             """Attempt to retrieve model-view matrix when uninitialised %s, projection=%s""",
             model, projection,
         )
@@ -95,7 +96,7 @@ class Frustum(object):
 
         distance = numpy.sum(self.planes * point, -1)
         vis = ~numpy.any(distance < -radius, -1)
-        #assert vis == self.visible(array(point)[numpy.newaxis, :], radius)
+        # assert vis == self.visible(array(point)[numpy.newaxis, :], radius)
 
         return vis
 

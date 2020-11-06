@@ -64,33 +64,33 @@ def allAdjacentSamePlane(dir, secondaryDir):
 
     if leftOf(secondaryDir, dir):
         return (
-        dir,
-        left,
-        right,
-        getDir(dir, Up),
-        getDir(dir, Down),
-        getDir(left, Up),
-        getDir(right, Up),
-        getDir(left, Down),
-        getDir(right, Down),
-        back,
-        getDir(back, Up),
-        getDir(back, Down),
+            dir,
+            left,
+            right,
+            getDir(dir, Up),
+            getDir(dir, Down),
+            getDir(left, Up),
+            getDir(right, Up),
+            getDir(left, Down),
+            getDir(right, Down),
+            back,
+            getDir(back, Up),
+            getDir(back, Down),
         )
     else:
         return (
-        dir,
-        right,
-        left,
-        getDir(dir, Up),
-        getDir(dir, Down),
-        getDir(right, Up),
-        getDir(left, Up),
-        getDir(right, Down),
-        getDir(left, Down),
-        back,
-        getDir(back, Up),
-        getDir(back, Down),
+            dir,
+            right,
+            left,
+            getDir(dir, Up),
+            getDir(dir, Down),
+            getDir(right, Up),
+            getDir(left, Up),
+            getDir(right, Down),
+            getDir(left, Down),
+            back,
+            getDir(back, Up),
+            getDir(back, Down),
         )
 
 
@@ -101,33 +101,33 @@ def allAdjacentUp(dir, secondaryDir):
 
     if leftOf(secondaryDir, dir):
         return (
-        getDir(dir, Up),
-        getDir(left, Up),
-        getDir(right, Up),
-        getDir(back, Up),
-        dir,
-        left,
-        right,
-        back,
-        getDir(dir, Down),
-        getDir(left, Down),
-        getDir(right, Down),
-        getDir(back, Down),
+            getDir(dir, Up),
+            getDir(left, Up),
+            getDir(right, Up),
+            getDir(back, Up),
+            dir,
+            left,
+            right,
+            back,
+            getDir(dir, Down),
+            getDir(left, Down),
+            getDir(right, Down),
+            getDir(back, Down),
         )
     else:
         return (
-        getDir(dir, Up),
-        getDir(right, Up),
-        getDir(left, Up),
-        getDir(back, Up),
-        dir,
-        right,
-        left,
-        back,
-        getDir(dir, Down),
-        getDir(right, Down),
-        getDir(left, Down),
-        getDir(back, Down),
+            getDir(dir, Up),
+            getDir(right, Up),
+            getDir(left, Up),
+            getDir(back, Up),
+            dir,
+            right,
+            left,
+            back,
+            getDir(dir, Down),
+            getDir(right, Down),
+            getDir(left, Down),
+            getDir(back, Down),
         )
 
 
@@ -138,33 +138,33 @@ def allAdjacentDown(dir, secondaryDir):
 
     if leftOf(secondaryDir, dir):
         return (
-        getDir(dir, Down),
-        getDir(left, Down),
-        getDir(right, Down),
-        getDir(back, Down),
-        dir,
-        left,
-        right,
-        back,
-        getDir(dir, Up),
-        getDir(left, Up),
-        getDir(right, Up),
-        getDir(back, Up),
+            getDir(dir, Down),
+            getDir(left, Down),
+            getDir(right, Down),
+            getDir(back, Down),
+            dir,
+            left,
+            right,
+            back,
+            getDir(dir, Up),
+            getDir(left, Up),
+            getDir(right, Up),
+            getDir(back, Up),
         )
     else:
         return (
-        getDir(dir, Down),
-        getDir(right, Down),
-        getDir(left, Down),
-        getDir(back, Down),
-        dir,
-        right,
-        left,
-        back,
-        getDir(dir, Up),
-        getDir(right, Up),
-        getDir(left, Up),
-        getDir(back, Up),
+            getDir(dir, Down),
+            getDir(right, Down),
+            getDir(left, Down),
+            getDir(back, Down),
+            dir,
+            right,
+            left,
+            back,
+            getDir(dir, Up),
+            getDir(right, Up),
+            getDir(left, Up),
+            getDir(back, Up),
         )
 
 
@@ -189,22 +189,22 @@ def insideBox(box, (x, y, z)):
 
 
 Colors = {
-0: "white",
-1: "orange",
-2: "magenta",
-3: "light blue",
-4: "yellow",
-5: "lime green",
-6: "pink",
-7: "gray",
-8: "light gray",
-9: "cyan",
-10: "purple",
-11: "blue",
-12: "brown",
-13: "green",
-14: "red",
-15: "black",
+    0: "white",
+    1: "orange",
+    2: "magenta",
+    3: "light blue",
+    4: "yellow",
+    5: "lime green",
+    6: "pink",
+    7: "gray",
+    8: "light gray",
+    9: "cyan",
+    10: "purple",
+    11: "blue",
+    12: "brown",
+    13: "green",
+    14: "red",
+    15: "black",
 }
 
 
@@ -213,7 +213,6 @@ class BusCreator:
     ends = {}
     guides = {}
     path = {}
-
 
     def __init__(self, level, box, options):
         self.level = level

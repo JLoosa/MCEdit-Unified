@@ -1,2 +1,2 @@
-from camera import CameraViewport
-from chunk import ChunkViewport
+from .camera import CameraViewport
+from .chunk import ChunkViewport

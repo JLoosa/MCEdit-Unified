@@ -1,18 +1,18 @@
-from pymclevel.materials import Block
-from editortools.brush import createBrushMask
 import numpy
+
+from editortools.brush import createBrushMask
 
 displayName = 'Erode'
 
 
 def createInputs(self):
     self.inputs = (
-    {'Hollow': False},
-    {'Noise': 100},
-    {'W': (3, 1, 4096), 'H': (3, 1, 4096), 'L': (3, 1, 4096)},
-    {'Strength': (1, 1, 20)},
-    {'Old (Messy)': False},
-    {'Minimum Spacing': 1}
+        {'Hollow': False},
+        {'Noise': 100},
+        {'W': (3, 1, 4096), 'H': (3, 1, 4096), 'L': (3, 1, 4096)},
+        {'Strength': (1, 1, 20)},
+        {'Old (Messy)': False},
+        {'Minimum Spacing': 1}
     )
 
 
@@ -20,7 +20,8 @@ def apply(self, op, point):
     brushBox = op.tool.getDirtyBox(point, op.tool).expand(1)
 
     if brushBox.volume > 1048576:
-        print "Affected area is too big for this brush mode"
+        print
+        "Affected area is too big for this brush mode"
         return
 
     erosionStrength = op.options["Strength"]

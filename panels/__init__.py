@@ -1,3 +1,3 @@
-from graphics import GraphicsPanel
-from options import OptionsPanel
-from control import ControlPanel
+from panels.control import ControlPanel
+from panels.graphics import GraphicsPanel
+from panels.options import OptionsPanel

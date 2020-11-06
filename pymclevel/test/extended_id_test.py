@@ -1,7 +1,7 @@
 from pymclevel import BoundingBox
-from pymclevel.schematic import MCSchematic
 from pymclevel import MCInfdevOldLevel
-from templevel import TempLevel
+from pymclevel.schematic import MCSchematic
+from pymclevel.test.templevel import TempLevel
 
 __author__ = 'Rio'
 
@@ -36,7 +36,7 @@ def testExport():
                  (15, 16, 16),
                  (15, 16, 15),
                  (15, 15, 15),
-    ]:
+                 ]:
         schem = level.extractSchematic(BoundingBox((0, 0, 0), size))
         schem = TempLevel("schem", createFunc=lambda f: schem.saveToFile(f)).level
         assert (schem.Blocks > 255).any()
@@ -45,4 +45,3 @@ def testExport():
 def testAlphaIDs():
     level = alpha_test_level()
     assert level.blockAt(0, 2, 5) == 2048
-

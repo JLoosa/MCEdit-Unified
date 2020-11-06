@@ -1,7 +1,8 @@
-import urllib2
 import json
 import os
+import urllib.request
 from logging import getLogger
+
 
 def run():
     log = getLogger(__name__)
@@ -17,7 +18,7 @@ def run():
         if not os.path.exists(file_path):
             _download = True
         else:
-            conn = urllib2.urlopen(url, timeout=7.5)
+            conn = urllib.request.urlopen(url, timeout=7.5)
             new_data = conn.read().strip()
             current = open(file_path, 'rb')
             current_data = current.read().strip()
@@ -31,7 +32,7 @@ def run():
                 log.info("Updated {} {}::{}".format(_gamePlatform, _gameVersionNumber, os.path.basename(file_path)))
                 return True
         if _download:
-            conn = urllib2.urlopen(url, timeout=7.5)
+            conn = urllib.request.urlopen(url, timeout=7.5)
             fp = open(file_path, 'wb')
             fp.write(conn.read())
             conn.close()
@@ -44,7 +45,7 @@ def run():
     ver = []
 
     try:
-        manifest = urllib2.urlopen("https://raw.githubusercontent.com/Podshot/MCEdit-Unified/master/mcver/mcver.json")
+        manifest = urllib.request.urlopen("https://raw.githubusercontent.com/Podshot/MCEdit-Unified/master/mcver/mcver.json")
         data = json.loads(manifest.read())
         manifest.close()
     except:

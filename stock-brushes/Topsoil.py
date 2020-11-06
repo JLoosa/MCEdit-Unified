@@ -1,24 +1,24 @@
+import itertools
+
 from editortools.brush import createBrushMask, createTileEntities
 from pymclevel.level import extractHeights
-import itertools
 
 displayName = "Topsoil"
 
 
 def createInputs(self):
     self.inputs = (
-    {'Hollow': False},
-    {'Noise': 100},
-    {'W': (3, 1, 4096), 'H': (3, 1, 4096), 'L': (3, 1, 4096)},
-    {'Block': materials.blockWithID(1, 0)},
-    {'Depth': 1},
-    {'Only Change Natural Earth': False},
-    {'Minimum Spacing': 1},
+        {'Hollow': False},
+        {'Noise': 100},
+        {'W': (3, 1, 4096), 'H': (3, 1, 4096), 'L': (3, 1, 4096)},
+        {'Block': materials.blockWithID(1, 0)},
+        {'Depth': 1},
+        {'Only Change Natural Earth': False},
+        {'Minimum Spacing': 1},
     )
 
 
 def applyToChunkSlices(self, op, chunk, slices, brushBox, brushBoxThisChunk):
-
     depth = op.options['Depth']
     blocktype = op.options['Block']
 
@@ -36,7 +36,8 @@ def applyToChunkSlices(self, op, chunk, slices, brushBox, brushBoxThisChunk):
             blocktypeMask = blockmask[blocks]
 
         except Exception, e:
-            print repr(e), " while using blockmask from filters.topsoil"
+            print
+            repr(e), " while using blockmask from filters.topsoil"
             blocktypeMask = blocks != 0
 
     else:
@@ -45,7 +46,7 @@ def applyToChunkSlices(self, op, chunk, slices, brushBox, brushBoxThisChunk):
 
     if depth < 0:
         blocktypeMask &= (blocks != blocktype.ID)
-    
+
     if len(blocktypeMask) == 0:
         return
     heightmap = extractHeights(blocktypeMask)

@@ -1,6 +1,5 @@
-from albow import Widget, Label, Button, TextFieldWrapped
-from pymclevel.nbt import *
 import release
+from pymclevel.nbt import *
 
 operations = {
     "Yes/No Dialog": 1,
@@ -8,30 +7,37 @@ operations = {
     "Scoreboard Editing (Objective)": 3,
     "Scoreboard Editing (Team)": 4,
     "Player Data": 5,
-    }
+}
 
 inputs = (
     ("Operation", tuple(sorted(operations.keys()))),
     ("Float Field Test (Default)", 0.0),
     ("Float Field Test (Min=-1.0 Max=1.0", (0.0, -1.0, 1.0)),
     ("Float Field Test (Increments by 0.3)", (0.0, -5.0, 5.0, 0.3)),
-    )
+)
 
 
 class StoreData:
     def __init__(self):
         self._isFork = False
         self._editor = None
+
     @property
     def isFork(self):
         return self._isFork
+
     @property
     def editor(self):
         return self._editor
 
+
 data = StoreData()
+
+
 def hiAction():
-    print '"Hi" Button clicked!'
+    print
+    '"Hi" Button clicked!'
+
 
 def yesFUNC(level, box):
     for x in xrange(box.minx, box.maxx):
@@ -56,9 +62,10 @@ def perform(level, box, options):
     if not data.isFork:
         raise NotImplemented("This filter will only work with MCEdit-Unified!")
     op = options["Operation"]
-    #print dir(level.scoreboard.Objectives)
-    #print level.init_scoreboard().PlayerScores["Chevalerie94"]
-    print "Test Filter Ran"
+    # print dir(level.scoreboard.Objectives)
+    # print level.init_scoreboard().PlayerScores["Chevalerie94"]
+    print
+    "Test Filter Ran"
     if op == "Yes/No Dialog":
         choice = editor.YesNoWidget("Place a sponge block here?")
         if choice:
@@ -74,16 +81,16 @@ def perform(level, box, options):
                 x = e["Pos"][0].value
                 y = e["Pos"][1].value
                 z = e["Pos"][2].value
-                
-                if (x,y,z) in box:
-                    keyname = "{0} - {1},{2},{3}".format(e["id"].value,int(x),int(y),int(z))
+
+                if (x, y, z) in box:
+                    keyname = "{0} - {1},{2},{3}".format(e["id"].value, int(x), int(y), int(z))
                     entities[keyname] = e
                     chunks.append(chunk)
         thing = (
-                 ("Entity", tuple(sorted(entities.keys()))),
-                 ("Entity Name", "string"),
-                 ("Replace existing names?", False),
-                 )
+            ("Entity", tuple(sorted(entities.keys()))),
+            ("Entity Name", "string"),
+            ("Replace existing names?", False),
+        )
         result = editor.addExternalWidget(thing)
         if result != "user canceled":
             entity = entities[result["Entity"]]
@@ -103,13 +110,16 @@ def perform(level, box, options):
         scoreboard["data"]["Objectives"].append(test_objective)
         level.save_scoreboard(scorebaord)
         for objective in score.Objectives:
-            print "Objective Name: " + str(objective["Name"].value)
+            print
+            "Objective Name: " + str(objective["Name"].value)
     elif op == "Scoreboard Editing (Team)":
         if level.scoreboard is not None:
             for team in level.scoreboard.Teams:
-                print "Team Name: " + str(team.DisplayName)
+                print
+                "Team Name: " + str(team.DisplayName)
     elif op == "Player Data":
         players = level.init_player_data()
         for p in players.keys():
-            print players[p]["Air"].value
+            print
+            players[p]["Air"].value
         level.save_player_data(players)

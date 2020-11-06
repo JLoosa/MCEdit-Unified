@@ -52,18 +52,18 @@ __email__ = "jt@spacemonkey.com"
 import bisect
 import ctypes
 import ctypes.util
-import weakref
-import threading
-from collections import namedtuple
-import os
-import sys
-import platform
-import directories
-
 # Let have some logging stuff.
 import logging
-log = logging.getLogger(__name__)
+import os
+import platform
+import sys
+import threading
+import weakref
+from collections import namedtuple
 
+import directories
+
+log = logging.getLogger(__name__)
 
 # Here we want to load the file corresponding to the current paltform.
 # So, let check for that :)
@@ -90,7 +90,7 @@ try:
             if pth is None:
                 raise IOError("File 'libleveldb.so' not found in any of these places:\n%s" % '\n'.join(searched))
             else:
-                log.info("Found 'libleveldb.so' in %s"%pth)
+                log.info("Found 'libleveldb.so' in %s" % pth)
         else:
             pth = os.path.dirname(os.path.abspath(__file__))
         _ldb = ctypes.CDLL(os.path.join(pth, 'libleveldb.so'))
@@ -100,11 +100,12 @@ try:
     elif plat == 'win32':
         if getattr(sys, '_MEIPASS', False):
             import win32api
+
             win32api.SetDllDirectory(sys._MEIPASS)
         DLL_NAME = 'LevelDB-MCPE-32bit.dll'
-        if platform.architecture()[0] == '64bit' or sys.maxsize > 2**32:
+        if platform.architecture()[0] == '64bit' or sys.maxsize > 2 ** 32:
             DLL_NAME = 'LevelDB-MCPE-64bit.dll'
-        #_ldb = ctypes.CDLL(os.path.join(os.path.dirname(os.path.abspath(__file__)), "LevelDB-MCPE.dll"))
+        # _ldb = ctypes.CDLL(os.path.join(os.path.dirname(os.path.abspath(__file__)), "LevelDB-MCPE.dll"))
         _ldb = ctypes.CDLL(str(directories.getDataFile('pymclevel', DLL_NAME)))
     log.debug("Binary support v%s.%s for PE 1+ world succesfully loaded." % (_ldb.leveldb_major_version(), _ldb.leveldb_minor_version()))
 except Exception as e:
@@ -114,7 +115,6 @@ except Exception as e:
     log.error("The binary support for PE 1+ worlds could not be loaded:")
     log.error(e)
     raise e
-
 
 _ldb.leveldb_filterpolicy_create_bloom.argtypes = [ctypes.c_int]
 _ldb.leveldb_filterpolicy_create_bloom.restype = ctypes.c_void_p
@@ -343,7 +343,7 @@ class Iterator(object):
         # we have a prefix. see if there's anything after our prefix.
         # there's probably a much better way to calculate the Next prefix.
         hex_prefix = self._prefix.encode('hex')
-        Next_prefix = hex(long(hex_prefix, 16) + 1)[2:].rstrip("L")
+        Next_prefix = hex(int(hex_prefix, 16) + 1)[2:].rstrip("L")
         Next_prefix = Next_prefix.rjust(len(hex_prefix), "0")
         Next_prefix = Next_prefix.decode("hex").rstrip("\x00")
         self._impl.seek(Next_prefix)
@@ -459,7 +459,7 @@ class Iterator(object):
             self.SeekToFirst()
         for row in self:
             if end_key is not None and (row.key > end_key or (
-                        not end_inclusive and row.key == end_key)):
+                    not end_inclusive and row.key == end_key)):
                 break
             yield row
 
@@ -631,7 +631,7 @@ class DBInterface(object):
     Write = write
 
     def NewIterator(self, options=None, verify_checksums=None, fill_cache=None, prefix=None,
-                 keys_only=False):
+                    keys_only=False):
         if verify_checksums is None:
             verify_checksums = self._default_verify_checksums
         if fill_cache is None:
@@ -643,7 +643,7 @@ class DBInterface(object):
                 prefix = self._prefix + prefix
         return Iterator(
             self._impl.NewIterator(verify_checksums=verify_checksums,
-                                fill_cache=fill_cache),
+                                   fill_cache=fill_cache),
             keys_only=keys_only, prefix=prefix)
 
     def snapshot(self, default_sync=None, default_verify_checksums=None,
@@ -709,9 +709,9 @@ class DBInterface(object):
         if fill_cache is None:
             fill_cache = self._default_fill_cache
         return self.NewIterator(verify_checksums=verify_checksums,
-                             fill_cache=fill_cache).range(start_key=start_key,
-                                                          end_key=end_key, start_inclusive=start_inclusive,
-                                                          end_inclusive=end_inclusive)
+                                fill_cache=fill_cache).range(start_key=start_key,
+                                                             end_key=end_key, start_inclusive=start_inclusive,
+                                                             end_inclusive=end_inclusive)
 
     Range = range
 
@@ -721,7 +721,7 @@ class DBInterface(object):
         if fill_cache is None:
             fill_cache = self._default_fill_cache
         return self.NewIterator(verify_checksums=verify_checksums,
-                             fill_cache=fill_cache, prefix=prefix).SeekToFirst().keys()
+                                fill_cache=fill_cache, prefix=prefix).SeekToFirst().keys()
 
     Keys = keys
 
@@ -731,7 +731,7 @@ class DBInterface(object):
         if fill_cache is None:
             fill_cache = self._default_fill_cache
         return self.NewIterator(verify_checksums=verify_checksums,
-                             fill_cache=fill_cache, prefix=prefix).SeekToFirst().values()
+                                fill_cache=fill_cache, prefix=prefix).SeekToFirst().values()
 
     Values = values
 
@@ -1191,5 +1191,6 @@ class _LevelDBImpl(object):
                             other_objects=self._objs)
 
     Snapshot = snapshot
+
 
 log.debug("MCEdit-Unified internal PE 1+ support initialized.")

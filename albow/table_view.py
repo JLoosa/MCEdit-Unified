@@ -1,12 +1,13 @@
 #
 # Albow - Table View
 #
-#-# Modified by D.C.-G. for translation purpose
+# -# Modified by D.C.-G. for translation purpose
 from pygame import Rect
-from layout import Column
-from palette_view import PaletteView
-from utils import blit_in_rect
-from translate import _
+
+from albow.layout import Column
+from albow.palette_view import PaletteView
+from albow.translate import _
+from albow.utils import blit_in_rect
 
 
 class TableView(Column):
@@ -75,7 +76,7 @@ class TableView(Column):
         self.draw_text_cell(surf, i, text, cell_rect, column.alignment, self.font)
 
     def draw_text_cell(self, surf, i, data, cell_rect, align, font):
-        buf = font.render(unicode(data), True, self.fg_color)
+        buf = font.render(bytes(data), True, self.fg_color)
         blit_in_rect(surf, buf, cell_rect, align)
 
     @staticmethod
@@ -87,7 +88,7 @@ class TableView(Column):
 
     @staticmethod
     def click_column_header(col):
-        print "click_column_header: ", col
+        print("click_column_header: ", col)
 
     def click_header(self, n, e):
         x, y = self.global_to_local(e.pos)
@@ -112,7 +113,7 @@ class TableColumn(object):
         self.width = width
         self.alignment = align
         if fmt:
-            if isinstance(fmt, (str, unicode)):
+            if isinstance(fmt, (str, bytes)):
                 self.format_string = fmt
             else:
                 self.formatter = fmt

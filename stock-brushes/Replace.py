@@ -1,4 +1,3 @@
-from pymclevel.materials import Block
 from editortools.brush import createBrushMask, createTileEntities
 from pymclevel import block_fill
 
@@ -10,13 +9,13 @@ wildcardBlocks = ['Block']
 
 def createInputs(self):
     self.inputs = (
-    {'Hollow': False},
-    {'Noise': 100},
-    {'W': (3, 1, 4096), 'H': (3, 1, 4096), 'L': (3, 1, 4096)},
-    {'Block': materials.blockWithID(1, 0)},
-    {'Block To Replace With': materials.blockWithID(1, 0)},
-    {'Swap': tool.swap},
-    {'Minimum Spacing': 1}
+        {'Hollow': False},
+        {'Noise': 100},
+        {'W': (3, 1, 4096), 'H': (3, 1, 4096), 'L': (3, 1, 4096)},
+        {'Block': materials.blockWithID(1, 0)},
+        {'Block To Replace With': materials.blockWithID(1, 0)},
+        {'Swap': tool.swap},
+        {'Minimum Spacing': 1}
     )
 
 
@@ -27,7 +26,8 @@ def applyToChunkSlices(self, op, chunk, slices, brushBox, brushBoxThisChunk):
     data = chunk.Data[slices]
 
     if op.options['Block'].wildcard:
-        print "Wildcard replace"
+        print
+        "Wildcard replace"
         blocksToReplace = []
         for i in range(16):
             blocksToReplace.append(op.editor.level.materials.blockWithID(op.options['Block'].ID, i))

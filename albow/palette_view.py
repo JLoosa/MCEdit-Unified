@@ -1,7 +1,8 @@
 from pygame import Rect, draw
-from grid_view import GridView
-from utils import frame_rect
-from theme import ThemeProperty
+
+from albow.grid_view import GridView
+from albow.theme import ThemeProperty
+from albow.utils import frame_rect
 
 
 class PaletteView(GridView):
@@ -20,6 +21,7 @@ class PaletteView(GridView):
     scroll_button_size = ThemeProperty('scroll_button_size')
     scroll_button_color = ThemeProperty('scroll_button_color')
     highlight_style = ThemeProperty('highlight_style')
+
     # 'frame' or 'fill' or 'reverse' or None
 
     def __init__(self, cell_size, nrows, ncols, scrolling=False, **kwds):
@@ -27,11 +29,11 @@ class PaletteView(GridView):
         self.scrolling = scrolling
         if scrolling:
             d = self.scroll_button_size
-            #l = self.width
-            #b = self.height
+            # l = self.width
+            # b = self.height
             self.width += d
-            #self.scroll_up_rect = Rect(l, 0, d, d).inflate(-4, -4)
-            #self.scroll_down_rect = Rect(l, b - d, d, d).inflate(-4, -4)
+            # self.scroll_up_rect = Rect(l, 0, d, d).inflate(-4, -4)
+            # self.scroll_down_rect = Rect(l, b - d, d, d).inflate(-4, -4)
         self.scroll = 0
         self.dragging_hover = False
         self.scroll_rel = 0

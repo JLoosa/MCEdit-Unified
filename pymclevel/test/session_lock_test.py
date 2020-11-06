@@ -1,6 +1,7 @@
-from pymclevel.infiniteworld import SessionLockLost, MCInfdevOldLevel
-from templevel import TempLevel
 import unittest
+
+from pymclevel.infiniteworld import SessionLockLost
+from pymclevel.test.templevel import TempLevel
 
 
 class SessionLockTest(unittest.TestCase):

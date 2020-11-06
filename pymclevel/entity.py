@@ -2,11 +2,11 @@
 Created on Jul 23, 2011
 @author: Rio
 '''
+import random
+from copy import deepcopy
 from math import isnan
 
-import random
-import nbt
-from copy import deepcopy
+import pymclevel.nbt as nbt
 
 __all__ = ["Entity", "TileEntity", "TileTick"]
 
@@ -434,12 +434,12 @@ class TileEntity(object):
 
                 if (command.startswith('tp') and len(words) == 5) or command.startswith(
                         'particle') or command.startswith('replaceitem block') or (
-                            command.startswith('spawnpoint') and len(words) == 5) or command.startswith('stats block') or (
-                            command.startswith('summon') and len(words) >= 5):
+                        command.startswith('spawnpoint') and len(words) == 5) or command.startswith('stats block') or (
+                        command.startswith('summon') and len(words) >= 5):
                     x, y, z = words[2:5]
                     words[2:5] = coords(x, y, z, staticCommands)
                 elif command.startswith('blockdata') or command.startswith('setblock') or (
-                            command.startswith('setworldspawn') and len(words) == 4):
+                        command.startswith('setworldspawn') and len(words) == 4):
                     x, y, z = words[1:4]
                     words[1:4] = coords(x, y, z, staticCommands)
                 elif command.startswith('playsound') and len(words) >= 6:
@@ -661,12 +661,12 @@ class Entity(object):
         eTag["Pos"] = nbt.TAG_List(positionTags)
 
         # Also match the 'minecraft:XXX' names
-#         if eTag["id"].value in ("Painting", "ItemFrame", u'minecraft:painting', u'minecraft:item_frame'):
-#             print "#" * 40
-#             print eTag
-#             eTag["TileX"].value += copyOffset[0]
-#             eTag["TileY"].value += copyOffset[1]
-#             eTag["TileZ"].value += copyOffset[2]
+        #         if eTag["id"].value in ("Painting", "ItemFrame", u'minecraft:painting', u'minecraft:item_frame'):
+        #             print "#" * 40
+        #             print eTag
+        #             eTag["TileX"].value += copyOffset[0]
+        #             eTag["TileY"].value += copyOffset[1]
+        #             eTag["TileZ"].value += copyOffset[2]
 
         # Trying more agnostic way
         if eTag.get('TileX') and eTag.get('TileY') and eTag.get('TileZ'):
@@ -779,7 +779,7 @@ class PocketEntity(Entity):
         id = cls.getId(v)
         if type(id) != int and v not in cls.entityList.keys():
             id = cls.unknown_entity_top + 1
-            cls.entityList[v] = cls.entityList['Entity %s'%id] = id
+            cls.entityList[v] = cls.entityList['Entity %s' % id] = id
             cls.unknown_entity_top += 1
         return id
 

@@ -2,10 +2,10 @@
 # please give credit to SethBling.
 # http://youtube.com/SethBling
 
-from pymclevel import TAG_List
 from pymclevel import TAG_Byte
-from pymclevel import TAG_Int
 from pymclevel import TAG_Compound
+from pymclevel import TAG_Int
+from pymclevel import TAG_List
 
 displayName = "Make Mobs Invincible"
 

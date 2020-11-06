@@ -11,6 +11,7 @@ ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
 WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE."""
+import numpy
 
 """
 config.py
@@ -21,6 +22,7 @@ import collections
 import ConfigParser
 
 from locale import getdefaultlocale
+
 DEF_ENC = getdefaultlocale()[1]
 if DEF_ENC is None:
     DEF_ENC = "UTF-8"
@@ -40,7 +42,7 @@ class Config(object):
             self.config.read(self.getPath())
         except Exception as e:
             log.error(e)
-            log.warn("Error while reading configuration file mcedit.ini: {0}".format(e))
+            log.warning("Error while reading configuration file mcedit.ini: {0}".format(e))
 
         self.transformConfig()
         self._sections = {}
@@ -118,10 +120,9 @@ class Config(object):
             self.config.set("Version", "version", "1.6.0.0")
             self.save()
 
-
     def save(self):
         try:
-            cf = file(self.getPath(), 'w')
+            cf = open(self.getPath(), 'w')
             self.config.write(cf)
             cf.close()
         except Exception as e:
@@ -160,8 +161,7 @@ class ConfigSection(object):
 
 
 class ConfigValue(object):
-
-    allowedTypes = [int, float, bool, basestring, str, unicode]
+    allowedTypes = [int, float, bool, (str, bytes), str, bytes]
 
     def __init__(self, key, name, default=None):
         if default is None:
@@ -178,7 +178,7 @@ class ConfigValue(object):
         try:
             if self.type is bool:
                 return self.config.getboolean(self.section, self.name)
-            if self.type is unicode:
+            if self.type is bytes:
                 return self.type(self.config.get(self.section, self.name).decode(DEF_ENC))
             return self.type(self.config.get(self.section, self.name))
         except Exception as e:
@@ -197,11 +197,12 @@ class ConfigValue(object):
             if setter is not None:
                 setter(s, value)
             return self.set(value)
+
         return _s
 
     def set(self, value):
         log.debug("Property Change: %15s %30s = %s", self.section, self.name, value)
-        if self.type is unicode and isinstance(value, unicode):
+        if self.type is bytes and isinstance(value, bytes):
             value = value.encode(DEF_ENC)
         self.config.set(self.section, self.name, str(value))
         self._notifyObservers(value)
@@ -218,7 +219,7 @@ class ConfigValue(object):
             attr = self.key
         log.debug("Subscribing %s.%s", target, attr)
 
-        attr = intern(str(attr))
+        attr = numpy.intern(str(attr))
         targetref = weakref.ref(target)
         observers.setdefault((targetref, attr), callback)
 
@@ -275,7 +276,6 @@ class ConfigValue(object):
 
 
 class ListValue(ConfigValue):
-
     allowedTypes = [list, tuple]
 
     def __init__(self, key, name, default=None):
@@ -361,6 +361,7 @@ class ConfigDict(collections.MutableMapping):
         k.dict = self.dict.copy()
         k.keyorder = list(self.keyorder)
         return k
+
 
 # Quick Reference:
 # 7 Bedrock
@@ -473,69 +474,69 @@ definitions = {
         ("version", "version", "1.6.0.0")
     ],
     ("settings", "Settings"): [
-        ("flyMode", "Fly Mode", False),
-        ("enableMouseLag", "Enable Mouse Lag", False),
-        ("longDistanceMode", "Long Distance Mode", False),
-        ("shouldResizeAlert", "Window Size Alert", True),
-        ("closeMinecraftWarning", "Close Minecraft Warning", True),
-        ("skin", "MCEdit Skin", "[Current]"),
-        ("fov", "Field of View", 70.0),
-        ("spaceHeight", "Space Height", 64),
-        ("blockBuffer", "Block Buffer", 256 * 1048576),
-        ("reportCrashes", "report crashes new", False),
-        ("reportCrashesAsked", "report crashes asked", False),
-        ("staticCommandsNudge", "Static Coords While Nudging", False),
-        ("moveSpawnerPosNudge", "Change Spawners While Nudging", False),
-        ("rotateBlockBrush", "rotateBlockBrushRow", True),
-        ("langCode", "Language String", "en_US"),
-        ("viewDistance", "View Distance", 8),
-        ("targetFPS", "Target FPS", 30),
-        ("windowWidth", "window width", 1152),
-        ("windowHeight", "window height", 864),
-        ("windowMaximized", "window maximized", False),
-        ("windowMaximizedHeight", "window maximized height", 0),
-        ("windowMaximizedWidth", "window maximized width", 0),
-        ("windowX", "window x", 0),
-        ("windowY", "window y", 0),
-        ("windowShowCmd", "window showcmd", 1),
-        ("setWindowPlacement", "SetWindowPlacement", True),
-        ("showHiddenOres", "show hidden ores", False),
-        ("hiddableOres", "hiddable ores", hiddableOres),
-        ] + [
-            ("showOre%s" % i, "show ore %s" % i, True) for i in hiddableOres
-        ] + [
-        ("fastLeaves", "fast leaves", True),
-        ("roughGraphics", "rough graphics", False),
-        ("showChunkRedraw", "show chunk redraw", True),
-        ("drawSky", "draw sky", True),
-        ("drawFog", "draw fog", True),
-        ("showCeiling", "show ceiling", True),
-        ("drawEntities", "draw entities", True),
-        ("drawMonsters", "draw monsters", True),
-        ("drawItems", "draw items", True),
-        ("drawTileEntities", "draw tile entities", True),
-        ("drawTileTicks", "draw tile ticks", False),
-        ("drawUnpopulatedChunks", "draw unpopulated chunks", True),
-        ("drawChunkBorders", "draw chunk borders", False),
-        ("vertexBufferLimit", "vertex buffer limit", 384),
-        ("vsync", "vertical sync", 0),
-        ("viewMode", "View Mode", "Camera"),
-        ("undoLimit", "Undo Limit", 20),
-        ("recentWorlds", "Recent Worlds", ['']),
-        ("resourcePack", "Resource Pack", u"Default"),
-        ("maxCopies", "Copy stack size", 32),
-        ("superSecretSettings", "Super Secret Settings", False),
-        ("compassToggle", "Compass Toggle", True),
-        ("compassSize", "Compass Size", 60),
-        ("fogIntensity", "Fog Intensity", 20),
-        ("fontProportion", "Fonts Proportion", 100),
-        ("downloadPlayerSkins", "Download Player Skins", True),
-        ("maxViewDistance", "Max View Distance", 32),
-        ("drawPlayerHeads", "Draw Player Heads", True),
-        ("showQuickBlockInfo", "Show Block Info when hovering", True),
-        ("savePositionOnClose", "Save camera position on close", False),
-        ("showWindowSizeWarning", "Show window size warning", True)
-    ],
+                                  ("flyMode", "Fly Mode", False),
+                                  ("enableMouseLag", "Enable Mouse Lag", False),
+                                  ("longDistanceMode", "Long Distance Mode", False),
+                                  ("shouldResizeAlert", "Window Size Alert", True),
+                                  ("closeMinecraftWarning", "Close Minecraft Warning", True),
+                                  ("skin", "MCEdit Skin", "[Current]"),
+                                  ("fov", "Field of View", 70.0),
+                                  ("spaceHeight", "Space Height", 64),
+                                  ("blockBuffer", "Block Buffer", 256 * 1048576),
+                                  ("reportCrashes", "report crashes new", False),
+                                  ("reportCrashesAsked", "report crashes asked", False),
+                                  ("staticCommandsNudge", "Static Coords While Nudging", False),
+                                  ("moveSpawnerPosNudge", "Change Spawners While Nudging", False),
+                                  ("rotateBlockBrush", "rotateBlockBrushRow", True),
+                                  ("langCode", "Language String", "en_US"),
+                                  ("viewDistance", "View Distance", 8),
+                                  ("targetFPS", "Target FPS", 30),
+                                  ("windowWidth", "window width", 1152),
+                                  ("windowHeight", "window height", 864),
+                                  ("windowMaximized", "window maximized", False),
+                                  ("windowMaximizedHeight", "window maximized height", 0),
+                                  ("windowMaximizedWidth", "window maximized width", 0),
+                                  ("windowX", "window x", 0),
+                                  ("windowY", "window y", 0),
+                                  ("windowShowCmd", "window showcmd", 1),
+                                  ("setWindowPlacement", "SetWindowPlacement", True),
+                                  ("showHiddenOres", "show hidden ores", False),
+                                  ("hiddableOres", "hiddable ores", hiddableOres),
+                              ] + [
+                                  ("showOre%s" % i, "show ore %s" % i, True) for i in hiddableOres
+                              ] + [
+                                  ("fastLeaves", "fast leaves", True),
+                                  ("roughGraphics", "rough graphics", False),
+                                  ("showChunkRedraw", "show chunk redraw", True),
+                                  ("drawSky", "draw sky", True),
+                                  ("drawFog", "draw fog", True),
+                                  ("showCeiling", "show ceiling", True),
+                                  ("drawEntities", "draw entities", True),
+                                  ("drawMonsters", "draw monsters", True),
+                                  ("drawItems", "draw items", True),
+                                  ("drawTileEntities", "draw tile entities", True),
+                                  ("drawTileTicks", "draw tile ticks", False),
+                                  ("drawUnpopulatedChunks", "draw unpopulated chunks", True),
+                                  ("drawChunkBorders", "draw chunk borders", False),
+                                  ("vertexBufferLimit", "vertex buffer limit", 384),
+                                  ("vsync", "vertical sync", 0),
+                                  ("viewMode", "View Mode", "Camera"),
+                                  ("undoLimit", "Undo Limit", 20),
+                                  ("recentWorlds", "Recent Worlds", ['']),
+                                  ("resourcePack", "Resource Pack", u"Default"),
+                                  ("maxCopies", "Copy stack size", 32),
+                                  ("superSecretSettings", "Super Secret Settings", False),
+                                  ("compassToggle", "Compass Toggle", True),
+                                  ("compassSize", "Compass Size", 60),
+                                  ("fogIntensity", "Fog Intensity", 20),
+                                  ("fontProportion", "Fonts Proportion", 100),
+                                  ("downloadPlayerSkins", "Download Player Skins", True),
+                                  ("maxViewDistance", "Max View Distance", 32),
+                                  ("drawPlayerHeads", "Draw Player Heads", True),
+                                  ("showQuickBlockInfo", "Show Block Info when hovering", True),
+                                  ("savePositionOnClose", "Save camera position on close", False),
+                                  ("showWindowSizeWarning", "Show window size warning", True)
+                              ],
     ("controls", "Controls"): [
         ("mouseSpeed", "mouse speed", 5.0),
         ("cameraAccel", "camera acceleration", 125.0),
@@ -602,7 +603,7 @@ definitions = {
         ("useBulletText", "Use Bullet Text", False),
         ("useBulletImages", "Use Bullet Images", True),
         ("defaultBulletImages", "Default Bullet Images", True),
-        #("bulletFileName", "Bullet Images File", directories.os.path.join(directories.getDataDir(), 'Nbtsheet.png')),
+        # ("bulletFileName", "Bullet Images File", directories.os.path.join(directories.getDataDir(), 'Nbtsheet.png')),
         ("bulletFileName", 'Bullet Image File', directories.getDataFile('Nbtsheet.png')),
         ("showAllTags", "Show all the tags in the tree", False),
     ],
@@ -619,7 +620,6 @@ definitions = {
         ("cancelCommandBlockOffset", "Cancel Command Block Offset", False)
     ]
 }
-
 
 config = None
 

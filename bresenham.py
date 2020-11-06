@@ -28,12 +28,12 @@ def bresenham(p1, p2):
     # if dy > dx:
     #     steep = 1
 
-    #d = (2 * dy) + (2 * dz) - dx
+    # d = (2 * dy) + (2 * dz) - dx
     otherAxes = [0, 1, 2]
     otherAxes.remove(longestAxis)
     p = [x, y, z]
     sp = [sx, sy, sz]
-    for i in xrange(0, int(dl[longestAxis])):
+    for i in range(0, int(dl[longestAxis])):
         coords.append(tuple(p))
         for j in otherAxes:
 

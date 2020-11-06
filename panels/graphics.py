@@ -1,9 +1,10 @@
 from __future__ import unicode_literals
+
 import albow
-from albow.dialogs import Dialog
-from resource_packs import ResourcePackHandler
 import pymclevel
+from albow.dialogs import Dialog
 from config import config
+from resource_packs import ResourcePackHandler
 
 
 class GraphicsPanel(Dialog):
@@ -27,34 +28,34 @@ class GraphicsPanel(Dialog):
         self.saveOldResourcePack = ResourcePackHandler.Instance().get_selected_resource_pack_name()
 
         self.fieldOfViewRow = albow.FloatInputRow("Field of View: ",
-                                                ref=config.settings.fov, width=100, min=25, max=120)
+                                                  ref=config.settings.fov, width=100, min=25, max=120)
 
         self.targetFPSRow = albow.IntInputRow("Target FPS: ",
-                                                ref=config.settings.targetFPS, width=100, min=1, max=60)
+                                              ref=config.settings.targetFPS, width=100, min=1, max=60)
 
         self.bufferLimitRow = albow.IntInputRow("Vertex Buffer Limit (MB): ",
                                                 ref=config.settings.vertexBufferLimit, width=100, min=0)
 
         fastLeavesRow = albow.CheckBoxLabel("Fast Leaves",
-                                                ref=config.settings.fastLeaves,
-                                                tooltipText="Leaves are solid, like Minecraft's 'Fast' graphics")
+                                            ref=config.settings.fastLeaves,
+                                            tooltipText="Leaves are solid, like Minecraft's 'Fast' graphics")
 
         roughGraphicsRow = albow.CheckBoxLabel("Rough Graphics",
-                                                ref=config.settings.roughGraphics,
-                                                tooltipText="All blocks are drawn the same way (overrides 'Fast Leaves')")
+                                               ref=config.settings.roughGraphics,
+                                               tooltipText="All blocks are drawn the same way (overrides 'Fast Leaves')")
 
         enableMouseLagRow = albow.CheckBoxLabel("Enable Mouse Lag",
                                                 ref=config.settings.enableMouseLag,
                                                 tooltipText="Enable choppy mouse movement for faster loading.")
-        
+
         playerSkins = albow.CheckBoxLabel("Show Player Skins",
-                                             ref=config.settings.downloadPlayerSkins,
-                                             tooltipText="Show player skins while editing the world")
-        
+                                          ref=config.settings.downloadPlayerSkins,
+                                          tooltipText="Show player skins while editing the world")
+
         self.maxView = albow.IntInputRow("Max View Distance",
-                                       ref=config.settings.maxViewDistance,
-                                       tooltipText="Sets the maximum view distance for the renderer. Values over 32 can possibly be unstable, so use it at your own risk"
-                                       )
+                                         ref=config.settings.maxViewDistance,
+                                         tooltipText="Sets the maximum view distance for the renderer. Values over 32 can possibly be unstable, so use it at your own risk"
+                                         )
         self.maxView.subwidgets[1]._increment = 2
 
         packs = ResourcePackHandler.Instance().get_available_resource_packs()
@@ -74,7 +75,7 @@ class GraphicsPanel(Dialog):
                                        self.maxView,
                                        playerSkins,
                                        self.resourcePackButton,
-                                      ), align='r')
+                                       ), align='r')
 
         settingsColumn = albow.Column((albow.Label("Graphics Settings"),
                                        settingsColumn))
@@ -97,11 +98,12 @@ class GraphicsPanel(Dialog):
     def change_texture(self):
         ResourcePackHandler.Instance().set_selected_resource_pack_name(self.resourcePackButton.selectedChoice)
         self.mcedit.displayContext.loadTextures()
+
     texturePack = config.settings.skin.property(_reloadTextures)
-    
+
     def checkMaxView(self):
         if (config.settings.maxViewDistance.get() % 2) != 0:
-            config.settings.maxViewDistance.set(config.settings.maxViewDistance.get()-1)
+            config.settings.maxViewDistance.set(config.settings.maxViewDistance.get() - 1)
 
     def dismiss(self, *args, **kwargs):
         self.reshowNumberFields()

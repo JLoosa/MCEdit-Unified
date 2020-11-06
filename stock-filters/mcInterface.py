@@ -52,5 +52,5 @@ class MCLevelAdapter(object):
 
 SaveFile = MCLevelAdapter
 
-#dict['L'] = self.level.blockLightAt(x,y,z)
-#dict['S'] = self.level.skyLightAt(x,y,z)
+# dict['L'] = self.level.blockLightAt(x,y,z)
+# dict['S'] = self.level.skyLightAt(x,y,z)

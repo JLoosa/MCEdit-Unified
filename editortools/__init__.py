@@ -12,12 +12,12 @@ WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE."""
 
-from select import SelectionTool
-from brush import BrushTool
-from fill import FillTool
-from clone import CloneTool, ConstructionTool
-from filter import FilterTool
-from player import PlayerPositionTool, PlayerSpawnPositionTool
-from chunk import ChunkTool
-from nbtexplorer import NBTExplorerTool
-from tooloptions import ToolOptions
+from editortools.brush import BrushTool
+from editortools.chunk import ChunkTool
+from editortools.clone import CloneTool, ConstructionTool
+from editortools.fill import FillTool
+from editortools.filter import FilterTool
+from editortools.nbtexplorer import NBTExplorerTool
+from editortools.player import PlayerPositionTool, PlayerSpawnPositionTool
+from editortools.select import SelectionTool
+from editortools.tooloptions import ToolOptions
