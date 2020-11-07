@@ -10,18 +10,47 @@ mcedit.py
 
 Startup, main menu, keyboard configuration, automatic updating.
 """
+
 import importlib
+import json
+import locale
+import logging
 import os
+import os.path
+import shutil
 import sys
+import threading
+import traceback
+import urllib.parse
+import urllib.request
 
 import OpenGL
+import numpy
+import pygame
+from pygame import display, rect
 
+import albow
+import directories
+import keys
+import leveleditor
+import mclangres
+import mcplatform
+import panels
+import pymclevel
+import release
 import splash
+from albow.openglwidgets import GLViewport
+from albow.root import RootWidget
+from albow.translate import _, getPlatInfo
+from config import config
+from mcplatform import platform_open
+from player_cache import PlayerCache
+from pymclevel.minecraft_server import ServerJarStorage
+from utilities import mcver_updater, mcworld_support
+from utilities.gl_display_context import GLDisplayContext
 
 if "--debug-ogl" not in sys.argv:
     OpenGL.ERROR_CHECKING = False
-
-import logging
 
 # Setup file and stderr logging.
 logger = logging.getLogger()
@@ -63,8 +92,6 @@ logging_stream_handler.setFormatter(logging_file_line_formatter)
 
 logger.addHandler(logging_file_handler)
 logger.addHandler(logging_stream_handler)
-
-from . import release
 
 if __name__ == "__main__":
     start_msg = 'Starting MCEdit-Unified v%s' % release.TAG
@@ -112,22 +139,9 @@ if __name__ == "__main__" and '--new-features' in sys.argv:
                 logger.warning("Activating 'mcenf_%s'" % line)
         logger.warning("New features list loaded.")
 
-from player_cache import PlayerCache
-import directories
-import keys
-
-import albow
-import locale
-
 DEF_ENC = locale.getdefaultlocale()[1]
 if DEF_ENC is None:
     DEF_ENC = "UTF-8"
-from albow.translate import _, getPlatInfo
-
-from albow.openglwidgets import GLViewport
-from albow.root import RootWidget
-
-from config import config
 
 if __name__ == "__main__":
     # albow.resource.resource_dir = directories.getDataDir()
@@ -135,17 +149,14 @@ if __name__ == "__main__":
 
 
 def create_mocked_pyclark():
-    import imp
-
-    class MockedPyClark(object):
-        class Clark(object):
-
+    class MockedPyClark:
+        class Clark:
             def report(self, *args, **kwargs):
                 pass
 
         global_clark = Clark()
 
-    mod = imp.new_module('pyClark')
+    mod = importlib.import_module('pyClark')
     mod = MockedPyClark()
     sys.modules['pyClark'] = mod
     return mod
@@ -153,9 +164,6 @@ def create_mocked_pyclark():
 
 global pyClark
 pyClark = create_mocked_pyclark()
-
-import panels
-import leveleditor
 
 # Building translation template
 if __name__ == "__main__" and "-tt" in sys.argv:
@@ -185,8 +193,6 @@ if __name__ == "__main__" and "-tt" in sys.argv:
     logging.warning('Setting en_US as language for this session.')
     config.settings.langCode.set('en_US')
 
-import mcplatform
-
 # The two next switches '--debug-wm' and '--no-wm' are used to debug/disable the internal window handler.
 # They are exclusive. You can't debug if it is disabled.
 if __name__ == "__main__":
@@ -210,22 +216,6 @@ if __name__ == "__main__":
             print('system\'s', end=' ')
         print('libraries.')
     # -#
-from mcplatform import platform_open
-import numpy
-from pymclevel.minecraft_server import ServerJarStorage
-
-import os.path
-import pygame
-from pygame import display, rect
-import pymclevel
-import shutil
-import traceback
-import threading
-
-from utilities.gl_display_context import GLDisplayContext
-
-import mclangres
-from utilities import mcver_updater, mcworld_support
 
 getPlatInfo(OpenGL=OpenGL, numpy=numpy, pygame=pygame)
 
@@ -1014,21 +1004,12 @@ def getSelectedMinecraftVersion():
 
 
 def getLatestMinecraftVersion(snapshots=False):
-    import urllib.request, urllib.parse
-    import json
     versioninfo = json.loads(
         urllib.request.urlopen("http://s3.amazonaws.com/Minecraft.Download/versions/versions.json ").read())
     if snapshots:
         return versioninfo['latest']['snapshot']
     else:
         return versioninfo['latest']['release']
-
-
-def weird_fix():
-    try:
-        from OpenGL.platform import win32
-    except Exception:
-        pass
 
 
 class FakeStdOutErr:
