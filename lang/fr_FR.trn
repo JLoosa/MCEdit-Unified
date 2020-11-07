@@ -352,7 +352,7 @@ o164 When rotating your brush, also rotate the orientation of the block your bru
 t164 Les blocs de la brosse suivent sa rotation.
 o165 Choose your language.
 t165 Choisissez votre langue.
-o166 Click to make your MCEdit install self-contained by moving the settings and schematics into the program folder
+o166 Click to make your MCEdit install cls-contained by moving the settings and schematics into the program folder
 t166 Cliquez pour faire de MCEdit une application portable en déplaçant les fichiers schematic et de configuration dans le dossier du programme
 o167 Restart
 t167 Redémarrer

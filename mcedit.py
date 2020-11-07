@@ -36,16 +36,16 @@ if sys.platform == "darwin":
     logfile = os.path.expanduser("~/Library/Logs/mcedit.log")
 else:
     logfile = os.path.join(os.getcwd(), logfile)
-fh = logging.FileHandler(logfile, mode="w")
-fh.setLevel(logging.DEBUG)
+logging_file_handler = logging.FileHandler(logfile, mode="w")
+logging_file_handler.setLevel(logging.DEBUG)
 
-ch = logging.StreamHandler()
-ch.setLevel(logging.WARN)
+logging_stream_handler = logging.StreamHandler()
+logging_stream_handler.setLevel(logging.WARN)
 
 if "--log-info" in sys.argv:
-    ch.setLevel(logging.INFO)
+    logging_stream_handler.setLevel(logging.INFO)
 if "--log-debug" in sys.argv:
-    ch.setLevel(logging.DEBUG)
+    logging_stream_handler.setLevel(logging.DEBUG)
 
 
 class FileLineFormatter(logging.Formatter):
@@ -55,16 +55,16 @@ class FileLineFormatter(logging.Formatter):
         return super(FileLineFormatter, self).format(record)
 
 
-fmt = FileLineFormatter(
+logging_file_line_formatter = FileLineFormatter(
     '[%(levelname)8s][%(nameline)30s]:%(message)s'
 )
-fh.setFormatter(fmt)
-ch.setFormatter(fmt)
+logging_file_handler.setFormatter(logging_file_line_formatter)
+logging_stream_handler.setFormatter(logging_file_line_formatter)
 
-logger.addHandler(fh)
-logger.addHandler(ch)
+logger.addHandler(logging_file_handler)
+logger.addHandler(logging_stream_handler)
 
-import release
+from . import release
 
 if __name__ == "__main__":
     start_msg = 'Starting MCEdit-Unified v%s' % release.TAG
@@ -152,26 +152,7 @@ def create_mocked_pyclark():
 
 
 global pyClark
-pyClark = None
-if getattr(sys, 'frozen', False) or '--report-errors' in sys.argv:
-
-    if config.settings.reportCrashes.get():
-        try:
-            import pyClark
-
-            pyClark.Clark('http://127.0.0.1', inject=True)
-            logger.info('Successfully setup pyClark')
-        except ImportError:
-            pyClark = create_mocked_pyclark()
-            logger.info('The \'pyClark\' module has not been installed, disabling error reporting')
-            pass
-    else:
-        logger.info('User has opted out of pyClark error reporting')
-        print(type(create_mocked_pyclark()))
-        pyClark = create_mocked_pyclark()
-        print(pyClark)
-else:
-    pyClark = create_mocked_pyclark()
+pyClark = create_mocked_pyclark()
 
 import panels
 import leveleditor
@@ -353,7 +334,7 @@ class MCEdit(GLViewport):
         """
         if len(sys.argv) > 1:
             for arg in sys.argv[1:]:
-                f = arg.decode(sys.getfilesystemencoding())
+                f = arg
                 if os.path.isdir(os.path.join(pymclevel.minecraftSaveFileDir, f)):
                     f = os.path.join(pymclevel.minecraftSaveFileDir, f)
                     self.droppedLevel = f
@@ -855,7 +836,8 @@ class MCEdit(GLViewport):
 
         if config.settings.closeMinecraftWarning.get():
             answer = albow.ask(
-                "Warning: Only open a world in one program at a time. If you open a world at the same time in MCEdit and in Minecraft, you will lose your work and possibly damage your save file.\n\n If you are using Minecraft 1.3 or earlier, you need to close Minecraft completely before you use MCEdit.",
+                "Warning: Only open a world in one program at a time. If you open a world at the same time in MCEdit and in Minecraft, you will lose your work and possibly damage your save "
+                "file.\n\n If you are using Minecraft 1.3 or earlier, you need to close Minecraft completely before you use MCEdit.",
                 ["Don't remind me again.", "OK"], default=1, cancel=1)
             if answer == "Don't remind me again.":
                 config.settings.closeMinecraftWarning.set(False)

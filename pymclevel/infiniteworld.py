@@ -1196,7 +1196,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
                     except ValueError:
                         try:
                             print("{0} does not seem to be in a valid UUID format".format(player))
-                        except UnicodeEncode:
+                        except UnicodeEncodeError:
                             try:
                                 print("{0} does not seem to be in a valid UUID format".format(player))
                             except UnicodeError:
@@ -1240,7 +1240,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
     def acquireSessionLock(self):
         lock_file = self.worldFolder.getFilePath("session.lock")
         self.initTime = int(time.time() * 1000)
-        with file(lock_file, "wb") as f:
+        with open(lock_file, "wb") as f:
             f.write(struct.pack(">q", self.initTime))
             f.flush()
             os.fsync(f.fileno())
@@ -1258,7 +1258,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
 
         lockfile = self.worldFolder.getFilePath("session.lock")
         try:
-            (lock,) = struct.unpack(">q", file(lockfile, "rb").read())
+            (lock,) = struct.unpack(">q", open(lockfile, "rb").read())
         except struct.error:
             lock = -1
         if lock != self.initTime:

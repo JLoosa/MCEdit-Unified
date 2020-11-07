@@ -23,7 +23,7 @@ import logging
 import struct
 import zlib
 from contextlib import contextmanager
-from io import StringIO
+from io import BytesIO
 
 import numpy
 from numpy import array, zeros, fromstring
@@ -134,7 +134,7 @@ class TAG_Value(object):
         return "<%s name=\"%s\" value=%r>" % (str(self.__class__.__name__), self.name, self.value)
 
     def write_tag(self, buf):
-        buf.write(chr(self.tagID))
+        buf.write(bytes(self.tagID))
 
     def write_name(self, buf):
         if self.name is not None:
@@ -359,14 +359,14 @@ class TAG_Compound(TAG_Value, collections.MutableMapping):
         if self.name is None:
             self.name = ""
 
-        buf = StringIO()
+        buf = BytesIO()
         self.write_tag(buf)
         self.write_name(buf)
         self.write_value(buf)
         data = buf.getvalue()
 
         if compressed:
-            gzio = StringIO()
+            gzio = BytesIO()
             gz = gzip.GzipFile(fileobj=gzio, mode='wb')
             gz.write(data)
             gz.close()
@@ -388,7 +388,7 @@ class TAG_Compound(TAG_Value, collections.MutableMapping):
             tag.write_name(buf)
             tag.write_value(buf)
 
-        buf.write("\x00")
+        buf.write(b"\x00")
 
     # --- collection functions ---
 
@@ -489,7 +489,7 @@ class TAG_List(TAG_Value, collections.MutableSequence):
         return self
 
     def write_value(self, buf):
-        buf.write(chr(self.list_type))
+        buf.write(bytes(self.list_type))
         buf.write(TAG_Int.fmt.pack(len(self.value)))
         for i in self.value:
             i.write_value(buf)
@@ -542,8 +542,8 @@ for c in (
     tag_classes[c.tagID] = c
 
 
-def gunzip(data):
-    return gzip.GzipFile(fileobj=StringIO(data)).read()
+def gunzip(data) -> bytes:
+    return gzip.GzipFile(fileobj=BytesIO(data)).read()
 
 
 def try_gunzip(data):
@@ -588,11 +588,14 @@ def _load_buffer(buf):
     if not len(data):
         raise NBTFormatError("Asked to load root tag of zero length")
 
+    log.debug("data:", data)
+
     tag_type = data[0]
     if tag_type != 10:
         magic = data[:4]
-        raise NBTFormatError('Not an NBT file with a root TAG_Compound '
-                             '(file starts with "%s" (0x%08x)' % (magic.tostring(), magic.view(dtype='uint32')))
+        log.debug("magic:", magic)
+        # TODO: Reconstruct this full exception
+        raise NBTFormatError('Not an NBT file with a root TAG_Compound')
 
     ctx = load_ctx()
     ctx.offset = 1
@@ -692,14 +695,26 @@ def nested_string(tag, indent_string="  ", indent=0):
 
 
 try:
-    # noinspection PyUnresolvedReferences
-    # Inhibit the _nbt import if we're debugging the PE support errors, because we need to get information concerning NBT malformed data...
-    #     if DEBUG_PE or '--debug-pe' in sys.argv:
-    #         log.warning("PE support debug mode is activated. Using full Python NBT support!")
-    #     else:
-    from pymclevel._nbt import (load, TAG_Byte, TAG_Short, TAG_Int, TAG_Long, TAG_Float, TAG_Double, TAG_String,
-                      TAG_Byte_Array, TAG_List, TAG_Compound, TAG_Int_Array, TAG_Long_Array, TAG_Short_Array, NBTFormatError,
-                      littleEndianNBT, nested_string, gunzip, hexdump)
+    from pymclevel._nbt import load
+    from pymclevel._nbt import TAG_Byte
+    from pymclevel._nbt import TAG_Short
+    from pymclevel._nbt import TAG_Int
+    from pymclevel._nbt import TAG_Long
+    from pymclevel._nbt import TAG_Float
+    from pymclevel._nbt import TAG_Double
+    from pymclevel._nbt import TAG_String
+    from pymclevel._nbt import TAG_Byte_Array
+    from pymclevel._nbt import TAG_List
+    from pymclevel._nbt import TAG_Compound
+    from pymclevel._nbt import TAG_Int_Array
+    from pymclevel._nbt import TAG_Long_Array
+    from pymclevel._nbt import TAG_Short_Array
+    from pymclevel._nbt import NBTFormatError
+    from pymclevel._nbt import littleEndianNBT
+    from pymclevel._nbt import nested_string
+    from pymclevel._nbt import gunzip
+    from pymclevel._nbt import hexdump
+
 except ImportError as err:
     log.error("Failed to import Cythonized nbt file. Running on (very slow) pure-python nbt fallback.")
     log.error("(Did you forget to run 'setup.py build_ext --inplace'?)")

@@ -489,7 +489,9 @@ class MCServerChunkGenerator(object):
             log.info("Generating at %s" % ((cx, cz),))
             parentDir = dirname(os.path.abspath(level.worldFolder.filename))
             propsFile = join(parentDir, "server.properties")
-            props = readProperties(join(dirname(self.serverJarFile), "server.properties"))
+            debug_joined = join(dirname(str(self.serverJarFile)), "server.properties")
+            print(debug_joined)
+            props = readProperties(debug_joined)
             props["level-name"] = basename(level.worldFolder.filename)
             props["server-port"] = int(32767 + random.random() * 32700)
             props["level-type"] = worldType

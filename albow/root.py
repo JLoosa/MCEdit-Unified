@@ -130,6 +130,7 @@ class RootWidget(Widget):
         self.sessionStolen = False
         self.sprint = False
         self.filesToChange = []
+        self.mcedit = None
 
     def get_modifiers(self):
         """Returns the 'modifiers' global object."""
@@ -373,7 +374,7 @@ class RootWidget(Widget):
                             if self.editor.level is not None and hasattr(self.editor.level, "checkSessionLock"):
                                 self.editor.level.checkSessionLock()
                         except Exception as e:
-                            log.warn("Error reading chunk (?): %s", e)
+                            log.warning("Error reading chunk (?): %s", e)
                             traceback.print_exc()
                             if not config.session.override.get():
                                 self.sessionStolen = True
@@ -632,7 +633,7 @@ scheduled_calls = []
 
 def make_scheduled_calls():
     sched = scheduled_calls
-    t = time()
+    t = time.time()
     while sched and sched[0][0] <= t:
         sched[0][1]()
         sched.pop(0)
@@ -642,5 +643,5 @@ def schedule(delay, func):
     """Arrange for the given function to be called after the specified
     delay in seconds. Scheduled functions are called synchronously from
     the event loop, and only when the frame timer is running."""
-    t = time() + delay
+    t = time.time() + delay
     insort(scheduled_calls, (t, func))

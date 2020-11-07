@@ -44,10 +44,8 @@ import zlib
 from contextlib import contextmanager
 
 import numpy
-from cStringIO import StringIO
-from cpython cimport
-
-PyTypeObject, PyUnicode_DecodeUTF8, PyList_Append, PyString_FromStringAndSize
+from io import StringIO
+from cpython cimport PyTypeObject, PyUnicode_DecodeUTF8, PyList_Append, PyString_FromStringAndSize
 
 logger = logging.getLogger(__name__)
 
@@ -536,7 +534,7 @@ cdef class _TAG_Compound(TAG_Value):
         if filename_or_buf is None:
             return data
 
-        if isinstance(filename_or_buf, basestring):
+        if isinstance(filename_or_buf, (str, bytes)):
             f = open(filename_or_buf, "wb")
             f.write(data)
             f.close()
@@ -577,7 +575,7 @@ cdef void swab(void *vbuf, int nbytes):
         return
     cdef unsigned char *buf = <unsigned char *> vbuf
     cdef int i
-    for i in xrange((nbytes + 1) / 2):
+    for i in range((nbytes + 1) / 2):
         buf[i], buf[nbytes - i - 1] = buf[nbytes - i - 1], buf[i]
 
 #
@@ -725,7 +723,7 @@ cdef load_list(load_ctx ctx):
     cdef _TAG_List tag = TAG_List(list_type=list_type)
     cdef list val = tag.value
     cdef int i
-    for i in xrange(length):
+    for i in range(length):
         PyList_Append(val, load_tag(list_type, ctx))
 
     return tag
@@ -851,7 +849,7 @@ cdef load_tag(char tagID, load_ctx ctx):
         return load_short_array(ctx)
 
 def hexdump(src, length=8):
-    FILTER = ''.join([(len(repr(chr(x))) == 3) and chr(x) or '.' for x in xrange(256)])
+    FILTER = ''.join([(len(repr(chr(x))) == 3) and chr(x) or '.' for x in range(256)])
     N = 0
     result = ''
     while src:

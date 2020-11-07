@@ -352,7 +352,7 @@ o164 When rotating your brush, also rotate the orientation of the block your bru
 t164 当旋转笔刷时, 同时旋转笔刷方块的朝向.
 o165 Choose your language.
 t165 选择你的语言.
-o166 Click to make your MCEdit install self-contained by moving the settings and schematics into the program folder
+o166 Click to make your MCEdit install cls-contained by moving the settings and schematics into the program folder
 t166 点击来将配置文件和schematics文件移动到程序目录
 o167 Restart
 t167 重启

@@ -5,8 +5,8 @@ import sys
 
 # Output annotated .html
 import Cython.Compiler.Options
-from Cython.Build import cythonize
 from setuptools import setup
+from Cython.Build import cythonize
 
 Cython.Compiler.Options.annotate = True
 
@@ -73,7 +73,7 @@ sys.argv.insert(1, '--inplace')
 sys.argv.insert(1, 'build_ext')
 
 setup(
-    ext_modules=cythonize(ext_modules)
+    ext_modules=cythonize(ext_modules, language_level=3)
 )
 
 # On Linux, we want _nbt.so in pymclevel.

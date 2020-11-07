@@ -253,6 +253,7 @@ class OptionsPanel(Dialog):
             sgnal["en_US"] = "English (US)"
         self.langs = langs
         self.sgnal = sgnal
+        # The logging codecs fail to decode some of these languages.
         logging.debug("Detected languages: %s" % self.langs)
         return langs
 

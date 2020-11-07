@@ -15,7 +15,7 @@ This file is to note down what needs to be fixed, and anything that badly needs 
 	- Currently I've been just adding all the different block rotations to minecraft.yaml, which while it is functional it is clunky at best. I would like to add a key that when pressed increments the damage value of a block within a specified range, preferrably defined using a new attribute in minecraft.yaml. Such as rotation: [2, 3, 4, 5] for chests, allowing us to remove the directional entries from the block list and just use the key to rotate blocks.
 	- Files: minecraft.yaml, config.py, brush.py, possibly renderer.py
 - [ ] Add Pocket Edition 0.9.0 Format Compatibility
-	- Currently completely broken, to fix you need mojang's leveldb libraries from their github and a python wrapper, I've included a self-contained wrapper that should work, see leveldb.py. Feel free to break old pocket compatibility if needed.
+	- Currently completely broken, to fix you need mojang's leveldb libraries from their github and a python wrapper, I've included a cls-contained wrapper that should work, see leveldb.py. Feel free to break old pocket compatibility if needed.
 	- Files: pocket.py, leveleditor.py, possibly others
 - [ ] Update Pocket Edition materials
 	- While pocket.yaml may be up to date, the mappings aren't so much. Might be important down the line as the renderer does call these mappings.
